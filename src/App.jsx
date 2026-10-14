@@ -39,9 +39,11 @@ import {
 } from './MediumCommitteeFlow';
 import CinematicIntro from './CinematicIntro';
 import InteractiveConstellation from './InteractiveConstellation';
+import OfflinePage from './OfflinePage';
 import { 
   saveComplaintToFirestore, 
   updateComplaintInFirestore, 
+  deleteComplaintFromFirestore,
   fetchComplaintsFromFirestore, 
   subscribeToComplaints, 
   saveUserToFirestore, 
@@ -667,7 +669,8 @@ export default function CampusMaintenanceApp() {
   const [activeTab, setActiveTab] = useState(
     initialDeptSession ? (initialDeptSession.user?.role === 'ADMIN' ? 'dashboard' : 'tracker') : 'my-complaints'
   );
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [dismissOfflinePage, setDismissOfflinePage] = useState(false);
   const [offlineOutbox, setOfflineOutbox] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [scanSuccessToast, setScanSuccessToast] = useState(null);
@@ -791,7 +794,7 @@ export default function CampusMaintenanceApp() {
   const [profileEditSuccessToast, setProfileEditSuccessToast] = useState(false);
   const [smtpConfig, setSmtpConfig] = useState(null);
   const [emailLog, setEmailLog] = useState([]);
-  const [reporterEmail, setReporterEmail] = useState('student@rgukt.ac.in');
+  const [reporterEmail, setReporterEmail] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [appVersion, setAppVersion] = useState(null);
@@ -907,11 +910,12 @@ export default function CampusMaintenanceApp() {
       if (resC && resC.ok) {
         const dataC = await resC.json().catch(() => null);
         if (dataC && dataC.success && Array.isArray(dataC.complaints)) {
-          setComplaints(dataC.complaints);
+          const validComplaints = dataC.complaints.filter(c => c && c.id && (c.title || c.description || c.ticketNumber));
+          setComplaints(validComplaints);
           setSelectedTicket(prev => {
-            if (!prev && dataC.complaints.length > 0) return dataC.complaints[0];
+            if (!prev && validComplaints.length > 0) return validComplaints[0];
             if (prev) {
-              const updated = dataC.complaints.find(c => c.id === prev.id);
+              const updated = validComplaints.find(c => c.id === prev.id);
               return updated || prev;
             }
             return null;
@@ -923,10 +927,11 @@ export default function CampusMaintenanceApp() {
       try {
         const cloudComplaints = await fetchComplaintsFromFirestore();
         if (Array.isArray(cloudComplaints) && cloudComplaints.length > 0) {
+          const validCloud = cloudComplaints.filter(c => c && c.id && (c.title || c.description || c.ticketNumber));
           setComplaints(prev => {
             const map = new Map();
-            prev.forEach(c => { if (c && c.id) map.set(c.id, c); });
-            cloudComplaints.forEach(c => {
+            prev.forEach(c => { if (c && c.id && (c.title || c.description || c.ticketNumber)) map.set(c.id, c); });
+            validCloud.forEach(c => {
               if (c && c.id) {
                 map.set(c.id, { ...(map.get(c.id) || {}), ...c });
               }
@@ -983,10 +988,11 @@ export default function CampusMaintenanceApp() {
     try {
       unsubscribe = subscribeToComplaints((liveComplaints) => {
         if (Array.isArray(liveComplaints) && liveComplaints.length > 0) {
+          const validLive = liveComplaints.filter(c => c && c.id && (c.title || c.description || c.ticketNumber));
           setComplaints(prev => {
             const map = new Map();
-            prev.forEach(c => { if (c && c.id) map.set(c.id, c); });
-            liveComplaints.forEach(c => {
+            prev.forEach(c => { if (c && c.id && (c.title || c.description || c.ticketNumber)) map.set(c.id, c); });
+            validLive.forEach(c => {
               if (c && c.id) {
                 map.set(c.id, { ...(map.get(c.id) || {}), ...c });
               }
@@ -1004,11 +1010,31 @@ export default function CampusMaintenanceApp() {
       syncCloudUsersWithLocal(remoteUsers, currentUser, setCurrentUser);
     }).catch(e => console.warn('Firebase user sync notice:', e));
 
+    // Real-time Network Connectivity Event Handlers
+    const handleOnline = () => {
+      setIsOnline(true);
+      setDismissOfflinePage(false);
+      fetchData();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setDismissOfflinePage(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setIsOnline(false);
+    }
+
     // Check for live deployed updates from GitHub / server on load and every 45 seconds
     const checkLiveAppUpdate = async () => {
       try {
         const res = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
         if (res && res.ok) {
+          setIsOnline(true);
           const verData = await res.json().catch(() => null);
           if (verData && verData.version) {
             const savedVer = localStorage.getItem('rkv_app_deployed_version');
@@ -1019,9 +1045,13 @@ export default function CampusMaintenanceApp() {
             }
             setAppVersion(verData.version);
           }
+        } else if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          setIsOnline(false);
         }
       } catch (err) {
-        // silent check
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          setIsOnline(false);
+        }
       }
     };
 
@@ -1031,11 +1061,13 @@ export default function CampusMaintenanceApp() {
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
       clearInterval(updateInterval);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
-  const currentStudentEmail = (reporterEmail || currentUser?.email || 'student@rgukt.ac.in').toLowerCase().trim();
-  const currentStudentId = (currentUser?.idNo || '').trim().toUpperCase();
+  const currentStudentEmail = (currentUser?.email || currentUser?.collegeEmail || (reporterEmail !== 'student@rgukt.ac.in' ? reporterEmail : '') || '').toLowerCase().trim();
+  const currentStudentId = (currentUser?.idNo || currentUser?.staffId || currentUser?.id || '').trim().toUpperCase();
 
   // Role & Domain Isolation Filter:
   // - Students/Reporters: ONLY see complaints they personally submitted (matching their email, idNo, studentId, or reporterName)
@@ -1088,21 +1120,26 @@ export default function CampusMaintenanceApp() {
     // 3. STUDENT / REPORTER:
     // Must strictly see ONLY their own lodged complaints!
     if (role === 'REPORTER' || (!role && !isDepartmentRoleOrUser(currentUser))) {
+      // Discard empty/corrupt records (no title and no ticketNumber)
+      if (!c.title && !c.ticketNumber && !c.description) return false;
+
       const cEmail = (c.reporterEmail || '').toLowerCase().trim();
       const cId = (c.reporterId || c.studentId || '').trim().toUpperCase();
       const cName = (c.reporterName || '').trim().toLowerCase();
+      const curId = currentStudentId;
+      const curEmail = currentStudentEmail;
       const curName = (currentUser?.name || currentUser?.fullName || '').trim().toLowerCase();
 
-      // Check student ID
-      if (currentStudentId && (cId === currentStudentId || (c.reporterName || '').toUpperCase().includes(currentStudentId))) {
+      // 1. Check student ID (e.g. R240493)
+      if (curId && curId !== 'STUDENT' && (cId === curId || (c.reporterName || '').toUpperCase().includes(curId))) {
         return true;
       }
-      // Check student Email
-      if (currentStudentEmail && cEmail === currentStudentEmail) {
+      // 2. Check student Email (must be non-empty and never match generic student@rgukt.ac.in)
+      if (curEmail && curEmail !== 'student@rgukt.ac.in' && cEmail === curEmail) {
         return true;
       }
-      // Check student Name (only if non-empty and not generic)
-      if (curName && curName !== 'student' && curName !== 'student resident' && cName === curName) {
+      // 3. Check student Name (only if specific and matches)
+      if (curName && curName !== 'student' && curName !== 'student resident' && curName.length > 3 && cName === curName) {
         return true;
       }
       // Strictly do not show other students' complaints!
@@ -1478,6 +1515,27 @@ export default function CampusMaintenanceApp() {
     });
 
     e.target.value = '';
+  };
+
+  // Delete / Withdraw Complaint Handler
+  const handleDeleteComplaint = async (complaintId) => {
+    if (!complaintId) return;
+    if (!window.confirm('Are you sure you want to withdraw and remove this complaint from the system? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      // 1. Remove from local state immediately
+      setComplaints(prev => prev.filter(c => c.id !== complaintId));
+      if (selectedTicket?.id === complaintId) {
+        setSelectedTicket(null);
+      }
+      // 2. Remove from backend Express API
+      fetch(`/api/complaints/${complaintId}`, { method: 'DELETE' }).catch(() => null);
+      // 3. Remove permanently from Firebase Cloud Firestore
+      await deleteComplaintFromFirestore(complaintId);
+    } catch (e) {
+      console.warn('Error deleting complaint:', e);
+    }
   };
 
   // Form Submit Handler
@@ -2087,6 +2145,30 @@ export default function CampusMaintenanceApp() {
 
   const activeTechnician = staffList.find(s => s.id === selectedStaffId) || staffList[0];
 
+  // Show dedicated professional Offline Page when network is disconnected
+  if (!isOnline && !dismissOfflinePage) {
+    return (
+      <OfflinePage
+        onRetry={async () => {
+          try {
+            const res = await fetch('/version.json?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+            if (res && res.ok) {
+              setIsOnline(true);
+              setDismissOfflinePage(false);
+              fetchData();
+              return true;
+            }
+          } catch (e) {
+            // still offline
+          }
+          return false;
+        }}
+        onDismiss={() => setDismissOfflinePage(true)}
+        offlineQueueCount={offlineOutbox.length}
+      />
+    );
+  }
+
   // Show Cinematic Intro Screen before login page
   if (showIntro) {
     return <CinematicIntro onEnter={() => setShowIntro(false)} />;
@@ -2136,6 +2218,29 @@ export default function CampusMaintenanceApp() {
                 title="Dismiss"
               >
                 <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PERSISTENT OFFLINE CONTINGENCY BANNER */}
+      {!isOnline && (
+        <div className="shrink-0 bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-amber-950/95 text-white px-4 py-2 text-xs flex items-center justify-between z-40 border-b border-rose-500/50 shadow-xl shadow-rose-950/30">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0" />
+              <WifiOff className="w-4 h-4 text-rose-400 shrink-0" />
+              <span className="font-extrabold text-amber-300 shrink-0">Offline Contingency Mode:</span>
+              <span className="text-slate-300 truncate">Internet disconnected. Tickets you submit are safely cached locally and will auto-sync once back online.</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setDismissOfflinePage(false)}
+                className="px-2.5 py-1 bg-rose-600/30 hover:bg-rose-600/50 text-rose-200 border border-rose-500/40 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <span>View Offline Portal</span>
               </button>
             </div>
           </div>
@@ -3551,14 +3656,14 @@ export default function CampusMaintenanceApp() {
                     const rejectedCount = visibleComplaints.filter(c => c.status === 'REJECTED').length;
 
                     return (
-                      <div className="grid grid-cols-4 gap-2 p-1.5 bg-slate-800/80/90 rounded-xl">
+                      <div className="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/90 rounded-2xl border border-slate-800">
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('ALL')}
-                          className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
                             studentStatusFilter === 'ALL'
-                              ? 'bg-white text-slate-950 font-black shadow-2xs'
-                              : 'text-slate-300 hover:text-white hover:bg-white/50'
+                              ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30 ring-1 ring-blue-400'
+                              : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
                           }`}
                         >
                           <span className="text-[10px] uppercase tracking-wider font-extrabold">All</span>
@@ -3568,14 +3673,14 @@ export default function CampusMaintenanceApp() {
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('PENDING')}
-                          className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
                             studentStatusFilter === 'PENDING'
-                              ? 'bg-amber-500 text-white shadow-2xs'
-                              : 'text-amber-800 hover:bg-amber-50/60'
+                              ? 'bg-amber-500 text-white font-black shadow-lg shadow-amber-500/30 ring-1 ring-amber-300'
+                              : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
                           }`}
                         >
                           <span className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> Pending
+                            <Clock className="w-3 h-3 text-amber-400" /> Pending
                           </span>
                           <span className="text-sm font-black">{pendingCount}</span>
                         </button>
@@ -3583,14 +3688,14 @@ export default function CampusMaintenanceApp() {
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('SOLVED')}
-                          className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
                             studentStatusFilter === 'SOLVED'
-                              ? 'bg-emerald-600 text-white shadow-2xs'
-                              : 'text-emerald-800 hover:bg-emerald-50/60'
+                              ? 'bg-emerald-600 text-white font-black shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-300'
+                              : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
                           }`}
                         >
                           <span className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Solved
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Solved
                           </span>
                           <span className="text-sm font-black">{solvedCount}</span>
                         </button>
@@ -3598,14 +3703,14 @@ export default function CampusMaintenanceApp() {
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('REJECTED')}
-                          className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
                             studentStatusFilter === 'REJECTED'
-                              ? 'bg-rose-600 text-white shadow-2xs'
-                              : 'text-rose-800 hover:bg-rose-50/60'
+                              ? 'bg-rose-600 text-white font-black shadow-lg shadow-rose-600/30 ring-1 ring-rose-300'
+                              : 'text-rose-400 hover:text-rose-300 hover:bg-rose-500/10'
                           }`}
                         >
                           <span className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-                            <Ban className="w-3 h-3" /> Rejected
+                            <Ban className="w-3 h-3 text-rose-400" /> Rejected
                           </span>
                           <span className="text-sm font-black">{rejectedCount}</span>
                         </button>
@@ -3628,7 +3733,7 @@ export default function CampusMaintenanceApp() {
                       return (
                         <div className="p-8 text-center glass-panel rounded-2xl">
                           <div className="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto mb-3">
-                            <Layers className="w-6 h-6" />
+                            <Layers className="w-6 h-6 text-blue-500" />
                           </div>
                           <h4 className="text-sm font-bold text-slate-200">
                             {studentStatusFilter === 'PENDING' ? 'No Pending Complaints' :
@@ -3659,57 +3764,60 @@ export default function CampusMaintenanceApp() {
                     return filteredStudentComplaints.map(item => (
                       <div
                         key={item.id}
-                        className="p-4 sm:p-5 rounded-2xl border border-slate-700/60 bg-white hover:border-slate-300 transition-all shadow-xs space-y-3"
+                        className="cyber-card p-5 sm:p-6 rounded-2xl border border-slate-800 hover:border-blue-500/40 transition-all shadow-xl space-y-4 text-white"
                       >
                         {/* Header with Ticket #, Category, Priority, SLA & Status */}
                         <div className="flex items-start justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-mono font-bold text-slate-100">{item.ticketNumber}</span>
-                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-md bg-slate-800/80 text-slate-200">
-                              {item.category}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-mono font-black text-cyan-300 bg-cyan-950/70 border border-cyan-800/60 px-2.5 py-1 rounded-lg">
+                              {item.ticketNumber || 'TICKET-PENDING'}
                             </span>
-                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md ${
-                              item.status === 'REJECTED' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
-                              item.status === 'RESOLVED' || item.status === 'CLOSED' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
-                              item.priority === 'EMERGENCY' ? 'bg-rose-100 text-rose-800' : 'bg-blue-50 text-blue-700 border border-blue-200'
-                            }`}>
-                              {item.status === 'REJECTED' ? 'REJECTED' :
-                               item.status === 'RESOLVED' || item.status === 'CLOSED' ? 'SOLVED' :
-                               `${item.priority || 'MEDIUM'} Priority`}
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-200">
+                              {item.category || 'General Maintenance'}
                             </span>
                             <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-md ${
-                              item.status === 'RESOLVED' || item.status === 'CLOSED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                              item.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                              'bg-amber-50 text-amber-800 border border-amber-200'
+                              item.priority === 'EMERGENCY' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' :
+                              item.priority === 'HIGH' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
+                              'bg-blue-500/20 text-blue-300 border border-blue-500/40'
                             }`}>
-                              ● {item.status}
+                              {item.priority || 'MEDIUM'} Priority
+                            </span>
+                            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-md ${
+                              item.status === 'RESOLVED' || item.status === 'CLOSED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
+                              item.status === 'REJECTED' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' :
+                              item.status === 'IN_PROGRESS' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
+                              'bg-sky-500/20 text-sky-300 border border-sky-500/40'
+                            }`}>
+                              ● {item.status || 'SUBMITTED'}
                             </span>
                           </div>
                           <div className="text-right">
-                            <span className="text-[10px] font-bold text-slate-400 block uppercase">SLA Target</span>
-                            <span className="text-xs font-bold text-blue-600">{item.slaHours || 24} Hours</span>
+                            <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">SLA Target</span>
+                            <span className="text-xs font-extrabold text-cyan-400">{item.slaHours || 24} Hours</span>
                           </div>
                         </div>
 
                         {/* Title & Location */}
-                        <div>
-                          <h4 className="font-bold text-base text-white tracking-tight mb-1">{item.title}</h4>
-                          <p className="text-xs text-slate-400 flex items-center gap-1 truncate">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">{item.location}</span>
+                        <div className="space-y-1.5">
+                          <h4 className="font-extrabold text-base sm:text-lg text-white tracking-tight leading-snug">
+                            {item.title || 'Campus Maintenance Grievance'}
+                          </h4>
+                          <p className="text-xs font-medium text-slate-300 flex items-center gap-1.5 truncate">
+                            <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+                            <span className="truncate">{item.location || 'Location Not Specified'}</span>
                           </p>
                         </div>
 
                         {/* Description */}
                         {item.description && (
-                          <p className="text-xs text-slate-300 cyber-card-subtle p-2.5 rounded-xl border border-slate-800/60">
+                          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-xs text-slate-200 leading-relaxed font-normal">
                             {item.description}
-                          </p>
+                          </div>
                         )}
 
                         {/* INLINE CAMPUS HIERARCHY TRACKING FLOW WHEN "Track Complaint" IS EXPANDED */}
                         {Boolean(expandedTrackTickets[item.id]) && (
-                          <div className="pt-2">
+                          <div className="pt-2 animate-in fade-in duration-200">
                             {!item.isIcc && item.category !== 'Internal Complaints Committee (ICC)' && item.categoryType !== 'ICC' ? (
                               <HostelHierarchyTrackerCard
                                 ticket={item}
@@ -3721,12 +3829,12 @@ export default function CampusMaintenanceApp() {
                                 onAddAuthorityResponse={handleAddHostelAuthorityResponse}
                               />
                             ) : (
-                              <div className="p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 space-y-1.5">
-                                <div className="flex items-center gap-1.5 font-bold">
-                                  <ShieldCheck className="w-4 h-4 text-purple-700" />
+                              <div className="p-4 bg-purple-950/60 rounded-xl border border-purple-800/60 text-xs text-purple-200 space-y-1.5">
+                                <div className="flex items-center gap-1.5 font-bold text-purple-300">
+                                  <ShieldCheck className="w-4 h-4 text-purple-400" />
                                   <span>ICC Statutory Redressal Committee (Presided by Director)</span>
                                 </div>
-                                <p className="text-[11px] text-purple-800">
+                                <p className="text-[11px] text-purple-300/90">
                                   Level: <strong>{item.committeeLevel || 'Level 1: Small Committee (3 Members)'}</strong>
                                 </p>
                               </div>
@@ -3734,15 +3842,29 @@ export default function CampusMaintenanceApp() {
                           </div>
                         )}
 
-                        {/* Card Footer: Category, Assigned Person, and Track Buttons */}
-                        <div className="flex items-center justify-between text-xs pt-3 border-t border-slate-800/60 flex-wrap gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-slate-400 font-medium">{item.category}</span>
-                            <span className="text-slate-300">•</span>
-                            <span className="text-slate-300 font-semibold">{item.assignedStaffName || 'Dean Student Welfare & Technical Dept'}</span>
+                        {/* Card Footer: Category, Assigned Person, and Actions */}
+                        <div className="flex items-center justify-between text-xs pt-3.5 border-t border-slate-800/80 flex-wrap gap-2">
+                          <div className="flex items-center gap-2 text-slate-300">
+                            <span className="font-semibold text-slate-300">{item.category}</span>
+                            <span className="text-slate-600">•</span>
+                            <span className="text-slate-400">{item.assignedStaffName || 'Dean Student Welfare & Technical Dept'}</span>
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {/* WITHDRAW / REMOVE BUTTON */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteComplaint(item.id);
+                              }}
+                              className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 flex items-center gap-1 cursor-pointer"
+                              title="Withdraw and delete this complaint"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                              <span>Withdraw</span>
+                            </button>
+
                             {/* TRACK COMPLAINT BUTTON (Expands tracking in-place) */}
                             <button
                               type="button"
@@ -3756,13 +3878,13 @@ export default function CampusMaintenanceApp() {
                               }}
                               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer ${
                                 Boolean(expandedTrackTickets[item.id])
-                                  ? 'bg-slate-900 text-teal-300 border border-slate-800 hover:bg-slate-800'
+                                  ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40 hover:bg-slate-700'
                                   : 'bg-blue-600 hover:bg-blue-700 text-white'
                               }`}
                             >
                               {Boolean(expandedTrackTickets[item.id]) ? (
                                 <>
-                                  <ChevronUp className="w-3.5 h-3.5 text-teal-300" />
+                                  <ChevronUp className="w-3.5 h-3.5 text-cyan-300" />
                                   <span>Hide Tracking</span>
                                 </>
                               ) : (
@@ -3782,7 +3904,7 @@ export default function CampusMaintenanceApp() {
                                 setSelectedTicket(item);
                                 navigateToTab('tracker');
                               }}
-                              className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-slate-700/60 cyber-card-subtle hover:bg-slate-800/80 text-slate-200 flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center gap-1 cursor-pointer"
                               title="View detailed lifecycle timeline in My Complaint Status"
                             >
                               <span>Full Status</span>

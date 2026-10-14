@@ -12,6 +12,7 @@ import {
   getDoc, 
   getDocs, 
   updateDoc, 
+  deleteDoc,
   onSnapshot, 
   query, 
   orderBy, 
@@ -95,6 +96,22 @@ export async function updateComplaintInFirestore(complaintId, updates) {
     return true;
   } catch (error) {
     console.error("Firestore updateComplaint error:", error);
+    return false;
+  }
+}
+
+/**
+ * Delete a complaint permanently from Firebase Cloud Firestore
+ */
+export async function deleteComplaintFromFirestore(complaintId) {
+  if (!complaintId) return false;
+  try {
+    const docRef = doc(db, "complaints", String(complaintId));
+    await deleteDoc(docRef);
+    console.log("✅ [Cloud Firestore] Complaint deleted:", complaintId);
+    return true;
+  } catch (error) {
+    console.error("Firestore deleteComplaint error:", error);
     return false;
   }
 }
