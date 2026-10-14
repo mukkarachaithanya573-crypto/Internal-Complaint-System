@@ -146,19 +146,44 @@ export function subscribeToComplaints(onUpdate, onError) {
 
 
 /**
- * Save user profile to Firebase Cloud Firestore for cross-device authentication persistence
+ * Save user profile to Firebase Cloud Firestore for permanent cross-device persistence
  */
 export async function saveUserToFirestore(user) {
-  if (!user || (!user.idNo && !user.collegeEmail)) return null;
+  if (!user) return null;
+  const idKey = (user.idNo || user.staffId || user.id || '').trim().toUpperCase();
+  const emailKey = (user.collegeEmail || user.email || '').trim().toLowerCase();
+  if (!idKey && !emailKey) return null;
+
   try {
-    const docId = (user.idNo || user.collegeEmail).trim().toUpperCase();
+    const docId = (idKey || emailKey).replace(/[\/\s.]/g, '_');
     const docRef = doc(db, "users", docId);
-    const sanitized = cleanForFirestore(user);
-    await setDoc(docRef, {
+    const sanitized = cleanForFirestore(user) || {};
+    
+    const dataToSave = {
       ...sanitized,
-      updatedAtFirestore: serverTimestamp()
-    }, { merge: true });
-    console.log("✅ [Cloud Firestore] User profile stored successfully:", docId);
+      idNo: idKey || sanitized.idNo || null,
+      collegeEmail: emailKey || sanitized.collegeEmail || null,
+      email: emailKey || sanitized.email || null,
+      fullName: user.fullName || user.name || sanitized.fullName || sanitized.name || null,
+      name: user.name || user.fullName || sanitized.name || sanitized.fullName || null,
+      mobileNumber: user.mobileNumber || sanitized.mobileNumber || null,
+      branch: user.branch || sanitized.branch || null,
+      studyingYear: user.studyingYear || user.className || sanitized.studyingYear || sanitized.className || null,
+      className: user.className || user.studyingYear || sanitized.className || sanitized.studyingYear || null,
+      hostelRoom: user.hostelRoom || sanitized.hostelRoom || null,
+      hostelBlock: user.hostelBlock || sanitized.hostelBlock || null,
+      roomNumber: user.roomNumber || sanitized.roomNumber || null,
+      profilePic: user.profilePic || sanitized.profilePic || null,
+      role: user.role || sanitized.role || 'REPORTER',
+      department: user.department || sanitized.department || null,
+      zone: user.zone || sanitized.zone || null,
+      userTab: user.userTab || sanitized.userTab || (user.role === 'REPORTER' ? 'student' : 'department'),
+      updatedAtFirestore: serverTimestamp(),
+      updatedAtISO: new Date().toISOString()
+    };
+
+    await setDoc(docRef, dataToSave, { merge: true });
+    console.log("✅ [Cloud Firestore] User profile stored permanently:", docId);
     return docId;
   } catch (error) {
     console.error("Firestore saveUser error:", error);
@@ -175,8 +200,12 @@ export async function fetchUsersFromFirestore() {
     const snapshot = await getDocs(colRef);
     const list = [];
     snapshot.forEach((docSnap) => {
-      list.push(docSnap.data());
+      const data = docSnap.data();
+      if (data) {
+        list.push({ ...data, _docId: docSnap.id });
+      }
     });
+    console.log(`✅ [Cloud Firestore] Retrieved ${list.length} user profile(s) from cloud.`);
     return list;
   } catch (error) {
     console.warn("Firestore fetchUsers warning:", error.message || error);

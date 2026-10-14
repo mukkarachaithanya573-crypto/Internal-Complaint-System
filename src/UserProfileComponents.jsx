@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, PhoneCall, GraduationCap, Clock, Building2, MapPin, 
   Edit3, Save, X, CheckCircle2, ShieldCheck, Camera, Sparkles, AlertCircle 
@@ -52,7 +52,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
     studyingYear: currentUser?.studyingYear || currentUser?.className || 'B.Tech 3rd Year',
     hostelBlock: currentUser?.hostelBlock || (currentUser?.hostelRoom?.split('•')?.[0]?.trim()) || 'Penna BH-1 (Front Side)',
     roomNumber: currentUser?.roomNumber || (currentUser?.hostelRoom?.split('•')?.[1]?.trim()) || '108',
-    mobileNumber: currentUser?.mobileNumber ? currentUser.mobileNumber.replace(/^\+91\s*/, '') : '8247532907',
+    mobileNumber: currentUser?.mobileNumber ? currentUser.mobileNumber.replace(/^\+91\s*/, '') : '',
     profilePic: currentUser?.profilePic || '',
     department: currentUser?.department || currentUser?.category || 'Electrical',
     zone: currentUser?.zone || 'Academics & Hostels'
@@ -60,6 +60,25 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
 
   const [validationError, setValidationError] = useState('');
   const [photoPreview, setPhotoPreview] = useState(currentUser?.profilePic || '');
+
+  // Synchronize form whenever currentUser changes or modal opens
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || currentUser.fullName || '',
+        branch: currentUser.branch || 'CSE Dept',
+        studyingYear: currentUser.studyingYear || currentUser.className || 'B.Tech 3rd Year',
+        hostelBlock: currentUser.hostelBlock || (currentUser.hostelRoom?.split('•')?.[0]?.trim()) || 'Penna BH-1 (Front Side)',
+        roomNumber: currentUser.roomNumber || (currentUser.hostelRoom?.split('•')?.[1]?.trim()) || '108',
+        mobileNumber: currentUser.mobileNumber ? currentUser.mobileNumber.replace(/^\+91\s*/, '') : '',
+        profilePic: currentUser.profilePic || '',
+        department: currentUser.department || currentUser.category || 'Electrical',
+        zone: currentUser.zone || 'Academics & Hostels'
+      });
+      setPhotoPreview(currentUser.profilePic || '');
+      setValidationError('');
+    }
+  }, [currentUser, isOpen]);
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -383,10 +402,19 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
  */
 export function FullProfileView({ currentUser, currentRole, onOpenEditModal, complaints = [], onNavigateToTracker }) {
   const isStudent = currentRole === 'REPORTER' || (!currentRole && currentUser?.role !== 'STAFF' && currentUser?.role !== 'ADMIN');
-  const userTickets = complaints.filter(c => 
-    (currentUser?.email && c.reporterEmail?.toLowerCase() === currentUser.email.toLowerCase()) ||
-    (currentUser?.idNo && c.reporterId?.toUpperCase() === currentUser.idNo.toUpperCase())
-  );
+  const userTickets = complaints.filter(c => {
+    if (!c) return false;
+    if (isStudent) {
+      const matchEmail = currentUser?.email && c.reporterEmail?.toLowerCase() === currentUser.email.toLowerCase();
+      const curId = (currentUser?.idNo || '').trim().toUpperCase();
+      const matchId = curId && ((c.reporterId && c.reporterId.toUpperCase() === curId) || (c.studentId && c.studentId.toUpperCase() === curId));
+      const curName = (currentUser?.name || currentUser?.fullName || '').trim().toLowerCase();
+      const matchName = curName && curName !== 'student' && c.reporterName?.toLowerCase().trim() === curName;
+      return matchEmail || matchId || matchName;
+    }
+    // Staff/Admin: complaints passed is already visibleComplaints
+    return true;
+  });
   const resolvedCount = userTickets.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length;
   const activeCount = userTickets.length - resolvedCount;
 

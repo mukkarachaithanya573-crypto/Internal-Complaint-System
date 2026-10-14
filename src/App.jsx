@@ -575,6 +575,78 @@ export function clearDepartmentDailySession() {
   }
 }
 
+// HELPER: Match complaints to technical staff trade
+export function isComplaintMatchingTrade(c, tradeOrCategory) {
+  if (!c || !tradeOrCategory) return false;
+  const target = tradeOrCategory.toLowerCase();
+  const cCat = (c.category || '').toLowerCase();
+  const cDept = (c.concernedDept || '').toLowerCase();
+
+  // Electrical
+  if (target.includes('elec') || target.includes('power')) {
+    return cCat.includes('elec') || cCat.includes('power') || cDept.includes('elec') || cDept.includes('power');
+  }
+  // Plumbing
+  if (target.includes('plumb') || target.includes('water')) {
+    return cCat.includes('plumb') || cCat.includes('water') || cDept.includes('plumb') || cDept.includes('water');
+  }
+  // Civil / Carpentry / Furniture
+  if (target.includes('civil') || target.includes('carpenter') || target.includes('furniture')) {
+    return cCat.includes('civil') || cCat.includes('carpenter') || cCat.includes('furniture') ||
+           cDept.includes('civil') || cDept.includes('carpenter') || cDept.includes('furniture');
+  }
+  // IT Systems / Network / Wi-Fi
+  if (target.includes('it') || target.includes('wifi') || target.includes('wi-fi') || target.includes('network') || target.includes('systems')) {
+    return cCat.includes('it') || cCat.includes('wifi') || cCat.includes('wi-fi') || cCat.includes('network') ||
+           cDept.includes('it') || cDept.includes('wifi') || cDept.includes('wi-fi') || cDept.includes('network');
+  }
+  // Housekeeping / Sanitation
+  if (target.includes('clean') || target.includes('housekeep') || target.includes('sanitat')) {
+    return cCat.includes('clean') || cCat.includes('housekeep') || cCat.includes('sanitat') ||
+           cDept.includes('clean') || cDept.includes('housekeep') || cDept.includes('sanitat');
+  }
+  // Safety / Health
+  if (target.includes('safe') || target.includes('pest') || target.includes('hygiene') || target.includes('health')) {
+    return cCat.includes('safe') || cCat.includes('pest') || cCat.includes('hygiene') || cCat.includes('health') ||
+           cDept.includes('safe') || cDept.includes('pest') || cDept.includes('hygiene') || cDept.includes('health');
+  }
+
+  return cCat.includes(target) || cDept.includes(target);
+}
+
+// HELPER: Determine if complaint pertains to Hostel / Dormitory facilities
+export function isHostelComplaint(c) {
+  if (!c) return false;
+  if (c.locationType === 'HOSTEL_DORM') return true;
+  if (c.isHostelHierarchy || c.hierarchyStage === 'WARDEN' || c.currentHierarchyStage === 'WARDEN') return true;
+  const loc = (c.location || '').toLowerCase();
+  const room = (c.room || '').toLowerCase();
+  const title = (c.title || '').toLowerCase();
+  const desc = (c.description || '').toLowerCase();
+
+  const hostelKeywords = [
+    'hostel', 'dorm', 'bh-', 'gh-', 'bh1', 'bh2', 'gh1', 'gh2',
+    'penna', 'papagni', 'kundu', 'chitravati', 'rho', 'theta',
+    'alpha', 'beta', 'gamma', 'delta', 'mess', 'dining hall'
+  ];
+
+  return hostelKeywords.some(kw => 
+    loc.includes(kw) || room.includes(kw) || title.includes(kw) || desc.includes(kw)
+  );
+}
+
+// HELPER: Determine if complaint is an ICC grievance
+export function isIccComplaint(c) {
+  if (!c) return false;
+  return Boolean(
+    c.isIcc ||
+    c.category === 'Internal Complaints Committee (ICC)' ||
+    c.categoryType === 'ICC' ||
+    (c.category && c.category.toLowerCase().includes('icc')) ||
+    (c.committeeLevel && c.committeeLevel.toLowerCase().includes('icc'))
+  );
+}
+
 export default function CampusMaintenanceApp() {
   // Check if department user has an active daily workday session for today
   const initialDeptSession = getActiveDepartmentDailySession();
@@ -607,20 +679,30 @@ export default function CampusMaintenanceApp() {
     setActiveProfileKey(profileKey);
     const profile = CAMPUS_AUTHORITY_PROFILES[profileKey];
     if (profile) {
+      const allAccounts = getRegisteredAccounts();
+      const customSaved = allAccounts.find(a => 
+        (a.profileKey && a.profileKey === profileKey) ||
+        (a.idNo && profile.idNumber && a.idNo.toUpperCase() === profile.idNumber.toUpperCase()) ||
+        (a.collegeEmail && profile.email && a.collegeEmail.toLowerCase() === profile.email.toLowerCase())
+      );
       const updatedUser = {
+        ...profile,
         ...(currentUser || {}),
         id: profile.id,
-        name: profile.name,
-        email: profile.email,
+        name: customSaved?.fullName || customSaved?.name || profile.name,
+        fullName: customSaved?.fullName || customSaved?.name || profile.name,
+        email: customSaved?.collegeEmail || customSaved?.email || profile.email,
         role: profile.role,
-        department: profile.department,
-        category: profile.category,
+        department: customSaved?.department || profile.department,
+        category: customSaved?.category || profile.category,
         staffId: profile.idNumber,
-        mobileNumber: profile.phone ? profile.phone.replace('+91 ', '') : '',
+        mobileNumber: customSaved?.mobileNumber || (profile.phone ? profile.phone.replace('+91 ', '') : ''),
         location: profile.location,
-        designation: profile.designation,
+        designation: customSaved?.designation || profile.designation,
         hierarchyStage: profile.hierarchyStage,
-        departmentKey: profile.departmentKey
+        departmentKey: profile.departmentKey,
+        profilePic: customSaved?.profilePic || null,
+        profileKey: profileKey
       };
       setCurrentUser(updatedUser);
       if (profile.role === 'REPORTER') {
@@ -917,22 +999,9 @@ export default function CampusMaintenanceApp() {
       console.warn('Firebase complaint listener notice:', e);
     }
 
-    // Sync cloud registered users from Firestore into local accounts
+    // Sync cloud registered users from Firestore into local accounts and live session
     fetchUsersFromFirestore().then(remoteUsers => {
-      if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
-        const current = getRegisteredAccounts();
-        const existingIds = new Set(current.map(u => (u.idNo || '').trim().toUpperCase()));
-        const existingEmails = new Set(current.map(u => (u.collegeEmail || '').trim().toLowerCase()));
-        const newFromCloud = remoteUsers.filter(u => {
-          if (!u) return false;
-          const idMatch = u.idNo && existingIds.has(u.idNo.trim().toUpperCase());
-          const emailMatch = u.collegeEmail && existingEmails.has(u.collegeEmail.trim().toLowerCase());
-          return !idMatch && !emailMatch;
-        });
-        if (newFromCloud.length > 0) {
-          saveRegisteredAccounts([...newFromCloud, ...current]);
-        }
-      }
+      syncCloudUsersWithLocal(remoteUsers, currentUser, setCurrentUser);
     }).catch(e => console.warn('Firebase user sync notice:', e));
 
     // Check for live deployed updates from GitHub / server on load and every 45 seconds
@@ -968,28 +1037,21 @@ export default function CampusMaintenanceApp() {
   const currentStudentEmail = (reporterEmail || currentUser?.email || 'student@rgukt.ac.in').toLowerCase().trim();
   const currentStudentId = (currentUser?.idNo || '').trim().toUpperCase();
 
-  // Role & Creator-based visibility:
-  // - Students/Reporters: ONLY see complaints they personally submitted (matching their email, idNo, or reporterName)
-  // - Staff/Technicians: see complaints matching their trade/category or assigned to them
-  // - Admin / Campus Authorities (Warden, DSW, AO, Director): see all campus complaints
+  // Role & Domain Isolation Filter:
+  // - Students/Reporters: ONLY see complaints they personally submitted (matching their email, idNo, studentId, or reporterName)
+  // - Technical Staff: ONLY see complaints matching their specific trade/category or assigned directly to them
+  // - Hostel Wardens: ONLY see hostel/dorm maintenance complaints and hostel hierarchy tickets
+  // - ICC Committee Members: ONLY see statutory ICC/harassment grievances
+  // - Director / Admin: Central institutional governance oversight
   const visibleComplaints = complaints.filter(c => {
     if (!c) return false;
     const role = currentUser?.role || currentRole || 'REPORTER';
 
-    // Determine if complaint is an ICC complaint
-    const isIccTicket = Boolean(
-      c.isIcc ||
-      c.category === 'Internal Complaints Committee (ICC)' ||
-      c.categoryType === 'ICC' ||
-      (c.committeeLevel && c.committeeLevel.toLowerCase().includes('icc'))
-    );
+    const isIccTicket = isIccComplaint(c);
 
-    // ICC complaints confidentiality:
-    // Only accessible to:
-    // 1. Official ICC Committee members (Presiding Officer, Woman faculty, Legal member, Police representative)
-    // 2. The Director (Apex Head & Committee Chairperson)
-    // 3. The student/staff complainant who submitted the complaint
+    // 1. ICC COMPLAINTS CONFIDENTIALITY:
     if (isIccTicket) {
+      // Check if current user is an authorized ICC Member or Apex Director
       const isOfficialIccMember = Boolean(
         activeProfileKey === 'DIRECTOR' ||
         activeProfileKey?.startsWith('ICC_') ||
@@ -1001,45 +1063,88 @@ export default function CampusMaintenanceApp() {
       );
       if (isOfficialIccMember) return true;
 
-      // Also allow the reporter who lodged this ICC complaint
+      // Allow the student/staff reporter who lodged this ICC complaint to track their own ticket
       const cEmail = (c.reporterEmail || '').toLowerCase().trim();
+      const cId = (c.reporterId || c.studentId || '').trim().toUpperCase();
       if (currentStudentEmail && cEmail === currentStudentEmail) return true;
-      if (currentStudentId && (c.reporterId || '').trim().toUpperCase() === currentStudentId) return true;
+      if (currentStudentId && cId === currentStudentId) return true;
       if (currentUser?.name && (c.reporterName || '').trim().toLowerCase() === currentUser.name.trim().toLowerCase()) return true;
 
-      // Strictly hidden from Warden, general department technicians, and other non-ICC personnel
+      // Strictly hidden from Wardens, Technicians, Staff, and unrelated students
       return false;
     }
 
-    // Campus Admin & Apex Authorities (Warden, DSW, AO, Director) have access to manage non-ICC complaints
-    if (role === 'ADMIN' || activeProfileKey === 'WARDEN' || activeProfileKey === 'DSW' || activeProfileKey === 'AO' || activeProfileKey === 'DIRECTOR') return true;
+    // 2. ICC COMMITTEE MEMBERS:
+    // When an ICC Member is logged in, they should strictly see ICC tickets only! Not general plumbing/electrical repairs.
+    const isIccUser = Boolean(
+      activeProfileKey?.startsWith('ICC_') ||
+      currentUser?.category === 'ICC Committee' ||
+      currentUser?.idNo?.startsWith('ICC-')
+    );
+    if (isIccUser) {
+      return isIccTicket;
+    }
 
-    // Staff/Technicians see complaints assigned to them or in their trade/department
-    if (role === 'STAFF') {
-      const staffDept = (currentUser?.category || currentUser?.department || '').toLowerCase();
-      const staffId = currentUser?.staffId || currentUser?.id;
-      if (staffId && c.assignedStaffId === staffId) return true;
-      if (staffDept && (c.category || '').toLowerCase().includes(staffDept)) return true;
-      if (staffDept && (c.concernedDept || '').toLowerCase().includes(staffDept)) return true;
-      // Also allow if they personally reported it
+    // 3. STUDENT / REPORTER:
+    // Must strictly see ONLY their own lodged complaints!
+    if (role === 'REPORTER' || (!role && !isDepartmentRoleOrUser(currentUser))) {
       const cEmail = (c.reporterEmail || '').toLowerCase().trim();
-      return cEmail === currentStudentEmail || cEmail === 'student@rgukt.ac.in';
+      const cId = (c.reporterId || c.studentId || '').trim().toUpperCase();
+      const cName = (c.reporterName || '').trim().toLowerCase();
+      const curName = (currentUser?.name || currentUser?.fullName || '').trim().toLowerCase();
+
+      // Check student ID
+      if (currentStudentId && (cId === currentStudentId || (c.reporterName || '').toUpperCase().includes(currentStudentId))) {
+        return true;
+      }
+      // Check student Email
+      if (currentStudentEmail && cEmail === currentStudentEmail) {
+        return true;
+      }
+      // Check student Name (only if non-empty and not generic)
+      if (curName && curName !== 'student' && curName !== 'student resident' && cName === curName) {
+        return true;
+      }
+      // Strictly do not show other students' complaints!
+      return false;
     }
 
-    // Default: Reporter / Student - show complaints submitted by student or campus demo tickets
-    const cEmail = (c.reporterEmail || '').toLowerCase().trim();
-    if (currentStudentEmail && (cEmail === currentStudentEmail || cEmail === 'student@rgukt.ac.in')) return true;
+    // 4. DEPARTMENT TECHNICAL STAFF / TECHNICIANS:
+    // Must strictly see complaints matching their trade / assigned to them
+    if (role === 'STAFF') {
+      const staffTrade = activeTechnician?.trade || currentUser?.category || currentUser?.department || '';
+      const staffId = activeTechnician?.id || currentUser?.staffId || currentUser?.id;
+      const staffIdNo = (currentUser?.idNo || '').toUpperCase();
+      const staffName = (activeTechnician?.name || currentUser?.name || '').toLowerCase().trim();
 
-    if (currentStudentId) {
-      if ((c.reporterId || '').trim().toUpperCase() === currentStudentId) return true;
-      if ((c.reporterName || '').toUpperCase().includes(currentStudentId)) return true;
+      // Explicitly assigned to this staff member
+      if (staffId && (c.assignedStaffId === staffId || c.assignedTo === staffId)) return true;
+      if (staffIdNo && (c.assignedStaffId === staffIdNo || c.assignedTo === staffIdNo)) return true;
+      if (staffName && (c.assignedStaffName || '').toLowerCase().trim() === staffName) return true;
+
+      // Trade / Category match
+      if (staffTrade && isComplaintMatchingTrade(c, staffTrade)) return true;
+
+      // Also if this staff member personally reported a complaint in their quarters
+      const cEmail = (c.reporterEmail || '').toLowerCase().trim();
+      if (currentStudentEmail && cEmail === currentStudentEmail) return true;
+
+      return false;
     }
 
-    if (currentUser?.name && (c.reporterName || '').trim().toLowerCase() === currentUser.name.trim().toLowerCase()) {
+    // 5. HOSTEL WARDEN:
+    // In charge of Hostels & Dorms. Strictly sees hostel/dorm issues!
+    if (activeProfileKey === 'WARDEN' || currentUser?.role === 'WARDEN' || currentUser?.designation?.includes('Warden')) {
+      return isHostelComplaint(c);
+    }
+
+    // 6. DSW / AO / DIRECTOR / CAMPUS ADMIN:
+    // Administrative oversight of campus operations (non-ICC complaints, unless Director)
+    if (role === 'ADMIN' || activeProfileKey === 'DSW' || activeProfileKey === 'AO' || activeProfileKey === 'DIRECTOR') {
       return true;
     }
 
-    return true;
+    return false;
   });
 
   const studentEmails = emailLog.filter(m => {
@@ -1143,19 +1248,22 @@ export default function CampusMaintenanceApp() {
       const authorityProfile = CAMPUS_AUTHORITY_PROFILES[targetProfile];
       if (authorityProfile) {
         setCurrentUser(prev => ({
+          ...authorityProfile,
           ...(prev || {}),
           id: authorityProfile.id,
-          name: authorityProfile.name,
-          email: authorityProfile.email,
+          name: prev?.name || prev?.fullName || authorityProfile.name,
+          fullName: prev?.fullName || prev?.name || authorityProfile.name,
+          email: prev?.email || prev?.collegeEmail || authorityProfile.email,
           role: authorityProfile.role,
-          department: authorityProfile.department,
-          category: authorityProfile.category,
+          department: prev?.department || authorityProfile.department,
+          category: prev?.category || authorityProfile.category,
           staffId: authorityProfile.idNumber,
-          mobileNumber: authorityProfile.phone ? authorityProfile.phone.replace('+91 ', '') : '',
+          mobileNumber: prev?.mobileNumber || (authorityProfile.phone ? authorityProfile.phone.replace('+91 ', '') : ''),
           location: authorityProfile.location,
-          designation: authorityProfile.designation,
+          designation: prev?.designation || authorityProfile.designation,
           hierarchyStage: authorityProfile.hierarchyStage,
           departmentKey: authorityProfile.departmentKey,
+          profilePic: prev?.profilePic || null,
           profileKey: targetProfile,
           userTab: 'department'
         }));
@@ -1168,6 +1276,32 @@ export default function CampusMaintenanceApp() {
       setCurrentRole('REPORTER');
       setActiveProfileKey('REPORTER');
       setActiveTab('tracker');
+
+      // Hydrate student currentUser with custom edited profile fields from registered accounts
+      const regUsers = getRegisteredAccounts();
+      const existing = regUsers.find(u => 
+        ((user.idNo && u.idNo?.toUpperCase() === user.idNo.toUpperCase()) ||
+         (user.email && u.collegeEmail?.toLowerCase() === user.email.toLowerCase()))
+      );
+      if (existing) {
+        setCurrentUser(prev => ({
+          ...user,
+          ...(prev || {}),
+          ...existing,
+          fullName: existing.fullName || user.name || user.fullName,
+          name: existing.fullName || user.name || user.fullName,
+          branch: existing.branch || user.branch || 'Computer Science & Engineering',
+          studyingYear: existing.studyingYear || user.studyingYear || 'E3 (3rd Year)',
+          className: existing.className || user.className || 'E3 (3rd Year)',
+          hostelBlock: existing.hostelBlock || user.hostelBlock || 'K2-Block',
+          roomNumber: existing.roomNumber || user.roomNumber || '304',
+          hostelRoom: existing.hostelRoom || user.hostelRoom || '304',
+          mobileNumber: existing.mobileNumber || user.mobileNumber || '',
+          profilePic: existing.profilePic || user.profilePic || null,
+          role: 'REPORTER',
+          userTab: 'student'
+        }));
+      }
     }
   };
 
@@ -1182,14 +1316,16 @@ export default function CampusMaintenanceApp() {
   }, [profileEditSuccessToast]);
 
   // Handle saving and persisting updated user profile
-  const handleSaveUserProfile = (updatedProfile) => {
+  const handleSaveUserProfile = async (updatedProfile) => {
     if (!currentUser) return;
     const mergedUser = {
       ...currentUser,
-      ...updatedProfile
+      ...updatedProfile,
+      name: updatedProfile.name || updatedProfile.fullName || currentUser.name,
+      fullName: updatedProfile.fullName || updatedProfile.name || currentUser.fullName || currentUser.name
     };
 
-    // Update in-memory user
+    // Update in-memory user immediately
     setCurrentUser(mergedUser);
     if (mergedUser.email) {
       setReporterEmail(mergedUser.email);
@@ -1198,15 +1334,20 @@ export default function CampusMaintenanceApp() {
     // Persist to LocalStorage registered accounts list
     try {
       const allAccounts = getRegisteredAccounts();
+      let matchedFound = false;
       const updatedList = allAccounts.map(acc => {
         const matchId = acc.idNo && mergedUser.idNo && acc.idNo.toUpperCase() === mergedUser.idNo.toUpperCase();
-        const matchEmail = acc.collegeEmail && mergedUser.email && acc.collegeEmail.toLowerCase() === mergedUser.email.toLowerCase();
+        const matchEmail = (acc.collegeEmail || acc.email) && (mergedUser.email || mergedUser.collegeEmail) &&
+          (acc.collegeEmail || acc.email).toLowerCase() === (mergedUser.email || mergedUser.collegeEmail).toLowerCase();
         if (matchId || matchEmail) {
+          matchedFound = true;
           return {
             ...acc,
+            ...mergedUser,
             fullName: mergedUser.name || acc.fullName,
             name: mergedUser.name || acc.name,
             collegeEmail: mergedUser.email || acc.collegeEmail,
+            email: mergedUser.email || acc.email,
             mobileNumber: mergedUser.mobileNumber || acc.mobileNumber,
             branch: mergedUser.branch || acc.branch,
             studyingYear: mergedUser.studyingYear || acc.studyingYear,
@@ -1221,17 +1362,46 @@ export default function CampusMaintenanceApp() {
         }
         return acc;
       });
+
+      if (!matchedFound) {
+        updatedList.push({
+          idNo: mergedUser.idNo,
+          fullName: mergedUser.name,
+          name: mergedUser.name,
+          collegeEmail: mergedUser.email,
+          email: mergedUser.email,
+          mobileNumber: mergedUser.mobileNumber,
+          branch: mergedUser.branch,
+          studyingYear: mergedUser.studyingYear,
+          className: mergedUser.studyingYear,
+          hostelRoom: mergedUser.hostelRoom,
+          hostelBlock: mergedUser.hostelBlock,
+          roomNumber: mergedUser.roomNumber,
+          profilePic: mergedUser.profilePic,
+          role: mergedUser.role,
+          department: mergedUser.department,
+          zone: mergedUser.zone,
+          userTab: mergedUser.userTab || (mergedUser.role === 'REPORTER' ? 'student' : 'department')
+        });
+      }
       saveRegisteredAccounts(updatedList);
     } catch (err) {
       console.warn('Error saving updated profile to LocalStorage:', err);
     }
 
-    // Sync to Firebase Cloud Firestore for real-time and cross-device persistence
+    // If department user, update daily session
+    if (isDepartmentRoleOrUser(mergedUser) || mergedUser.userTab === 'department') {
+      saveDepartmentDailySession(mergedUser, mergedUser.profileKey || activeProfileKey);
+    }
+
+    // Sync to Firebase Cloud Firestore for permanent cross-device persistence
     try {
-      saveUserToFirestore({
+      await saveUserToFirestore({
         idNo: mergedUser.idNo,
-        collegeEmail: mergedUser.email,
+        collegeEmail: mergedUser.email || mergedUser.collegeEmail,
+        email: mergedUser.email || mergedUser.collegeEmail,
         fullName: mergedUser.name,
+        name: mergedUser.name,
         mobileNumber: mergedUser.mobileNumber,
         branch: mergedUser.branch,
         studyingYear: mergedUser.studyingYear,
@@ -1242,8 +1412,10 @@ export default function CampusMaintenanceApp() {
         profilePic: mergedUser.profilePic,
         role: mergedUser.role,
         department: mergedUser.department,
-        zone: mergedUser.zone
-      }).catch(e => console.warn('Firestore profile update sync notice:', e));
+        zone: mergedUser.zone,
+        userTab: mergedUser.userTab || (mergedUser.role === 'REPORTER' ? 'student' : 'department')
+      });
+      console.log('✅ [Cloud Firestore] Profile successfully synchronized to cloud database permanently.');
     } catch (e) {
       console.warn('Cloud sync error:', e);
     }
@@ -1391,9 +1563,15 @@ export default function CampusMaintenanceApp() {
       title: title.trim(),
       description: description.trim() || title.trim(),
       location: formattedLocation,
+      locationType: locationType,
+      block: locationType === 'ACADEMICS' ? academicLocation : locationType === 'HOSTEL_DORM' ? hostelLocation : separateFacility,
+      floor: floor,
+      room: room,
       zone: zoneName,
       priority: urgency,
       photos: photos,
+      reporterId: (currentUser?.idNo || '').trim().toUpperCase(),
+      studentId: (currentUser?.idNo || '').trim().toUpperCase(),
       reporterName: (isIccSelected && iccMaskIdentity) ? 'Confidential Student (Identity Masked)' : (currentUser ? currentUser.name : 'Chaithanya Yadav (Student)'),
       reporterEmail: reporterEmail.trim() || (currentUser ? currentUser.email : 'student@rgukt.ac.in')
     };
@@ -2109,7 +2287,7 @@ export default function CampusMaintenanceApp() {
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                       activeTab === 'tracker' ? 'bg-white text-amber-900' : 'bg-amber-950 text-amber-300 border border-amber-500/40'
                     }`}>
-                      {complaints.filter(c => c.status === 'ASSIGNED' || c.status === 'IN_PROGRESS' || c.status === 'REOPENED').length}
+                      {visibleComplaints.filter(c => c.status === 'ASSIGNED' || c.status === 'IN_PROGRESS' || c.status === 'REOPENED').length}
                     </span>
                   </button>
 
@@ -2128,7 +2306,7 @@ export default function CampusMaintenanceApp() {
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                       activeTab === 'solved' ? 'bg-white text-emerald-900' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
                     }`}>
-                      {complaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
+                      {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
                     </span>
                   </button>
 
@@ -4214,7 +4392,7 @@ export default function CampusMaintenanceApp() {
               <FullProfileView
                 currentUser={currentUser}
                 currentRole={currentRole}
-                complaints={complaints}
+                complaints={visibleComplaints}
                 onOpenEditModal={() => setShowProfileEditModal(true)}
                 onNavigateToTracker={() => setActiveTab('tracker')}
               />
@@ -4274,13 +4452,13 @@ export default function CampusMaintenanceApp() {
                     <div>
                       <span className="text-slate-400 block font-semibold">Total Solved</span>
                       <span className="font-black text-emerald-600 text-sm">
-                        {complaints.filter(c => (c.assignedStaffId === activeTechnician?.id || !c.assignedStaffId) && (c.status === 'RESOLVED' || c.status === 'CLOSED')).length} Orders
+                        {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length} Orders
                       </span>
                     </div>
                     <div>
                       <span className="text-slate-400 block font-semibold">Admin Verified</span>
                       <span className="font-black text-blue-600 text-sm">
-                        {complaints.filter(c => (c.assignedStaffId === activeTechnician?.id || !c.assignedStaffId) && (c.status === 'RESOLVED' || c.status === 'CLOSED') && c.adminVerified).length} Sealed
+                        {visibleComplaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && c.adminVerified).length} Sealed
                       </span>
                     </div>
                     <div>
@@ -4302,20 +4480,20 @@ export default function CampusMaintenanceApp() {
                       <p className="text-xs text-slate-400">Fix proofs, replacement spare parts, student reviews, and official Chief Warden approvals</p>
                     </div>
                     <span className="text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg">
-                      {complaints.filter(c => (c.assignedStaffId === activeTechnician?.id || !c.assignedStaffId) && (c.status === 'RESOLVED' || c.status === 'CLOSED')).length} Completed
+                      {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length} Completed
                     </span>
                   </div>
 
                   <div className="space-y-4">
-                    {complaints.filter(c => (c.assignedStaffId === activeTechnician?.id || !c.assignedStaffId) && (c.status === 'RESOLVED' || c.status === 'CLOSED')).length === 0 ? (
+                    {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length === 0 ? (
                       <div className="py-12 text-center text-slate-400">
                         <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                         <p className="font-bold text-slate-300 text-sm">No solved complaints recorded yet</p>
                         <p className="text-xs text-slate-400 mt-1">When you resolve assigned active work orders and submit fix proof, they will be archived here.</p>
                       </div>
                     ) : (
-                      complaints
-                        .filter(c => (c.assignedStaffId === activeTechnician?.id || !c.assignedStaffId) && (c.status === 'RESOLVED' || c.status === 'CLOSED'))
+                      visibleComplaints
+                        .filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED')
                         .map(ticket => (
                           <div key={ticket.id} className="p-4 sm:p-5 rounded-xl border border-slate-700/60 bg-emerald-50/20 border-l-4 border-l-emerald-500 flex flex-col gap-3">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -4458,7 +4636,7 @@ export default function CampusMaintenanceApp() {
               <FullProfileView
                 currentUser={currentUser}
                 currentRole={currentRole}
-                complaints={complaints}
+                complaints={visibleComplaints}
                 onOpenEditModal={() => setShowProfileEditModal(true)}
               />
             ) : activeTab === 'wayfinder' ? (
@@ -4515,14 +4693,7 @@ export default function CampusMaintenanceApp() {
 
                 {/* Sub-titles / Category Filter Pills */}
                 {(() => {
-                  const deptAll = complaints.filter(c => {
-                    const staffId = activeTechnician?.id;
-                    const staffDept = (activeTechnician?.trade || '').toLowerCase();
-                    const matchStaff = c.assignedStaffId === staffId;
-                    const matchCategory = staffDept && (c.category || '').toLowerCase().includes(staffDept);
-                    const matchConcerned = staffDept && (c.concernedDept || '').toLowerCase().includes(staffDept);
-                    return matchStaff || matchCategory || matchConcerned;
-                  });
+                  const deptAll = visibleComplaints;
 
                   const pendingCount = deptAll.filter(c => ['ASSIGNED', 'IN_PROGRESS', 'OPEN', 'REOPENED'].includes(c.status)).length;
                   const solvedCount = deptAll.filter(c => ['RESOLVED', 'CLOSED'].includes(c.status)).length;
@@ -4605,16 +4776,7 @@ export default function CampusMaintenanceApp() {
               
               <div className="space-y-4">
                 {(() => {
-                  const filteredDeptTickets = complaints.filter(c => {
-                    const staffId = activeTechnician?.id;
-                    const staffDept = (activeTechnician?.trade || '').toLowerCase();
-                    const matchStaff = c.assignedStaffId === staffId;
-                    const matchCategory = staffDept && (c.category || '').toLowerCase().includes(staffDept);
-                    const matchConcerned = staffDept && (c.concernedDept || '').toLowerCase().includes(staffDept);
-                    const isDeptComplaint = matchStaff || matchCategory || matchConcerned;
-
-                    if (!isDeptComplaint) return false;
-
+                  const filteredDeptTickets = visibleComplaints.filter(c => {
                     if (deptStatusFilter === 'PENDING') return ['ASSIGNED', 'IN_PROGRESS', 'OPEN', 'REOPENED'].includes(c.status);
                     if (deptStatusFilter === 'SOLVED') return ['RESOLVED', 'CLOSED'].includes(c.status);
                     if (deptStatusFilter === 'REJECTED') return c.status === 'REJECTED';
@@ -4815,7 +4977,7 @@ export default function CampusMaintenanceApp() {
                       className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
                     >
                       <Layers className="w-3.5 h-3.5" />
-                      <span>All Complaints ({complaints.length})</span>
+                      <span>All Complaints ({visibleComplaints.length})</span>
                     </button>
                     <button
                       type="button"
@@ -4832,7 +4994,7 @@ export default function CampusMaintenanceApp() {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="glass-panel p-5 rounded-2xl">
                     <span className="text-xs font-bold text-slate-400 uppercase">Total Complaints</span>
-                    <div className="text-2xl font-black text-white mt-1">{complaints.length + 1420}</div>
+                    <div className="text-2xl font-black text-white mt-1">{visibleComplaints.length}</div>
                     <span className="text-xs text-emerald-600 font-bold mt-2 block">+12% vs last month</span>
                   </div>
                   <div className="glass-panel p-5 rounded-2xl">
@@ -4848,7 +5010,7 @@ export default function CampusMaintenanceApp() {
                   <div className="glass-panel p-5 rounded-2xl">
                     <span className="text-xs font-bold text-slate-400 uppercase">Critical Backlog</span>
                     <div className="text-2xl font-black text-rose-600 mt-1">
-                      {complaints.filter(c => c.priority === 'EMERGENCY').length + 2}
+                      {visibleComplaints.filter(c => c.priority === 'EMERGENCY').length}
                     </div>
                     <span className="text-xs text-rose-600 font-bold mt-2 block">P1 Escalations</span>
                   </div>
@@ -5007,7 +5169,7 @@ export default function CampusMaintenanceApp() {
                       <div className="flex items-center gap-2">
                         <h2 className="text-xl font-bold text-white tracking-tight">All Campus Maintenance Complaints</h2>
                         <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
-                          {complaints.length} Total Complaints
+                          {visibleComplaints.length} Total Complaints
                         </span>
                       </div>
                       <p className="text-xs text-slate-400">
@@ -5258,7 +5420,7 @@ export default function CampusMaintenanceApp() {
                       className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
                     >
                       <Layers className="w-3.5 h-3.5" />
-                      <span>All Complaints ({complaints.length})</span>
+                      <span>All Complaints ({visibleComplaints.length})</span>
                     </button>
                   </div>
                 </div>
@@ -5268,21 +5430,21 @@ export default function CampusMaintenanceApp() {
                   <div className="cyber-card p-4 rounded-xl">
                     <span className="text-xs font-semibold text-slate-400 block">Total Solved</span>
                     <span className="text-2xl font-black text-emerald-700 mt-1 block">
-                      {complaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
+                      {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
                     </span>
                     <span className="text-[10px] text-slate-400">Campus-wide resolved issues</span>
                   </div>
                   <div className="cyber-card p-4 rounded-xl">
                     <span className="text-xs font-semibold text-slate-400 block">Admin Verified & Sealed</span>
                     <span className="text-2xl font-black text-blue-700 mt-1 block">
-                      {complaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && c.adminVerified).length}
+                      {visibleComplaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && c.adminVerified).length}
                     </span>
                     <span className="text-[10px] text-emerald-600 font-semibold">Quality standards approved</span>
                   </div>
                   <div className="cyber-card p-4 rounded-xl">
                     <span className="text-xs font-semibold text-slate-400 block">Pending Admin Audit</span>
                     <span className="text-2xl font-black text-amber-600 mt-1 block">
-                      {complaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && !c.adminVerified).length}
+                      {visibleComplaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && !c.adminVerified).length}
                     </span>
                     <span className="text-[10px] text-amber-600 font-semibold">Requires quality sign-off</span>
                   </div>
@@ -5326,7 +5488,7 @@ export default function CampusMaintenanceApp() {
                             : 'text-slate-300 hover:text-white'
                         }`}
                       >
-                        All ({complaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length})
+                        All ({visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length})
                       </button>
                       <button
                         onClick={() => setSolvedVerifyFilter('PENDING')}
@@ -5336,7 +5498,7 @@ export default function CampusMaintenanceApp() {
                             : 'text-slate-300 hover:text-white'
                         }`}
                       >
-                        Pending Sign-off ({complaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && !c.adminVerified).length})
+                        Pending Sign-off ({visibleComplaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && !c.adminVerified).length})
                       </button>
                       <button
                         onClick={() => setSolvedVerifyFilter('VERIFIED')}
@@ -5346,7 +5508,7 @@ export default function CampusMaintenanceApp() {
                             : 'text-slate-300 hover:text-white'
                         }`}
                       >
-                        Admin Verified ({complaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && c.adminVerified).length})
+                        Admin Verified ({visibleComplaints.filter(c => (c.status === 'RESOLVED' || c.status === 'CLOSED') && c.adminVerified).length})
                       </button>
                     </div>
 
@@ -5647,7 +5809,7 @@ export default function CampusMaintenanceApp() {
                   <div className="glass-panel p-5 rounded-2xl">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Work Orders</span>
                     <div className="text-2xl font-black text-blue-600 mt-1 flex items-baseline gap-2">
-                      <span>{complaints.filter(c => c.status === 'ASSIGNED' || c.status === 'IN_PROGRESS').length}</span>
+                      <span>{visibleComplaints.filter(c => c.status === 'ASSIGNED' || c.status === 'IN_PROGRESS').length}</span>
                       <span className="text-xs font-bold text-blue-500">In Hand</span>
                     </div>
                     <span className="text-[11px] text-slate-400 mt-1 block">Live technician queues</span>
@@ -5750,7 +5912,7 @@ export default function CampusMaintenanceApp() {
                       const contactEmail = staff.email || `${staff.trade.toLowerCase().replace(/[^a-z]/g, '')}@rgukt.ac.in`;
                       
                       // Active tickets assigned to this staff
-                      const assignedTickets = complaints.filter(
+                      const assignedTickets = visibleComplaints.filter(
                         c => c.assignedStaffId === staff.id || c.assignedStaffName === staff.name || (c.category && c.category.toLowerCase().includes(staff.trade.toLowerCase()))
                       );
 
@@ -5966,7 +6128,7 @@ export default function CampusMaintenanceApp() {
               <FullProfileView
                 currentUser={currentUser}
                 currentRole={currentRole}
-                complaints={complaints}
+                complaints={visibleComplaints}
                 onOpenEditModal={() => setShowProfileEditModal(true)}
               />
             )}
@@ -6553,6 +6715,103 @@ function saveRegisteredAccounts(users) {
   }
 }
 
+/**
+ * Synchronize users retrieved from Firebase Cloud Firestore into local accounts and live currentUser state
+ */
+export function syncCloudUsersWithLocal(remoteUsers, currentUser = null, setCurrentUser = null) {
+  if (!Array.isArray(remoteUsers) || remoteUsers.length === 0) return;
+  try {
+    const current = getRegisteredAccounts();
+    const remoteMapById = new Map();
+    const remoteMapByEmail = new Map();
+
+    remoteUsers.forEach(u => {
+      if (!u) return;
+      const id = (u.idNo || u.staffId || u.id || '').trim().toUpperCase();
+      const email = (u.collegeEmail || u.email || '').trim().toLowerCase();
+      if (id) remoteMapById.set(id, u);
+      if (email) remoteMapByEmail.set(email, u);
+    });
+
+    // 1. Update existing local accounts with latest cloud data
+    const mergedList = current.map(acc => {
+      const id = (acc.idNo || acc.staffId || acc.id || '').trim().toUpperCase();
+      const email = (acc.collegeEmail || acc.email || '').trim().toLowerCase();
+      const remote = (id && remoteMapById.get(id)) || (email && remoteMapByEmail.get(email));
+      if (remote) {
+        return {
+          ...acc,
+          ...remote,
+          fullName: remote.fullName || remote.name || acc.fullName,
+          name: remote.name || remote.fullName || acc.name,
+          collegeEmail: remote.collegeEmail || remote.email || acc.collegeEmail,
+          email: remote.email || remote.collegeEmail || acc.email,
+          mobileNumber: remote.mobileNumber || acc.mobileNumber,
+          branch: remote.branch || acc.branch,
+          studyingYear: remote.studyingYear || remote.className || acc.studyingYear,
+          className: remote.className || remote.studyingYear || acc.className,
+          hostelRoom: remote.hostelRoom || acc.hostelRoom,
+          hostelBlock: remote.hostelBlock || acc.hostelBlock,
+          roomNumber: remote.roomNumber || acc.roomNumber,
+          profilePic: remote.profilePic || acc.profilePic,
+          department: remote.department || acc.department,
+          zone: remote.zone || acc.zone
+        };
+      }
+      return acc;
+    });
+
+    // 2. Add any cloud-registered users not in local accounts
+    const knownIds = new Set(mergedList.map(a => (a.idNo || a.staffId || a.id || '').trim().toUpperCase()));
+    const knownEmails = new Set(mergedList.map(a => (a.collegeEmail || a.email || '').trim().toLowerCase()));
+
+    remoteUsers.forEach(u => {
+      if (!u) return;
+      const id = (u.idNo || u.staffId || u.id || '').trim().toUpperCase();
+      const email = (u.collegeEmail || u.email || '').trim().toLowerCase();
+      const hasId = id && knownIds.has(id);
+      const hasEmail = email && knownEmails.has(email);
+      if (!hasId && !hasEmail) {
+        mergedList.push(u);
+        if (id) knownIds.add(id);
+        if (email) knownEmails.add(email);
+      }
+    });
+
+    saveRegisteredAccounts(mergedList);
+
+    // 3. Dynamically update live currentUser in React state if logged in
+    if (currentUser && typeof setCurrentUser === 'function') {
+      const pId = (currentUser.idNo || currentUser.staffId || currentUser.id || '').trim().toUpperCase();
+      const pEmail = (currentUser.collegeEmail || currentUser.email || '').trim().toLowerCase();
+      const remote = (pId && remoteMapById.get(pId)) || (pEmail && remoteMapByEmail.get(pEmail));
+      if (remote) {
+        setCurrentUser(prevUser => {
+          if (!prevUser) return prevUser;
+          return {
+            ...prevUser,
+            ...remote,
+            name: remote.fullName || remote.name || prevUser.name,
+            fullName: remote.fullName || remote.name || prevUser.fullName,
+            mobileNumber: remote.mobileNumber || prevUser.mobileNumber,
+            branch: remote.branch || prevUser.branch,
+            studyingYear: remote.studyingYear || remote.className || prevUser.studyingYear,
+            className: remote.className || remote.studyingYear || prevUser.className,
+            hostelRoom: remote.hostelRoom || prevUser.hostelRoom,
+            hostelBlock: remote.hostelBlock || prevUser.hostelBlock,
+            roomNumber: remote.roomNumber || prevUser.roomNumber,
+            profilePic: remote.profilePic || prevUser.profilePic,
+            department: remote.department || prevUser.department,
+            zone: remote.zone || prevUser.zone
+          };
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Error syncing cloud users:', err);
+  }
+}
+
 function AuthScreen({ onLoginSuccess }) {
   const [authMode, setAuthMode] = useState('signin'); // 'signin' (every time login) | 'signup' (first time register)
   const [userTab, setUserTab] = useState('student'); // 'student' | 'department'
@@ -6703,22 +6962,11 @@ function AuthScreen({ onLoginSuccess }) {
     }
   };
 
-  // Pull users from Firebase Cloud Firestore on AuthScreen mount
+  // Pull and sync registered accounts from Firebase Cloud Firestore on AuthScreen mount
   useEffect(() => {
     fetchUsersFromFirestore().then(remoteUsers => {
       if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
-        const current = getRegisteredAccounts();
-        const existingIds = new Set(current.map(u => (u.idNo || '').trim().toUpperCase()));
-        const existingEmails = new Set(current.map(u => (u.collegeEmail || '').trim().toLowerCase()));
-        const newFromCloud = remoteUsers.filter(u => {
-          if (!u) return false;
-          const idMatch = u.idNo && existingIds.has(u.idNo.trim().toUpperCase());
-          const emailMatch = u.collegeEmail && existingEmails.has(u.collegeEmail.trim().toLowerCase());
-          return !idMatch && !emailMatch;
-        });
-        if (newFromCloud.length > 0) {
-          saveRegisteredAccounts([...newFromCloud, ...current]);
-        }
+        syncCloudUsersWithLocal(remoteUsers);
       }
     }).catch(e => console.warn('AuthScreen Firebase user fetch notice:', e));
   }, []);
@@ -7203,6 +7451,12 @@ function AuthScreen({ onLoginSuccess }) {
             role: newUser.role,
             profilePic: newUser.profilePic,
             mobileNumber: newUser.mobileNumber,
+            branch: newUser.branch || 'Computer Science & Engineering',
+            studyingYear: newUser.studyingYear || 'E3 (3rd Year)',
+            className: newUser.className || 'E3 (3rd Year)',
+            hostelBlock: newUser.hostelBlock || 'K2-Block',
+            roomNumber: newUser.roomNumber || '304',
+            hostelRoom: newUser.hostelRoom || '304',
             staffId: null,
             category: null
           });
@@ -7274,6 +7528,12 @@ function AuthScreen({ onLoginSuccess }) {
           profileKey: 'REPORTER',
           profilePic: matched.profilePic || null,
           mobileNumber: matched.mobileNumber || null,
+          branch: matched.branch || 'Computer Science & Engineering',
+          studyingYear: matched.studyingYear || matched.className || 'E3 (3rd Year)',
+          className: matched.className || matched.studyingYear || 'E3 (3rd Year)',
+          hostelBlock: matched.hostelBlock || 'K2-Block',
+          roomNumber: matched.roomNumber || matched.hostelRoom || '304',
+          hostelRoom: matched.hostelRoom || matched.roomNumber || '304',
           staffId: null,
           category: null,
           userTab: 'student'
@@ -7349,6 +7609,8 @@ function AuthScreen({ onLoginSuccess }) {
           profileKey: matched.profileKey || 'DEPT_ELECTRICAL',
           profilePic: matched.profilePic || null,
           mobileNumber: matched.mobileNumber || null,
+          department: matched.department || matched.trade || matched.category || 'Maintenance',
+          zone: matched.zone || 'Campus-Wide',
           staffId: matched.staffId || matched.idNo || 'staff-1',
           category: matched.category || 'Electrical',
           hierarchyStage: matched.hierarchyStage || 'DSW_DEPT',
@@ -7414,8 +7676,16 @@ function AuthScreen({ onLoginSuccess }) {
           role: existingAccount.role || role,
           profilePic: existingAccount.profilePic || profilePic,
           mobileNumber: existingAccount.mobileNumber || googleUser.phoneNumber || null,
-          staffId: isDept ? 'staff-1' : null,
-          category: isDept ? 'Electrical' : null
+          branch: existingAccount.branch || (!isDept ? 'Computer Science & Engineering' : undefined),
+          studyingYear: existingAccount.studyingYear || (!isDept ? 'E3 (3rd Year)' : undefined),
+          className: existingAccount.className || (!isDept ? 'E3 (3rd Year)' : undefined),
+          hostelBlock: existingAccount.hostelBlock || (!isDept ? 'K2-Block' : undefined),
+          roomNumber: existingAccount.roomNumber || (!isDept ? '304' : undefined),
+          hostelRoom: existingAccount.hostelRoom || (!isDept ? '304' : undefined),
+          department: existingAccount.department || (isDept ? existingAccount.category || 'Maintenance' : undefined),
+          zone: existingAccount.zone || (isDept ? 'Campus-Wide' : undefined),
+          staffId: isDept ? (existingAccount.staffId || 'staff-1') : null,
+          category: isDept ? (existingAccount.category || 'Electrical') : null
         });
         return;
       }
