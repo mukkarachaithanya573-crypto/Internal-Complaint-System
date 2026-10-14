@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "service": "gmail",
+  "host": "smtp.gmail.com",
+  "port": 587,
+  "secure": false,
+  "user": "plumbing@gmail.com",
+  "pass": "pumb@123",
+  "senderName": "RGUKT AP Maintenance Dispatcher",
+  "testMode": false
+}

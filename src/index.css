@@ -1,0 +1,948 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* =========================================================================
+   COSMIC FLOATING GLASS UI & VISIONOS DEPTH STYLING
+   ========================================================================= */
+
+@keyframes cosmicFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(0.35deg);
+  }
+}
+
+@keyframes floatLayerA {
+  0%, 100% {
+    transform: translateY(0px) translateZ(20px);
+  }
+  50% {
+    transform: translateY(-5px) translateZ(28px);
+  }
+}
+
+@keyframes floatLayerB {
+  0%, 100% {
+    transform: translateY(0px) translateZ(10px);
+  }
+  50% {
+    transform: translateY(-3px) translateZ(16px);
+  }
+}
+
+@keyframes cosmicPulseGlow {
+  0%, 100% {
+    box-shadow: 
+      0 30px 80px -15px rgba(0, 0, 0, 0.9),
+      0 0 50px -5px rgba(56, 189, 248, 0.35),
+      0 0 70px -10px rgba(129, 140, 248, 0.25);
+  }
+  50% {
+    box-shadow: 
+      0 35px 90px -15px rgba(0, 0, 0, 0.95),
+      0 0 65px 0px rgba(168, 85, 247, 0.45),
+      0 0 85px -5px rgba(56, 189, 248, 0.35);
+  }
+}
+
+.cosmic-floating-card {
+  animation: cosmicFloat 7s ease-in-out infinite, cosmicPulseGlow 9s ease-in-out infinite;
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+/* Horizontal 3D Card Flip Animation when switching between Sign In & Register */
+@keyframes cardFlipToSignup {
+  0% {
+    transform: perspective(1200px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+  48% {
+    transform: perspective(1200px) rotateY(90deg) scale(0.92);
+    opacity: 0.15;
+  }
+  52% {
+    transform: perspective(1200px) rotateY(-90deg) scale(0.92);
+    opacity: 0.15;
+  }
+  100% {
+    transform: perspective(1200px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cardFlipToSignin {
+  0% {
+    transform: perspective(1200px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+  48% {
+    transform: perspective(1200px) rotateY(-90deg) scale(0.92);
+    opacity: 0.15;
+  }
+  52% {
+    transform: perspective(1200px) rotateY(90deg) scale(0.92);
+    opacity: 0.15;
+  }
+  100% {
+    transform: perspective(1200px) rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.auth-flip-active-signup {
+  animation: cardFlipToSignup 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  backface-visibility: hidden;
+}
+
+.auth-flip-active-signin {
+  animation: cardFlipToSignin 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  backface-visibility: hidden;
+}
+
+.cosmic-float-piece-a {
+  animation: floatLayerA 5.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.cosmic-float-piece-b {
+  animation: floatLayerB 6.5s ease-in-out infinite 0.6s;
+  will-change: transform;
+}
+
+/* Clean Frosted Glass Border Wrapper for Auth Card */
+.rotating-border-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 530px;
+  border-radius: 2.25rem;
+  overflow: visible;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(56, 189, 248, 0.3) 30%, rgba(129, 140, 248, 0.2) 60%, rgba(255, 255, 255, 0.15) 100%);
+  box-shadow: 
+    0 20px 50px -10px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(56, 189, 248, 0.25);
+}
+
+/* 8K Top-Center Logo Crest Orb styling */
+.auth-crest-orb {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(30, 41, 59, 0.95) 0%, rgba(8, 14, 28, 0.98) 70%, rgba(3, 7, 18, 1) 100%);
+  border: 1.5px solid rgba(147, 197, 253, 0.65);
+  box-shadow: 
+    0 0 0 2.5px rgba(15, 23, 42, 0.8),
+    0 0 24px 4px rgba(56, 189, 248, 0.55),
+    0 0 45px 8px rgba(99, 102, 241, 0.35),
+    inset 0 2px 4px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.auth-crest-orb:hover {
+  transform: scale(1.06);
+  box-shadow: 
+    0 0 0 2.5px rgba(15, 23, 42, 0.9),
+    0 0 32px 8px rgba(56, 189, 248, 0.75),
+    0 0 55px 12px rgba(147, 51, 234, 0.45),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Cosmic Ultra-Glassmorphic Card Canvas */
+.rotating-border-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  overflow: visible;
+  background: rgba(8, 14, 28, 0.88);
+  backdrop-filter: blur(36px) saturate(220%);
+  -webkit-backdrop-filter: blur(36px) saturate(220%);
+  border-radius: calc(2.25rem - 2.5px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.7),
+    inset 0 0 30px rgba(56, 189, 248, 0.05);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Cosmic Glassy Segmented Role Bar */
+.glossy-segmented-bar {
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    inset 0 1.5px 3px rgba(0, 0, 0, 0.4),
+    0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.glossy-segmented-active {
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.8),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 0 18px rgba(56, 189, 248, 0.35) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Floating Glass Profile Avatar / Step Pill */
+.glossy-piece-glass {
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.3),
+    0 8px 24px -4px rgba(0, 0, 0, 0.5);
+}
+
+/* Cosmic Glossy Vision Input with High-Contrast Typography */
+.glossy-input {
+  background: rgba(15, 23, 42, 0.7) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    inset 0 1.5px 3px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glossy-input::placeholder {
+  color: rgba(203, 213, 225, 0.8) !important; /* Slate-300 with high readability */
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+.glossy-input:focus {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 
+    0 0 0 3px rgba(56, 189, 248, 0.35),
+    inset 0 1px 2px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(56, 189, 248, 0.45) !important;
+}
+
+/* VisionOS Cosmic Primary Action Button */
+.glossy-btn {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.95) 0%, rgba(99, 102, 241, 1) 50%, rgba(168, 85, 247, 0.95) 100%) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.7),
+    0 10px 28px -4px rgba(99, 102, 241, 0.55),
+    0 0 24px rgba(56, 189, 248, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glossy-btn:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 1) 0%, rgba(99, 102, 241, 1) 50%, rgba(168, 85, 247, 1) 100%) !important;
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.9),
+    0 14px 34px -4px rgba(99, 102, 241, 0.7),
+    0 0 32px rgba(56, 189, 248, 0.5) !important;
+  transform: translateY(-1.5px);
+}
+
+.glossy-btn:active {
+  transform: translateY(0);
+}
+
+/* VisionOS Cosmic Secondary / Google Glass Button */
+.glossy-btn-secondary {
+  background: rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
+    0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glossy-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1.5px);
+}
+
+.glossy-btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* =========================================================================
+   CYBER DARK GLASSMORPHISM UI/UX SYSTEM
+   Deep navy background (#050914 / #0a0f24), translucent glass cards,
+   neon blue-purple gradients, glowing borders, hover-lift effects,
+   staggered card entrance animations, and ambient floating orbs.
+   ========================================================================= */
+
+/* Deep Cyber Navy Mesh Canvas */
+.cyber-canvas-bg {
+  background: 
+    radial-gradient(circle at 12% 15%, rgba(56, 189, 248, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 85% 18%, rgba(168, 85, 247, 0.22) 0%, transparent 48%),
+    radial-gradient(circle at 50% 80%, rgba(99, 102, 241, 0.16) 0%, transparent 52%),
+    radial-gradient(circle at 80% 88%, rgba(6, 182, 212, 0.15) 0%, transparent 45%),
+    linear-gradient(145deg, #040816 0%, #080e22 45%, #050a1a 100%) !important;
+  background-attachment: fixed !important;
+  color: #f1f5f9 !important;
+}
+
+/* Floating Neon Ambient Accents with breathing animation */
+@keyframes neonBreathA {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate(25px, -35px) scale(1.12);
+    opacity: 0.9;
+  }
+}
+
+@keyframes neonBreathB {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(-30px, 30px) scale(1.18);
+    opacity: 0.85;
+  }
+}
+
+.ambient-neon-cyan {
+  position: absolute;
+  filter: blur(80px);
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(14, 165, 233, 0.25) 50%, transparent 75%);
+  border-radius: 9999px;
+  animation: neonBreathA 12s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.ambient-neon-purple {
+  position: absolute;
+  filter: blur(85px);
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(139, 92, 246, 0.22) 50%, transparent 75%);
+  border-radius: 9999px;
+  animation: neonBreathB 14s ease-in-out infinite 2s;
+  will-change: transform, opacity;
+}
+
+/* Cyber Glass Card (Deep Navy Glass with Specular Edge Glow) */
+.glass-panel,
+.cyber-card {
+  background: rgba(13, 22, 44, 0.68) !important;
+  backdrop-filter: blur(28px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 
+    0 16px 40px -8px rgba(0, 0, 0, 0.65),
+    0 4px 16px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22),
+    inset 0 0 20px 0 rgba(56, 189, 248, 0.03) !important;
+  color: #f1f5f9 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Cyber Card with Glowing Border on Hover */
+.cyber-card-interactive,
+.glass-panel-interactive {
+  background: rgba(13, 22, 44, 0.68) !important;
+  backdrop-filter: blur(28px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 
+    0 16px 40px -8px rgba(0, 0, 0, 0.65),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22) !important;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cyber-card-interactive:hover,
+.glass-panel-interactive:hover {
+  background: rgba(17, 30, 60, 0.82) !important;
+  transform: translateY(-4px) scale(1.006) !important;
+  border-color: rgba(56, 189, 248, 0.55) !important;
+  box-shadow: 
+    0 24px 50px -10px rgba(0, 0, 0, 0.85),
+    0 0 28px -2px rgba(56, 189, 248, 0.35),
+    0 0 45px -4px rgba(168, 85, 247, 0.22),
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Cyber Glass Subtle (Internal nested container) */
+.glass-panel-subtle,
+.cyber-card-subtle {
+  background: rgba(10, 18, 38, 0.55) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  box-shadow: 
+    0 6px 20px -2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.14) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Cyber Frosted Acrylic Sidebar */
+.glass-sidebar,
+.cyber-sidebar {
+  background: rgba(7, 13, 29, 0.82) !important;
+  backdrop-filter: blur(32px) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(220%) !important;
+  border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 
+    8px 0 35px -5px rgba(0, 0, 0, 0.75),
+    inset -1px 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Cyber Frosted Acrylic Topbar / Header */
+.glass-header,
+.cyber-header {
+  background: rgba(7, 13, 29, 0.82) !important;
+  backdrop-filter: blur(32px) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(220%) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+  box-shadow: 
+    0 8px 30px -4px rgba(0, 0, 0, 0.65),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Animated Neon Gradient Action Button */
+.cyber-btn-gradient {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%) !important;
+  background-size: 200% 200% !important;
+  animation: cyberGradientFlow 6s ease infinite !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+  box-shadow: 
+    0 10px 25px -4px rgba(99, 102, 241, 0.5),
+    0 0 20px rgba(56, 189, 248, 0.35),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes cyberGradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cyber-btn-gradient:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 
+    0 14px 34px -4px rgba(99, 102, 241, 0.7),
+    0 0 32px rgba(168, 85, 247, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Glowing Neon Pills / Badges */
+.cyber-pill-cyan {
+  background: rgba(14, 165, 233, 0.15) !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25) !important;
+}
+
+.cyber-pill-purple {
+  background: rgba(168, 85, 247, 0.15) !important;
+  border: 1px solid rgba(192, 132, 252, 0.45) !important;
+  color: #c084fc !important;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.25) !important;
+}
+
+.cyber-pill-emerald {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.25) !important;
+}
+
+/* Cyber Form Inputs (Deep Navy Frosted Glass with Cyan focus aura) */
+.cyber-input {
+  background: rgba(9, 16, 35, 0.75) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  color: #f8fafc !important;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 1px 1px rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.cyber-input:focus {
+  background: rgba(12, 22, 48, 0.92) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 
+    0 0 0 3px rgba(56, 189, 248, 0.3),
+    0 0 24px rgba(56, 189, 248, 0.35),
+    inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Smooth Staggered Entrances */
+@keyframes cyberFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cyber-stagger-1 { animation: cyberFadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+/* =========================================================================
+   GLOBAL CYBER DARK HIGH-CONTRAST TYPOGRAPHY & VISIBILITY RULES
+   Ensures 100% crisp visibility, high contrast, and readability of all
+   headings, body copy, descriptions, captions, labels, tables, and inputs.
+   ========================================================================= */
+
+/* High-contrast base text overrides for all dark containers */
+.cyber-canvas-bg,
+.cyber-card,
+.glass-panel,
+.cyber-card-subtle {
+  color: #f8fafc !important; /* Slate-50 pure crisp white */
+}
+
+/* Headings on dark cyber backgrounds: luminous white */
+.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h1:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h2:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h3:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h4:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h5:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h6:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+.cyber-card h1, .cyber-card h2, .cyber-card h3, .cyber-card h4,
+.glass-panel h1, .glass-panel h2, .glass-panel h3, .glass-panel h4 {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Secondary descriptions and labels on dark glass (strictly scoped to dark backgrounds only) */
+.cyber-card > p,
+.cyber-card > div > p,
+.cyber-card p:not(.bg-white *):not([class*="bg-white"] *):not(.bg-emerald-50 *):not([class*="bg-emerald-"] *):not(.bg-amber-50 *):not([class*="bg-amber-"] *):not([class*="from-amber-"] *):not(.bg-slate-50 *):not(.bg-slate-100 *):not(.bg-slate-200 *):not([class*="from-teal-"] *):not([class*="from-purple-"] *):not([class*="from-sky-"] *),
+.glass-panel p:not(.bg-white *):not([class*="bg-white"] *):not(.bg-emerald-50 *):not([class*="bg-emerald-"] *):not(.bg-amber-50 *):not([class*="bg-amber-"] *):not([class*="from-amber-"] *):not(.bg-slate-50 *):not(.bg-slate-100 *):not(.bg-slate-200 *):not([class*="from-teal-"] *):not([class*="from-purple-"] *):not([class*="from-sky-"] *),
+.cyber-card-subtle p:not(.bg-white *):not([class*="bg-white"] *):not(.bg-emerald-50 *):not([class*="bg-emerald-"] *):not(.bg-amber-50 *):not([class*="bg-amber-"] *):not([class*="from-amber-"] *):not(.bg-slate-50 *):not(.bg-slate-100 *):not(.bg-slate-200 *):not([class*="from-teal-"] *):not([class*="from-purple-"] *):not([class*="from-sky-"] *) {
+  color: #e2e8f0 !important;
+}
+
+/* Auto-boost low-contrast tailwind text utility classes ONLY on dark navy backgrounds */
+.cyber-canvas-bg > .text-slate-400,
+.cyber-canvas-bg > .text-slate-500,
+.cyber-canvas-bg > .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.cyber-canvas-bg > .text-slate-700,
+.cyber-canvas-bg > .text-slate-800,
+.cyber-canvas-bg > .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+/* =========================================================================
+   MANDATORY HIGH-CONTRAST RULES FOR GENUINE SOLID WHITE & LIGHT BOXES
+   Target ONLY actual solid white containers/inputs and light notification cards.
+   Strictly excludes transparent dark glass (.cyber-canvas-bg, hover:bg-white/5, etc.)
+   ========================================================================= */
+
+/* Solid white cards, white modals, and light alert containers */
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *):not(.cyber-sidebar *):not(.cyber-header *),
+.modal-white-card,
+.bg-slate-100:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *):not(.cyber-sidebar *),
+[class*="bg-teal-50"]:not(#cinematic-intro *):not(.rotating-border-content *),
+[class*="bg-amber-50"]:not(#cinematic-intro *):not(.rotating-border-content *),
+[class*="bg-emerald-50"]:not(#cinematic-intro *):not(.rotating-border-content *) {
+  color: #0f172a !important;
+}
+
+/* Headings inside genuine solid white boxes */
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h1,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h2,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h3,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h4,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h5,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h6,
+.modal-white-card h1, .modal-white-card h2, .modal-white-card h3, .modal-white-card h4 {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+}
+
+/* Paragraphs and text inside genuine solid white containers */
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *) > p,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *) > div > p,
+.modal-white-card p {
+  color: #0f172a !important;
+  font-weight: 700;
+}
+
+/* Accidental white text inside genuine solid white boxes is forced to dark slate */
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-white,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-slate-100,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-slate-200,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-slate-300 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+/* =========================================================================
+   PROTECTED DARK THEME HIGH-CONTRAST TYPOGRAPHY
+   Guarantees 100% luminous contrast for Launching, Auth, and Dashboard
+   ========================================================================= */
+
+/* Launching Screen (CinematicIntro) */
+#cinematic-intro,
+#cinematic-intro * {
+  -webkit-font-smoothing: antialiased;
+}
+
+#cinematic-intro #stage div {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+#cinematic-intro #site h1,
+#cinematic-intro .cinematic-portal-title {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em !important;
+  text-shadow: 0 0 35px rgba(255,255,255,1), 0 0 65px rgba(56,189,248,0.95), 0 2px 10px rgba(0,0,0,0.95) !important;
+}
+
+#cinematic-intro #site small {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 15px rgba(56, 189, 248, 0.8) !important;
+}
+
+/* Auth Card (.rotating-border-content) */
+.rotating-border-content,
+.rotating-border-content h1,
+.rotating-border-content h2,
+.rotating-border-content h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
+}
+
+.rotating-border-content p,
+.rotating-border-content span:not([class*="bg-"]):not([class*="text-sky-"]):not([class*="text-purple-"]):not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]) {
+  color: #f1f5f9 !important;
+}
+
+.rotating-border-content label {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95) !important;
+}
+
+/* Dashboard Sidebar buttons (Transparent Dark Glass) */
+.cyber-sidebar button:not(.cyber-btn-gradient),
+.glass-sidebar button:not(.cyber-btn-gradient) {
+  color: #e2e8f0 !important;
+}
+
+.cyber-sidebar button:not(.cyber-btn-gradient):hover,
+.glass-sidebar button:not(.cyber-btn-gradient):hover {
+  color: #ffffff !important;
+  background-color: rgba(30, 41, 59, 0.6) !important;
+}
+
+/* =========================================================================
+   AMBER / YELLOW ALERT BOXES (Mandatory notices, warnings)
+   Forces text in genuine light yellow boxes to dark amber-950 for contrast
+   ========================================================================= */
+.bg-amber-50,
+.bg-amber-100,
+.from-amber-50,
+.from-amber-100 {
+  color: #451a03 !important;
+}
+
+.bg-amber-50 p,
+.bg-amber-50 span,
+.bg-amber-50 div,
+.bg-amber-50 strong,
+.bg-amber-100 p,
+.bg-amber-100 span,
+.bg-amber-100 div,
+.bg-amber-100 strong {
+  color: #451a03 !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* =========================================================================
+   EMERALD / GREEN STAGE BOXES (Completed milestones)
+   Forces text in light green boxes to dark emerald-950
+   ========================================================================= */
+.bg-emerald-50,
+.bg-emerald-100,
+.from-emerald-50,
+.from-emerald-100 {
+  color: #064e3b !important;
+}
+
+.bg-emerald-50 h5,
+.bg-emerald-50 h4,
+.bg-emerald-50 p,
+.bg-emerald-50 span,
+.bg-emerald-50 strong,
+.bg-emerald-100 h5,
+.bg-emerald-100 h4,
+.bg-emerald-100 p,
+.bg-emerald-100 span,
+.bg-emerald-100 strong {
+  color: #064e3b !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
+/* Table headers & cells readability */
+.cyber-canvas-bg table th {
+  color: #38bdf8 !important; /* Neon cyan for table headers */
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cyber-canvas-bg table td {
+  color: #f1f5f9 !important;
+  font-weight: 600;
+}
+
+/* Form labels readability: 100% Bold Luminous White on dark themes */
+.cyber-canvas-bg label,
+.cyber-card label,
+.glass-panel label,
+.rotating-border-content label,
+form label,
+.form-label {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Inside genuine light/white containers, labels must be dark slate-950 */
+.bg-white:not([class*="/"]):not([class*="hover:"]):not([class*="focus:"]) > label,
+.bg-white:not([class*="/"]):not([class*="hover:"]):not([class*="focus:"]) > div > label,
+.modal-white-card label,
+.bg-slate-50 label,
+.bg-slate-100 label,
+.bg-amber-50 label,
+.bg-amber-100 label {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
+/* Dark Cyber Form Inputs (default on dark panels) */
+.cyber-canvas-bg input:not(.bg-white):not(.bg-slate-50):not(.bg-slate-100),
+.cyber-canvas-bg textarea:not(.bg-white):not(.bg-slate-50):not(.bg-slate-100),
+.cyber-canvas-bg select:not(.bg-white):not(.bg-slate-50):not(.bg-slate-100),
+.glossy-input,
+.cyber-input {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Placeholder text visibility in all dark forms */
+.cyber-canvas-bg input:not(.bg-white)::placeholder,
+.cyber-canvas-bg textarea:not(.bg-white)::placeholder,
+.glossy-input::placeholder,
+.cyber-input::placeholder {
+  color: #94a3b8 !important; /* Highly visible light slate */
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* Light / White Input Boxes & Textareas: 100% High Contrast Solid Dark Text */
+input.bg-white, textarea.bg-white, select.bg-white,
+input.bg-slate-50, textarea.bg-slate-50, select.bg-slate-50,
+input.bg-slate-100, textarea.bg-slate-100, select.bg-slate-100 {
+  color: #020617 !important; /* Pure Slate-950 high contrast text */
+  font-weight: 800 !important;
+}
+
+input.bg-white::placeholder, textarea.bg-white::placeholder {
+  color: #64748b !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* Option elements in dropdowns: always clean dark text on crisp background */
+select option,
+select optgroup {
+  background-color: #ffffff !important;
+  color: #020617 !important;
+  font-weight: 700 !important;
+}
+.cyber-canvas-bg select.cyber-input option,
+.cyber-canvas-bg select:not([class*="bg-"]) option {
+  background-color: #0b1329 !important;
+  color: #ffffff !important;
+}
+.cyber-canvas-bg select[class*="bg-"] option,
+.bg-white select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* =========================================================================
+   UNIVERSAL HIGH-CONTRAST VISIBILITY FOR ALL SYMBOLS & ICONS
+   ========================================================================= */
+.cyber-canvas-bg .lucide,
+.cyber-canvas-bg svg {
+  stroke-width: 2.1px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.3));
+}
+
+/* Eliminate dark/invisible icon strokes in cyber canvas (only when on dark background) */
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-900:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-800:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-700:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-600:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-900:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-800:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-700:not(.bg-white *):not([class*="bg-white"] *),
+.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-600:not(.bg-white *):not([class*="bg-white"] *) {
+  color: #38bdf8 !important;
+  stroke: #38bdf8 !important;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.45)) !important;
+}
+
+/* Dark/slate icons inside white and light boxes remain crisp dark slate */
+.bg-white svg.text-slate-900,
+.bg-white svg.text-slate-800,
+.bg-white svg.text-slate-700,
+.bg-white svg.text-slate-600,
+[class*="bg-white"] svg.text-slate-900,
+[class*="bg-white"] svg.text-slate-800,
+[class*="bg-white"] svg.text-slate-700,
+[class*="bg-white"] svg.text-slate-600,
+.bg-slate-50 svg.text-slate-700,
+.bg-slate-100 svg.text-slate-700,
+.bg-slate-200 svg.text-slate-700 {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+  filter: none !important;
+}
+
+/* Glowing accents for specific status symbols */
+.cyber-canvas-bg svg.text-amber-400,
+.cyber-canvas-bg svg.text-amber-500,
+.cyber-canvas-bg svg.text-yellow-400,
+.cyber-canvas-bg svg.text-yellow-500 {
+  color: #fbbf24 !important;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.6)) !important;
+}
+
+.cyber-canvas-bg svg.text-rose-400,
+.cyber-canvas-bg svg.text-rose-500,
+.cyber-canvas-bg svg.text-red-400,
+.cyber-canvas-bg svg.text-red-500 {
+  color: #f43f5e !important;
+  filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.6)) !important;
+}
+
+.cyber-canvas-bg svg.text-emerald-400,
+.cyber-canvas-bg svg.text-emerald-500,
+.cyber-canvas-bg svg.text-green-400,
+.cyber-canvas-bg svg.text-green-500 {
+  color: #34d399 !important;
+  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.6)) !important;
+}
+
+.cyber-canvas-bg svg.text-cyan-400,
+.cyber-canvas-bg svg.text-cyan-500,
+.cyber-canvas-bg svg.text-sky-400,
+.cyber-canvas-bg svg.text-sky-500,
+.cyber-canvas-bg svg.text-blue-400 {
+  color: #38bdf8 !important;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6)) !important;
+}
+
+.cyber-canvas-bg svg.text-purple-400,
+.cyber-canvas-bg svg.text-purple-500,
+.cyber-canvas-bg svg.text-indigo-400 {
+  color: #c084fc !important;
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.6)) !important;
+}
+
+.cyber-canvas-bg svg.text-white {
+  color: #ffffff !important;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)) !important;
+}
+
+/* Category & Urgency badge symbols high visibility */
+.cyber-canvas-bg .badge,
+.cyber-canvas-bg [class*="rounded-full"] svg,
+.cyber-canvas-bg button svg {
+  flex-shrink: 0;
+}
+
+
+
+
+
+
+
