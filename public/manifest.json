@@ -1,16 +1,26 @@
 {
-  "name": "INTERNAL COMPLAINT SYSTEM",
-  "short_name": "INTERNAL COMPLAINT SYSTEM",
+  "name": "Internal Complaint System",
+  "short_name": "ICS",
   "description": "Centralized Campus Facility Maintenance & Internal Grievance Redressal System - RGUKT RK Valley",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#030712",
-  "theme_color": "#0a0f1d",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/favicon-32.png",
       "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-128.png",
+      "sizes": "128x128",
       "type": "image/png"
     },
     {

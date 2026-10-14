@@ -1,10 +1,91 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-html, body, #root {
+/* =========================================================================
+   NATIVE MOBILE APP & PWA STYLING (Capacitor / Android / iOS / Standalone)
+   ========================================================================= */
+
+/* 1. Disable touch tap highlighting across all elements */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* 2. Safe area insets for phone notches, dynamic islands, and navigation bars */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  /* Safe area inset padding for phone notches and bottom navigation bars */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+/* 3. Disable text selection on buttons and inputs/interactive controls */
+button,
+input,
+select,
+textarea,
+[role="button"],
+.cyber-btn-gradient,
+.glossy-btn,
+.btn {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text cursor and editing in text inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Safe area inset utilities */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-inset {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Custom Scrollbar */
