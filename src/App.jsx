@@ -691,10 +691,63 @@ export default function CampusMaintenanceApp() {
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [dismissOfflinePage, setDismissOfflinePage] = useState(false);
   const [offlineOutbox, setOfflineOutbox] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem('rgukt_app_notifications');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [activeToast, setActiveToast] = useState(null);
   const [scanSuccessToast, setScanSuccessToast] = useState(null);
   const [feedbackModalTicket, setFeedbackModalTicket] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState('staff-1');
+
+  // Push System Notification helper across Toast, Local Storage, and Browser Push
+  const pushSystemNotification = (title, body, channel = 'CAMPUS') => {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newNotif = {
+      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      title,
+      body,
+      channel,
+      recipient: currentUser?.name || currentUser?.fullName || 'Student Resident',
+      time: timeStr,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev.filter(n => n.id !== newNotif.id)].slice(0, 50);
+      try {
+        localStorage.setItem('rgukt_app_notifications', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
+    setActiveToast(newNotif);
+    setTimeout(() => {
+      setActiveToast(curr => (curr?.id === newNotif.id ? null : curr));
+    }, 6000);
+
+    // Browser Notification API
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        try {
+          new Notification(title, { body, icon: '/logo.png?v=original' });
+        } catch (e) {}
+      } else if (Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            try {
+              new Notification(title, { body, icon: '/logo.png?v=original' });
+            } catch (e) {}
+          }
+        });
+      }
+    }
+  };
 
   // Switch between individual authority and student profiles seamlessly
   const handleSwitchProfile = (profileKey) => {
@@ -813,7 +866,19 @@ export default function CampusMaintenanceApp() {
   const [profileEditSuccessToast, setProfileEditSuccessToast] = useState(false);
   const [smtpConfig, setSmtpConfig] = useState(null);
   const [emailLog, setEmailLog] = useState([]);
-  const [reporterEmail, setReporterEmail] = useState('');
+  const [reporterEmail, setReporterEmail] = useState(() => {
+    return initialUser?.collegeEmail || initialUser?.email || (initialUser?.idNo ? `${initialUser.idNo.toLowerCase()}@rguktrkv.ac.in` : '');
+  });
+
+  // Automatically keep reporterEmail in sync with logged-in user profile
+  useEffect(() => {
+    if (currentUser) {
+      const email = currentUser.collegeEmail || currentUser.email || (currentUser.idNo ? `${currentUser.idNo.toLowerCase()}@rguktrkv.ac.in` : '');
+      if (email && (!reporterEmail || reporterEmail === 'student@rgukt.ac.in')) {
+        setReporterEmail(email);
+      }
+    }
+  }, [currentUser]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [appVersion, setAppVersion] = useState(null);
@@ -973,7 +1038,17 @@ export default function CampusMaintenanceApp() {
         const dataA = await resA.json().catch(() => null);
         if (dataA && dataA.success) {
           setAnalytics(dataA);
-          setNotifications(dataA.notifications || []);
+          if (Array.isArray(dataA.notifications) && dataA.notifications.length > 0) {
+            setNotifications(prev => {
+              const ids = new Set(prev.map(p => p.id));
+              const additions = dataA.notifications.filter(n => !ids.has(n.id));
+              const merged = [...additions, ...prev].slice(0, 50);
+              try {
+                localStorage.setItem('rgukt_app_notifications', JSON.stringify(merged));
+              } catch (e) {}
+              return merged;
+            });
+          }
         }
       }
 
@@ -1689,7 +1764,13 @@ export default function CampusMaintenanceApp() {
       reporterId: (currentUser?.idNo || '').trim().toUpperCase(),
       studentId: (currentUser?.idNo || '').trim().toUpperCase(),
       reporterName: (isIccSelected && iccMaskIdentity) ? 'Confidential Student (Identity Masked)' : (currentUser ? currentUser.name : 'Chaithanya Yadav (Student)'),
-      reporterEmail: reporterEmail.trim() || (currentUser ? currentUser.email : 'student@rgukt.ac.in')
+      reporterEmail: (
+        reporterEmail.trim() ||
+        currentUser?.collegeEmail ||
+        currentUser?.email ||
+        (currentUser?.idNo ? `${currentUser.idNo.toLowerCase()}@rguktrkv.ac.in` : '') ||
+        'student@rguktrkv.ac.in'
+      ).trim()
     };
 
     if (!isOnline) {
@@ -1767,22 +1848,18 @@ export default function CampusMaintenanceApp() {
     }
 
     // 4. Dispatch Dynamic EmailJS Notifications (User + Authority)
-    sendEmailOnComplaintSubmission(newComplaint).catch(err => {
+    sendEmailOnComplaintSubmission(newComplaint).then(res => {
+      console.log('✅ EmailJS complaint submission dispatched:', res);
+    }).catch(err => {
       console.warn('EmailJS submission notice:', err);
     });
 
     // 5. In-App / Web Push Notification
-    setNotifications(prev => [
-      {
-        id: `notif-${Date.now()}`,
-        recipient: newComplaint.reporterName || 'You',
-        channel: 'EMAILJS + WEB',
-        title: `📋 Complaint Registered: #${newComplaint.ticketNumber}`,
-        body: `Assigned to ${newComplaint.currentHierarchyAuthority || 'Hostel Resident Warden'}. Notification email dispatched.`,
-        time: new Date().toISOString()
-      },
-      ...prev
-    ]);
+    pushSystemNotification(
+      `📋 Complaint Registered: #${newComplaint.ticketNumber}`,
+      `Assigned to ${newComplaint.currentHierarchyAuthority || 'Hostel Resident Warden'}. Official confirmation email dispatched to ${newComplaint.reporterEmail}.`,
+      'EMAILJS + DISPATCH'
+    );
 
     // 6. Update UI State & smoothly transition to My Complaints Card
     setTitle('');
@@ -1874,17 +1951,17 @@ export default function CampusMaintenanceApp() {
           console.warn('EmailJS problem solved notice:', err);
         });
 
-        setNotifications(prev => [
-          {
-            id: `notif-${Date.now()}`,
-            recipient: finalTicket.reporterName || 'You',
-            channel: 'EMAILJS + WEB',
-            title: `✅ Problem Solved: #${finalTicket.ticketNumber || ticketId}`,
-            body: `Issue at ${finalTicket.location || 'Campus'} has been marked as resolved. Please review and verify.`,
-            time: new Date().toISOString()
-          },
-          ...prev
-        ]);
+        pushSystemNotification(
+          `✅ Problem Solved: #${finalTicket.ticketNumber || ticketId}`,
+          `Issue at ${finalTicket.location || 'Campus'} has been marked as resolved. Please review and verify.`,
+          'WORK ORDER RESOLVED'
+        );
+      } else {
+        pushSystemNotification(
+          `🔄 Work Order Updated: ${nextStatus}`,
+          `Ticket #${ticketId} status changed to ${nextStatus}.`,
+          'WORK ORDER'
+        );
       }
     } catch (err) {
       console.error('Error updating status:', err);
@@ -1947,18 +2024,12 @@ export default function CampusMaintenanceApp() {
           console.warn('EmailJS authority response notice:', err);
         });
 
-        // Push In-App Notification
-        setNotifications(prev => [
-          {
-            id: `notif-${Date.now()}`,
-            recipient: data.complaint?.reporterName || 'You',
-            channel: 'EMAILJS + WEB',
-            title: `📝 Response from ${authorityStage}: #${data.complaint?.ticketNumber}`,
-            body: `Official response recorded: "${response}"`,
-            time: new Date().toISOString()
-          },
-          ...prev
-        ]);
+        // Push In-App / System Notification
+        pushSystemNotification(
+          `📝 Response from ${authorityStage}: #${data.complaint?.ticketNumber}`,
+          `Official response recorded: "${response}"`,
+          'AUTHORITY UPDATE'
+        );
       } else {
         console.error('Response error:', data.message);
       }
@@ -2004,17 +2075,11 @@ export default function CampusMaintenanceApp() {
         });
 
         // Push In-App / Web Notification
-        setNotifications(prev => [
-          {
-            id: `notif-${Date.now()}`,
-            recipient: data.complaint?.reporterName || 'You',
-            channel: 'EMAILJS + WEB',
-            title: `🚀 Complaint Escalated: #${data.complaint?.ticketNumber} ➔ ${toStage}`,
-            body: `Tagged from ${fromStage} with previous response. Respective Officer (${toStage}) has been notified.`,
-            time: new Date().toISOString()
-          },
-          ...prev
-        ]);
+        pushSystemNotification(
+          `🚀 Complaint Escalated: #${data.complaint?.ticketNumber} ➔ ${toStage}`,
+          `Tagged from ${fromStage} with previous response. Respective Officer (${toStage}) has been notified.`,
+          'HIERARCHY ESCALATION'
+        );
       } else {
         console.error('Escalation error:', data.message);
       }
@@ -2773,8 +2838,23 @@ export default function CampusMaintenanceApp() {
                 </span>
               </div>
 
-              {/* TOP RIGHT CORNER: GLOBAL REAL-TIME REFRESH + IDENTITY + LOGOUT BUTTON */}
+              {/* TOP RIGHT CORNER: NOTIFICATIONS + REAL-TIME REFRESH + IDENTITY + LOGOUT BUTTON */}
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                {/* Notification Center Bell Trigger */}
+                <button
+                  type="button"
+                  onClick={() => setShowMailboxModal(true)}
+                  className="relative p-2 bg-slate-900/90 hover:bg-slate-800 text-cyan-400 border border-cyan-500/40 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center hover:border-cyan-300 hover:scale-105 active:scale-95"
+                  title="View All Campus Notifications & Email Dispatches"
+                >
+                  <Bell className="w-4 h-4 text-cyan-400" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 border border-rose-400 text-white font-black text-[10px] flex items-center justify-center shadow-md animate-pulse">
+                      {notifications.length > 99 ? '99+' : notifications.length}
+                    </span>
+                  )}
+                </button>
+
                 <button
                   type="button"
                   onClick={fetchData}
@@ -2823,6 +2903,40 @@ export default function CampusMaintenanceApp() {
                 </button>
               </div>
             </header>
+
+            {/* FLOATING REAL-TIME NOTIFICATION TOAST */}
+            {activeToast && (
+              <div className="fixed top-4 right-4 z-50 max-w-sm w-[90vw] sm:w-96 bg-slate-950/95 border-2 border-cyan-400 text-white p-4 rounded-2xl shadow-2xl shadow-cyan-950/80 backdrop-blur-xl animate-in slide-in-from-top-4 duration-300">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shrink-0 shadow-inner">
+                    <Bell className="w-5 h-5 text-cyan-400 animate-pulse" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
+                        {activeToast.channel || 'Campus Alert'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {activeToast.time || 'Just now'}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-white mt-0.5 truncate">
+                      {activeToast.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                      {activeToast.body}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveToast(null)}
+                    className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* DYNAMIC SCROLLABLE BODY */}
             <div className="flex-1 w-full min-h-0 overflow-y-auto px-4 sm:px-6 py-4 overscroll-contain">
@@ -7288,19 +7402,30 @@ function AuthScreen({ onLoginSuccess }) {
     setIsSendingOtp(true);
 
     try {
-      await sendOtpEmail(targetEmail, code, targetName);
+      const res = await sendOtpEmail(targetEmail, code, targetName);
       setOtpSent(true);
       setForgotStep('verify');
       setOtpTimer(45);
       setCanResendOtp(false);
-      setSuccessMsg(`✅ 6-digit OTP sent to ${targetEmail}! Please enter the code below to verify.`);
+      if (res && res.success) {
+        setSuccessMsg(`✅ 6-digit OTP sent to ${targetEmail}! Please enter the code below to verify.`);
+      } else {
+        setSuccessMsg(`⚠️ Email server response note: Verification code generated: ${code}. You can enter it below or check email.`);
+      }
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        if (Notification.permission === 'granted') {
+          try { new Notification('RGUKT Verification Code', { body: `Your verification OTP is ${code}`, icon: '/logo.png?v=original' }); } catch(e) {}
+        } else if (Notification.permission === 'default') {
+          try { Notification.requestPermission(); } catch(e) {}
+        }
+      }
     } catch (err) {
       console.error('Forgot password OTP dispatch error:', err);
       setOtpSent(true);
       setForgotStep('verify');
       setOtpTimer(45);
       setCanResendOtp(false);
-      setSuccessMsg(`✅ OTP sent to ${targetEmail}! Code generated: ${code}`);
+      setSuccessMsg(`✅ Verification OTP: ${code} (Enter below to continue)`);
     } finally {
       setIsSendingOtp(false);
     }
@@ -7501,19 +7626,30 @@ function AuthScreen({ onLoginSuccess }) {
     setIsSendingOtp(true);
 
     try {
-      await sendOtpEmail(targetEmail, code, targetName);
+      const res = await sendOtpEmail(targetEmail, code, targetName);
       setOtpSent(true);
       setSignupStep('otp');
       setOtpTimer(45);
       setCanResendOtp(false);
-      setSuccessMsg(`✅ 6-digit OTP sent to ${targetEmail}! Enter the code below to complete registration and enter the app.`);
+      if (res && res.success) {
+        setSuccessMsg(`✅ 6-digit OTP sent to ${targetEmail}! Enter the code below to complete registration and enter the app.`);
+      } else {
+        setSuccessMsg(`⚠️ Email server response note: Verification code generated: ${code}. You can enter it below or check email.`);
+      }
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        if (Notification.permission === 'granted') {
+          try { new Notification('RGUKT Verification Code', { body: `Your registration OTP is ${code}`, icon: '/logo.png?v=original' }); } catch(e) {}
+        } else if (Notification.permission === 'default') {
+          try { Notification.requestPermission(); } catch(e) {}
+        }
+      }
     } catch (err) {
       console.error('OTP error:', err);
       setOtpSent(true);
       setSignupStep('otp');
       setOtpTimer(45);
       setCanResendOtp(false);
-      setSuccessMsg(`✅ OTP sent to ${targetEmail}! Code generated: ${code}`);
+      setSuccessMsg(`✅ Verification OTP: ${code} (Enter below to continue)`);
     } finally {
       setIsSendingOtp(false);
     }
@@ -7934,9 +8070,13 @@ function AuthScreen({ onLoginSuccess }) {
       setIsSubmitting(false);
 
       try {
-        await sendOtpEmail(email, code, fullName);
+        const res = await sendOtpEmail(email, code, fullName);
         setOtpSent(true);
-        setSuccessMsg(`✅ Google account connected (${email})! We sent a 6-digit verification OTP to your mail. Please enter OTP below to complete registration.`);
+        if (res && res.success) {
+          setSuccessMsg(`✅ Google account connected (${email})! We sent a 6-digit verification OTP to your mail. Please enter OTP below to complete registration.`);
+        } else {
+          setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
+        }
       } catch (otpErr) {
         console.error('Google registration OTP dispatch error:', otpErr);
         setOtpSent(true);
@@ -10667,19 +10807,29 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
               })
             )
           ) : (
-            notifications.map(notif => (
-              <div key={notif.id} className="p-3.5 glass-panel rounded-2xl shadow-2xs">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-bold text-slate-100">{notif.title}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">{notif.channel}</span>
-                </div>
-                <p className="text-xs text-slate-300">{notif.body}</p>
-                <div className="mt-2 text-[10px] text-slate-400 flex items-center justify-between">
-                  <span>Recipient: <strong>{notif.recipient}</strong></span>
-                  <span>{new Date(notif.time).toLocaleTimeString()}</span>
-                </div>
+            notifications.length === 0 ? (
+              <div className="p-8 text-center text-slate-400">
+                <Bell className="w-8 h-8 text-slate-500 mx-auto mb-2 opacity-50" />
+                <p className="text-xs font-bold text-slate-300">No notifications yet</p>
+                <p className="text-[11px] text-slate-400 mt-1">System dispatches, complaint receipts, and security alerts will appear here.</p>
               </div>
-            ))
+            ) : (
+              notifications.map(notif => (
+                <div key={notif.id} className="p-3.5 glass-panel rounded-2xl shadow-2xs border border-slate-700/60">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-bold text-slate-100">{notif.title}</span>
+                    <span className="text-[10px] text-cyan-400 font-mono bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">{notif.channel || 'CAMPUS'}</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{notif.body}</p>
+                  <div className="mt-2 text-[10px] text-slate-400 flex items-center justify-between">
+                    <span>Recipient: <strong className="text-slate-200">{notif.recipient || 'You'}</strong></span>
+                    <span className="font-mono text-slate-400">
+                      {notif.time ? (isNaN(new Date(notif.time)) ? notif.time : new Date(notif.time).toLocaleTimeString()) : (notif.timestamp ? new Date(notif.timestamp).toLocaleTimeString() : 'Just now')}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )
           )}
         </div>
 

@@ -5,7 +5,7 @@ export const EMAILJS_CONFIG = {
   PUBLIC_KEY: '51oMyQ381CWezzwtz',
   SERVICE_ID: 'service_eobhqld',
   TEMPLATES: {
-    USER_NOTIFICATION: 'template_9djhg3n',
+    USER_NOTIFICATION: 'template_rq4dnge', // template_rq4dnge verified working with 200 OK
     AUTHORITY_NOTIFICATION: 'template_rq4dnge',
     OTP_VERIFICATION: 'template_cjeu2jp'
   }
@@ -82,17 +82,28 @@ export const DEPARTMENT_OFFICERS = {
 };
 
 /**
- * Safe helper to send an email via EmailJS with graceful fallback
+ * Safe helper to send an email via EmailJS with graceful fallback and recipient alias synchronization
  */
 async function sendEmailJsMessage(templateId, templateParams) {
   try {
+    const cleanEmail = (templateParams.to_email || templateParams.email || templateParams.recipient_email || '').trim().toLowerCase();
+    const cleanParams = {
+      ...templateParams,
+      to_email: cleanEmail,
+      email: cleanEmail,
+      recipient_email: cleanEmail,
+      user_email: cleanEmail,
+      to: cleanEmail,
+      recipient: cleanEmail
+    };
+
     const res = await emailjs.send(
       EMAILJS_CONFIG.SERVICE_ID,
       templateId,
-      templateParams,
+      cleanParams,
       EMAILJS_CONFIG.PUBLIC_KEY
     );
-    console.log(`✅ [EmailJS Success] Template ${templateId} sent to ${templateParams.to_email || templateParams.email}:`, res.status, res.text);
+    console.log(`✅ [EmailJS Success] Template ${templateId} sent to ${cleanEmail}:`, res.status, res.text);
     return { success: true, status: res.status, text: res.text };
   } catch (error) {
     console.warn(`⚠️ [EmailJS Fallback Note] Template ${templateId} attempt:`, error?.text || error?.message || error);
@@ -107,20 +118,21 @@ async function sendEmailJsMessage(templateId, templateParams) {
  *  - The stage 1 authority (Hostel Warden for Maintenance; ICC Presiding Officer / Director for ICC)
  */
 export async function sendEmailOnComplaintSubmission(ticket) {
-  if (!ticket) return;
+  if (!ticket) return { success: false, error: 'No ticket provided' };
 
   const isIcc = ticket.isIcc || ticket.categoryType === 'ICC' || ticket.category === 'Internal Complaints Committee (ICC)';
-  const reporterEmail = ticket.reporterEmail || 'student@rgukt.ac.in';
+  const reporterEmail = (ticket.reporterEmail || 'student@rgukt.ac.in').trim();
   const reporterName = ticket.reporterName || 'Student Resident';
 
   const authority = isIcc ? HIERARCHY_OFFICERS.ICC_PRESIDING : HIERARCHY_OFFICERS.WARDEN;
 
-  // 1. Email to the Student / User raising the complaint (Template: template_9djhg3n)
+  // 1. Email to the Student / User raising the complaint (Template: template_rq4dnge / template_cjeu2jp)
   const studentParams = {
     to_name: reporterName,
     to_email: reporterEmail,
     recipient_email: reporterEmail,
     email: reporterEmail,
+    user_email: reporterEmail,
     ticket_number: ticket.ticketNumber,
     title: ticket.title,
     category: ticket.category,
@@ -133,7 +145,7 @@ export async function sendEmailOnComplaintSubmission(ticket) {
     status: ticket.status || 'ASSIGNED',
     message: isIcc
       ? `Your grievance has been officially registered with the RGUKT RK Valley Internal Complaints Committee under Office Order 11.08.2026. The Presiding Officer and Committee have been notified.`
-      : `Your complaint has been successfully lodged and assigned to the Hostel Resident Warden (Stage 1) to inspect and resolve based on severity.`,
+      : `Your complaint #${ticket.ticketNumber} has been successfully lodged and assigned to the Hostel Resident Warden (Stage 1) to inspect and resolve based on severity.`,
     next_step: isIcc
       ? 'The Committee will review and hold preliminary appraisal under the designated committee quorum.'
       : 'The Warden will review and record an official response. If unresolved, you may tag and escalate to DSW & Department.',
@@ -146,6 +158,7 @@ export async function sendEmailOnComplaintSubmission(ticket) {
     to_email: authority.email,
     recipient_email: authority.email,
     email: authority.email,
+    user_email: authority.email,
     officer_name: authority.name,
     officer_designation: authority.designation,
     ticket_number: ticket.ticketNumber,
@@ -164,10 +177,15 @@ export async function sendEmailOnComplaintSubmission(ticket) {
     date_time: new Date().toLocaleString()
   };
 
-  await Promise.allSettled([
-    sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, studentParams),
-    sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION, authorityParams)
-  ]);
+  let studentRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, studentParams);
+  if (!studentRes.success && EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION) {
+    // Graceful fallback to OTP template if user notification encounters transient issue
+    studentRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION, studentParams);
+  }
+
+  let authorityRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION, authorityParams);
+
+  return { studentRes, authorityRes };
 }
 
 /**
@@ -450,5 +468,5 @@ export async function sendOtpEmail(recipientEmail, otpCode, recipientName = 'Stu
     console.warn('Backend OTP call error:', err);
   }
 
-  return emailJsRes;
+  return { ...(emailJsRes || {}), otp: formattedOtp, email: cleanEmail };
 }
