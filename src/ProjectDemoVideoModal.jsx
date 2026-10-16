@@ -3,8 +3,65 @@ import {
   Play, Pause, RotateCcw, Volume2, VolumeX, CheckCircle2, ShieldAlert,
   Sparkles, Building2, Bell, Wifi, WifiOff, Users, ArrowRight, X,
   Clock, HelpCircle, Check, Eye, ShieldCheck, Mail, AlertTriangle,
-  Layers, MapPin, Maximize2, Minimize2, Wrench, Zap, Droplet, Monitor
+  Layers, MapPin, Maximize2, Minimize2, Wrench, Zap, Droplet, Monitor,
+  ChevronUp
 } from 'lucide-react';
+
+// Web Audio API Synthesizer for high-tech UI feedback and warp sounds across all playback speeds
+function playUiSynthSound(type) {
+  try {
+    if (typeof window === 'undefined') return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    
+    if (!window._rguktAudioCtx || window._rguktAudioCtx.state === 'closed') {
+      window._rguktAudioCtx = new AudioContextClass();
+    }
+    const ctx = window._rguktAudioCtx;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'turbo') {
+      // 4x and 8x speed warp sweep (rich audible feedback even at maximum playback speeds)
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(1100, now + 0.15);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    } else if (type === 'chapter') {
+      // Pleasant double harmonic chime
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now); // C5
+      osc.frequency.setValueAtTime(783.99, now + 0.08); // G5
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } else if (type === 'complete') {
+      // Celebration triumph fanfare
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now); // C5
+      osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+      osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+      osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc.start(now);
+      osc.stop(now + 0.62);
+    }
+  } catch (err) {
+    // Non-blocking graceful fallback
+  }
+}
 
 // CHAPTER DEFINITIONS FOR THE COMPREHENSIVE DEMO TOUR
 const DEMO_CHAPTERS = [
@@ -16,6 +73,7 @@ const DEMO_CHAPTERS = [
     icon: Mail,
     color: 'from-blue-500 to-cyan-500',
     accentColor: '#38bdf8',
+    turboAnnouncement: 'Chapter 1: Identity and Two-Factor Webmail Authentication!',
     subtitles: [
       'Welcome to RGUKT Hostel & Campus Complaint Management System.',
       'Students and staff authenticate securely using university credentials.',
@@ -31,6 +89,7 @@ const DEMO_CHAPTERS = [
     icon: MapPin,
     color: 'from-emerald-500 to-teal-500',
     accentColor: '#34d399',
+    turboAnnouncement: 'Chapter 2: Hostel Dorm and Campus Location Selector!',
     subtitles: [
       'Pinpoint any maintenance issue across student dorms, academic halls, and labs.',
       'Select Hostel Blocks: Penna BH-1, BH-2, Krishna, Godavari, and Girls Hostels.',
@@ -46,6 +105,7 @@ const DEMO_CHAPTERS = [
     icon: Wrench,
     color: 'from-amber-500 to-orange-500',
     accentColor: '#fbbf24',
+    turboAnnouncement: 'Chapter 3: Lodge Grievance and Anonymous Privacy Protection!',
     subtitles: [
       'Report issues across Electrical, Plumbing, Civil, IT Systems, and Mess.',
       'Attach live photo evidence with instant client-side preview & compression.',
@@ -61,6 +121,7 @@ const DEMO_CHAPTERS = [
     icon: Layers,
     color: 'from-purple-500 to-indigo-500',
     accentColor: '#c084fc',
+    turboAnnouncement: 'Chapter 4: Four-Tier Hierarchy Escalation from Warden to Director!',
     subtitles: [
       'The multi-tier governance automatically escalates unresolved hostel grievances.',
       'Stage 1: Hostel Warden conducts on-site review & dispatches technical staff.',
@@ -77,6 +138,7 @@ const DEMO_CHAPTERS = [
     icon: ShieldAlert,
     color: 'from-rose-500 to-pink-500',
     accentColor: '#fb7185',
+    turboAnnouncement: 'Chapter 5: Statutory ICC Tri-Committee Protection System!',
     subtitles: [
       'Zero-tolerance statutory framework for campus safety and harassment prevention.',
       'Small Committee (3 Members): Presiding Officer + 2 Women Faculty for immediate action.',
@@ -93,6 +155,7 @@ const DEMO_CHAPTERS = [
     icon: Bell,
     color: 'from-cyan-500 to-blue-600',
     accentColor: '#22d3ee',
+    turboAnnouncement: 'Chapter 6: Live Tracker, Instant Notifications and Offline Sync!',
     subtitles: [
       'Track complaints in real-time: Submitted -> Assigned -> In Progress -> Resolved.',
       'Instant EmailJS dispatches notify both student and authorities upon every stage change.',
@@ -119,11 +182,22 @@ export default function ProjectDemoVideoModal({
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeSubtitle, setActiveSubtitle] = useState(DEMO_CHAPTERS[0].subtitles[0]);
+  const [isSpeechActive, setIsSpeechActive] = useState(false);
 
   const containerRef = useRef(null);
   const animationTimerRef = useRef(null);
-  const speechUtteranceRef = useRef(null);
-  const lastSubtitleRef = useRef('');
+  const currentChapterSpokenRef = useRef(-1);
+  const currentSentenceIdxRef = useRef(0);
+  const activeUtteranceRef = useRef(null);
+  const playbackSpeedRef = useRef(playbackSpeed);
+  playbackSpeedRef.current = playbackSpeed;
+  const isMutedRef = useRef(isMuted);
+  isMutedRef.current = isMuted;
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+  const isPlayingRef = useRef(isPlaying);
+  isPlayingRef.current = isPlaying;
 
   // Calculate current chapter based on currentTime
   let accumulatedTime = 0;
@@ -146,48 +220,148 @@ export default function ProjectDemoVideoModal({
     activeChapter = DEMO_CHAPTERS[activeChapterIndex];
   }
 
-  // Calculate current subtitle in active chapter
-  const chapterElapsed = Math.max(0, currentTime - chapterStartTime);
-  const subIndex = Math.min(
-    Math.floor((chapterElapsed / (activeChapter.duration || 1)) * activeChapter.subtitles.length),
-    activeChapter.subtitles.length - 1
-  );
-  const currentSubtitle = activeChapter.subtitles[subIndex] || activeChapter.subtitles[0];
-
-  // Speech synthesis narration for currently playing subtitle
-  useEffect(() => {
-    if (phase !== 'playing' || !isPlaying || isMuted) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+  // Robust function to speak a specific sentence and chain next on completion (NEVER cuts mid-sentence)
+  const speakSentence = useCallback((text, sentenceIdx, chapterIdx, speed) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (isMutedRef.current || !isPlayingRef.current || phaseRef.current !== 'playing') {
+      window.speechSynthesis.cancel();
+      setIsSpeechActive(false);
       return;
     }
 
-    if (currentSubtitle && currentSubtitle !== lastSubtitleRef.current) {
-      lastSubtitleRef.current = currentSubtitle;
+    try {
+      window.speechSynthesis.cancel(); // cancel any stale previous utterance before speaking new
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Calculate effective speech rate clamped to browser capability (0.75 to 2.0 max)
+      // Browsers clamp SpeechSynthesis rate to 2.0; going above 2.0 causes complete silence!
+      let rate = 1.05;
+      if (speed === 0.5) rate = 0.85;
+      else if (speed === 1) rate = 1.05;
+      else if (speed === 1.5) rate = 1.35;
+      else if (speed === 2) rate = 1.65;
+      else if (speed === 4) rate = 1.9;
+      else if (speed === 8) rate = 2.0;
+
+      utterance.rate = rate;
+      utterance.pitch = 1.05;
+      utterance.lang = 'en-US';
+
+      // Pick natural or clear voice if available
+      const voices = window.speechSynthesis.getVoices() || [];
+      const bestVoice = voices.find(v => 
+        (v.lang === 'en-US' || v.lang.startsWith('en')) &&
+        (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Enhanced'))
+      ) || voices.find(v => v.lang === 'en-US' || v.lang.startsWith('en'));
+      if (bestVoice) utterance.voice = bestVoice;
+
+      // Retain global reference so browser garbage collector does not terminate speech mid-sentence
+      window.__rguktActiveSpeechUtterance = utterance;
+      activeUtteranceRef.current = utterance;
+      setIsSpeechActive(true);
+
+      utterance.onstart = () => {
+        setIsSpeechActive(true);
+      };
+
+      utterance.onend = () => {
+        setIsSpeechActive(false);
+        window.__rguktActiveSpeechUtterance = null;
+        
+        // If speed is smooth (< 4x), advance to next sentence in the chapter
+        if (speed < 4 && isPlayingRef.current && phaseRef.current === 'playing' && !isMutedRef.current) {
+          const nextIdx = sentenceIdx + 1;
+          const chapter = DEMO_CHAPTERS[chapterIdx];
+          if (chapter && nextIdx < chapter.subtitles.length) {
+            currentSentenceIdxRef.current = nextIdx;
+            const nextText = chapter.subtitles[nextIdx];
+            setActiveSubtitle(nextText);
+            speakSentence(nextText, nextIdx, chapterIdx, playbackSpeedRef.current);
+          }
+        }
+      };
+
+      utterance.onerror = () => {
+        setIsSpeechActive(false);
+        window.__rguktActiveSpeechUtterance = null;
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      setIsSpeechActive(false);
+    }
+  }, []);
+
+  // Trigger narration whenever chapter changes or playback starts
+  const startChapterNarration = useCallback((chIdx, speed) => {
+    const chapter = DEMO_CHAPTERS[chIdx];
+    if (!chapter) return;
+
+    // Play synth sound effect (warp for 4x/8x, harmonic chime for smooth speeds)
+    playUiSynthSound(speed >= 4 ? 'turbo' : 'chapter');
+
+    if (speed >= 4) {
+      // 4X & 8X TURBO/HYPER MODE: speak the punchy turbo chapter announcement!
+      const phrase = chapter.turboAnnouncement || chapter.title;
+      setActiveSubtitle(phrase);
+      currentSentenceIdxRef.current = 0;
+      speakSentence(phrase, 0, chIdx, speed);
+    } else {
+      // 0.5x, 1x, 1.5x, 2x SMOOTH MODE: speak sequentially sentence by sentence
+      currentSentenceIdxRef.current = 0;
+      const firstSentence = chapter.subtitles[0];
+      setActiveSubtitle(firstSentence);
+      speakSentence(firstSentence, 0, chIdx, speed);
+    }
+  }, [speakSentence]);
+
+  // Keep SpeechSynthesis alive on Chrome (resumes if browser pauses speech)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const keepAlive = setInterval(() => {
+      if (isPlaying && phase === 'playing' && window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 3000);
+    return () => clearInterval(keepAlive);
+  }, [isPlaying, phase]);
+
+  // Watch active chapter transitions
+  useEffect(() => {
+    if (phase !== 'playing' || !isPlaying) return;
+    if (activeChapterIndex !== currentChapterSpokenRef.current) {
+      currentChapterSpokenRef.current = activeChapterIndex;
+      startChapterNarration(activeChapterIndex, playbackSpeed);
+    }
+  }, [activeChapterIndex, phase, isPlaying, playbackSpeed, startChapterNarration]);
+
+  // When playback speed changes mid-playback, re-anchor narration so the new speed is immediately audible
+  useEffect(() => {
+    if (phase === 'playing' && isPlaying) {
+      startChapterNarration(activeChapterIndex, playbackSpeed);
+    }
+  }, [playbackSpeed, activeChapterIndex, isPlaying, phase, startChapterNarration]);
+
+  // When mute state changes
+  useEffect(() => {
+    if (isMuted) {
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        try {
-          const utterance = new SpeechSynthesisUtterance(currentSubtitle);
-          // Scale voice rate with playback speed, capped at browser limit of 2.0x
-          utterance.rate = Math.min(Math.max(playbackSpeed * 0.95, 0.75), 2.0);
-          utterance.pitch = 1.05;
-          utterance.lang = 'en-US';
-          speechUtteranceRef.current = utterance;
-          window.speechSynthesis.speak(utterance);
-        } catch (e) {
-          // Ignore speech synthesis failures on unsupported devices
-        }
       }
+      setIsSpeechActive(false);
+    } else if (phase === 'playing' && isPlaying) {
+      startChapterNarration(activeChapterIndex, playbackSpeed);
     }
-  }, [currentSubtitle, phase, isPlaying, isMuted, playbackSpeed]);
+  }, [isMuted, activeChapterIndex, isPlaying, phase, playbackSpeed, startChapterNarration]);
 
-  // Clean up speech synthesis on unmount or phase change
+  // Clean up speech synthesis on unmount
   useEffect(() => {
     return () => {
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
+      setIsSpeechActive(false);
     };
   }, []);
 
@@ -207,6 +381,16 @@ export default function ProjectDemoVideoModal({
           clearInterval(animationTimerRef.current);
           setIsPlaying(false);
           setPhase('ended_ready_prompt');
+          playUiSynthSound('complete');
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            try {
+              const u = new SpeechSynthesisUtterance("Tour completed! Are you ready to explore the system?");
+              u.rate = 1.1;
+              u.pitch = 1.05;
+              window.speechSynthesis.speak(u);
+            } catch (e) {}
+          }
           return TOTAL_DEMO_DURATION;
         }
         return nextTime;
@@ -228,6 +412,7 @@ export default function ProjectDemoVideoModal({
         setPhase('playing');
         setIsPlaying(true);
         setCurrentTime(0);
+        currentChapterSpokenRef.current = -1;
       }
     } else {
       if (animationTimerRef.current) clearInterval(animationTimerRef.current);
@@ -253,6 +438,7 @@ export default function ProjectDemoVideoModal({
   const handleSeek = (newTime) => {
     const clamped = Math.max(0, Math.min(newTime, TOTAL_DEMO_DURATION));
     setCurrentTime(clamped);
+    currentChapterSpokenRef.current = -1;
   };
 
   // Jump to specific chapter
@@ -262,6 +448,7 @@ export default function ProjectDemoVideoModal({
       t += DEMO_CHAPTERS[i].duration;
     }
     setCurrentTime(t);
+    currentChapterSpokenRef.current = -1;
     if (!isPlaying) setIsPlaying(true);
   };
 
@@ -302,12 +489,22 @@ export default function ProjectDemoVideoModal({
   const handleReadyNo = () => {
     // If they select No, transition to asking if they want to play the video again
     setPhase('replay_prompt');
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      try {
+        const u = new SpeechSynthesisUtterance("Would you like to play the demo video again?");
+        u.rate = 1.1;
+        u.pitch = 1.05;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    }
   };
 
   // Handle "Play again?" Responses
   const handleReplayYes = () => {
     setPhase('playing');
     setCurrentTime(0);
+    currentChapterSpokenRef.current = -1;
     setIsPlaying(true);
   };
 
@@ -821,10 +1018,33 @@ export default function ProjectDemoVideoModal({
 
             </div>
 
-            {/* SUBTITLES / CAPTIONS OVERLAY (Always readable) */}
-            <div className="w-full max-w-2xl mt-4 px-4 py-2.5 rounded-2xl bg-slate-950/85 border border-cyan-500/30 backdrop-blur-xl text-center shadow-lg">
+            {/* SUBTITLES / CAPTIONS OVERLAY (Always readable with Animated Waveform Equalizer) */}
+            <div className="w-full max-w-2xl mt-4 px-4 py-2.5 rounded-2xl bg-slate-950/90 border border-cyan-500/40 backdrop-blur-xl text-center shadow-2xl">
+              <div className="flex items-center justify-center gap-2 mb-1.5">
+                {/* Audio Waveform Equalizer */}
+                {!isMuted && isSpeechActive ? (
+                  <div className="flex items-end gap-1 h-3.5 px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/40">
+                    <span className="w-1 bg-cyan-400 rounded-full animate-bounce h-2" style={{ animationDuration: '400ms' }} />
+                    <span className="w-1 bg-cyan-300 rounded-full animate-bounce h-3" style={{ animationDuration: '600ms', animationDelay: '150ms' }} />
+                    <span className="w-1 bg-cyan-400 rounded-full animate-bounce h-1.5" style={{ animationDuration: '350ms', animationDelay: '300ms' }} />
+                    <span className="w-1 bg-blue-400 rounded-full animate-bounce h-2.5" style={{ animationDuration: '500ms', animationDelay: '200ms' }} />
+                    <span className="text-[9px] font-mono font-black uppercase text-cyan-300 tracking-wider ml-1">
+                      {playbackSpeed >= 4 ? `⚡ ${playbackSpeed}X TURBO AUDIO` : 'NARRATION ACTIVE'}
+                    </span>
+                  </div>
+                ) : isMuted ? (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-950/60 border border-rose-500/40 text-[9px] font-bold text-rose-300">
+                    <VolumeX className="w-3 h-3" />
+                    <span>MUTED</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 text-[9px] font-bold text-slate-400">
+                    <span>{playbackSpeed >= 4 ? `⚡ ${playbackSpeed}X AUDIO ACTIVE` : 'AUDIO SYNCED'}</span>
+                  </div>
+                )}
+              </div>
               <p className="text-xs sm:text-sm font-semibold text-slate-100 tracking-wide leading-relaxed animate-in fade-in duration-200">
-                "{currentSubtitle}"
+                "{activeSubtitle || activeChapter.subtitles[0]}"
               </p>
             </div>
           </div>
@@ -902,28 +1122,65 @@ export default function ProjectDemoVideoModal({
               </div>
 
               {/* RIGHT CONTROLS: PLAYBACK SPEED IN BOTTOM RIGHT CORNER (UP TO 8X) */}
-              <div className="relative flex items-center gap-2">
-                <span className="text-[11px] font-bold text-slate-400 hidden xs:inline">
+              <div className="relative flex items-center gap-1.5 sm:gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 hidden xs:inline">
                   Speed:
                 </span>
 
-                {/* Speed Selector Dropdown / Pill */}
+                {/* Direct quick-cycle to all speeds (0.5x, 1x, 2x, 4x Turbo, 8x Hyper) */}
+                <div className="flex items-center gap-1">
+                  {[0.5, 1, 2, 4, 8].map(s => {
+                    const isSelected = playbackSpeed === s;
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          setPlaybackSpeed(s);
+                          playUiSynthSound(s >= 4 ? 'turbo' : 'chapter');
+                        }}
+                        className={`px-2 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer flex items-center gap-0.5 active:scale-95 ${
+                          isSelected
+                            ? s >= 4
+                              ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 shadow-md shadow-amber-500/30'
+                              : 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+                            : s >= 4
+                              ? 'bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 border border-amber-500/30'
+                              : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700'
+                        }`}
+                        title={
+                          s === 4
+                            ? "4x Turbo Speed (Crisp Voice & Warp Sound)"
+                            : s === 8
+                            ? "8x Hyper Speed (Max Speed with Voice & Synth)"
+                            : `${s}x Speed`
+                        }
+                      >
+                        {s >= 4 && <span>⚡</span>}
+                        <span>{s}x</span>
+                        {s === 8 && <span className="text-[8px] font-black uppercase ml-0.5">MAX</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Speed Selector Dropdown for full options */}
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setShowSpeedMenu(prev => !prev)}
-                    className="px-3 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 font-black text-xs tracking-wider flex items-center gap-1.5 shadow-md shadow-cyan-950/60 transition-all cursor-pointer"
-                    title="Change playback speed (Up to 8x)"
+                    className="p-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 font-black text-xs flex items-center justify-center shadow-md cursor-pointer"
+                    title="Open all speed options"
                   >
-                    <span className="text-[11px]">⚡</span>
-                    <span>{playbackSpeed}x</span>
+                    <ChevronUp className="w-3.5 h-3.5" />
                   </button>
 
                   {/* Dropdown Menu for Speed Options (0.5x to 8x) */}
                   {showSpeedMenu && (
-                    <div className="absolute bottom-full right-0 mb-2 w-32 bg-slate-900 border border-cyan-500/40 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                      <div className="px-2 py-1 text-[10px] font-black uppercase text-slate-400 border-b border-slate-800">
-                        Playback Speed
+                    <div className="absolute bottom-full right-0 mb-2 w-44 bg-slate-900 border border-cyan-500/40 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                      <div className="px-2.5 py-1 text-[10px] font-black uppercase text-cyan-300 border-b border-slate-800 flex items-center justify-between">
+                        <span>Playback Speed</span>
+                        <span className="text-[9px] text-slate-400">Up to 8x</span>
                       </div>
                       <div className="space-y-0.5 mt-1">
                         {SPEED_OPTIONS.map(speed => (
@@ -933,6 +1190,7 @@ export default function ProjectDemoVideoModal({
                             onClick={() => {
                               setPlaybackSpeed(speed);
                               setShowSpeedMenu(false);
+                              playUiSynthSound(speed >= 4 ? 'turbo' : 'chapter');
                             }}
                             className={`w-full px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
                               playbackSpeed === speed
@@ -940,36 +1198,18 @@ export default function ProjectDemoVideoModal({
                                 : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                             }`}
                           >
-                            <span>{speed}x</span>
-                            {speed === 8 && (
-                              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-slate-950 font-black">
-                                MAX
-                              </span>
-                            )}
+                            <span className="flex items-center gap-1.5">
+                              {speed >= 4 ? '⚡' : '•'}
+                              <span>{speed}x</span>
+                              {speed === 4 && <span className="text-[9px] text-amber-300 font-bold">(Turbo)</span>}
+                              {speed === 8 && <span className="text-[9px] text-rose-300 font-bold">(Hyper)</span>}
+                            </span>
                             {playbackSpeed === speed && <Check className="w-3.5 h-3.5" />}
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
-                </div>
-
-                {/* Direct quick-cycle to 2x or 8x for fast testing */}
-                <div className="hidden md:flex items-center gap-1">
-                  {[1, 2, 4, 8].map(s => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setPlaybackSpeed(s)}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                        playbackSpeed === s
-                          ? 'bg-cyan-500 text-slate-950 font-black'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {s}x
-                    </button>
-                  ))}
                 </div>
               </div>
 

@@ -9,7 +9,7 @@ import {
   Ban, Inbox, Send, AlertCircle, IdCard, ExternalLink, Settings, Building, Building2,
   Search, Printer, Link2, GraduationCap, CheckCheck, MessageSquare, Play,
   Compass, Navigation, Map as MapIcon, Phone, KeyRound, Smartphone, Trash2,
-  Scale, Gavel, Plus, Edit3, Save, UserCheck
+  Scale, Gavel, Plus, Edit3, Save, UserCheck, Menu
 } from 'lucide-react';
 import { 
   HOSTEL_HIERARCHY_LEVELS, 
@@ -946,9 +946,27 @@ export default function CampusMaintenanceApp() {
   const [deptStatusFilter, setDeptStatusFilter] = useState('PENDING'); // 'PENDING' | 'SOLVED' | 'REJECTED' | 'ALL'
   const [expandedTrackTickets, setExpandedTrackTickets] = useState({}); // { [ticketId]: boolean }
   const [tabHistory, setTabHistory] = useState([]);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+
+  // Close dashboard drawer on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isDashboardOpen) {
+        setIsDashboardOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDashboardOpen]);
 
   // Step-back navigation handler: goes back one step in tab/modal history instead of kicking user out to main starting page
   const handleStepBack = () => {
+    // 0. If dashboard navigation drawer is open, close it first as a step back
+    if (isDashboardOpen) {
+      setIsDashboardOpen(false);
+      return;
+    }
+
     // 1. If any modal is open, close that modal first as a step back
     if (showDemoModal) {
       setShowDemoModal(false);
@@ -1005,8 +1023,9 @@ export default function CampusMaintenanceApp() {
     }
   };
 
-  // Safe navigation function that records previous step into history
+  // Safe navigation function that records previous step into history and closes dashboard drawer
   const navigateToTab = (nextTab) => {
+    setIsDashboardOpen(false); // Automatically dismiss dashboard drawer upon selecting an item
     if (nextTab === activeTab) return;
     setTabHistory(prev => [...prev.slice(-10), activeTab]);
     setActiveTab(nextTab);
@@ -2438,11 +2457,45 @@ export default function CampusMaintenanceApp() {
         </div>
       )}
 
-      {/* MAIN LAYOUT: DASHBOARD FIXED TO LEFT SIDE (TOP-LEFT TO BOTTOM-LEFT) */}
+      {/* MAIN LAYOUT */}
       <div className="flex-1 w-full h-full min-h-0 flex overflow-hidden relative z-10">
+
+        {/* BACKDROP OVERLAY FOR DASHBOARD (Clicking it goes back and closes dashboard) */}
+        {isDashboardOpen && (
+          <div
+            onClick={() => setIsDashboardOpen(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 transition-opacity animate-in fade-in duration-200"
+            aria-hidden="true"
+          />
+        )}
         
-        {/* FIXED LEFT-SIDE DASHBOARD (From Top-Left to Bottom-Left Corner) */}
-        <aside className="w-72 sm:w-80 shrink-0 h-full cyber-sidebar flex flex-col justify-between z-20 overflow-y-auto overscroll-contain">
+        {/* DASHBOARD DRAWER (Controlled by 3-Line Bar at Top-Left Corner) */}
+        <aside
+          className={`fixed inset-y-0 left-0 w-80 max-w-[85vw] h-full cyber-sidebar flex flex-col justify-between z-50 overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out shadow-2xl border-r border-cyan-500/40 bg-slate-950/95 backdrop-blur-2xl ${
+            isDashboardOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+          }`}
+          aria-label="Campus Redressal Dashboard Menu"
+        >
+          {/* TOP CONTROLS OF DASHBOARD: 3-LINE BAR STATUS & BACK BUTTON */}
+          <div className="p-3 border-b border-cyan-500/20 bg-slate-900/90 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-400/30 flex items-center justify-center">
+                <Menu className="w-4 h-4" />
+              </div>
+              <span className="text-xs font-black uppercase text-cyan-300 tracking-wider">
+                Dashboard Menu
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsDashboardOpen(false)}
+              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+              title="Close Dashboard & Go Back"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Back</span>
+            </button>
+          </div>
           
           {/* DASHBOARD NAVIGATION MENU */}
           <div className="p-4 flex-1 flex flex-col justify-between h-full">
@@ -2873,22 +2926,41 @@ export default function CampusMaintenanceApp() {
           {/* MAIN DYNAMIC CONTENT WORKSPACE (Independently Scrollable from Top to Bottom) */}
           <div className="flex-1 min-w-0 w-full h-full flex flex-col overflow-hidden bg-transparent">
 
-            {/* TOP HEADER BAR: ALIGNED TO TOP-RIGHT CORNER */}
-            <header className="shrink-0 z-10 px-4 sm:px-6 py-2.5 glass-header flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
+            {/* TOP HEADER BAR: 3-LINE BAR AT TOP-LEFT CORNER */}
+            <header className="shrink-0 z-30 px-3 sm:px-6 py-2.5 glass-header flex items-center justify-between gap-3 flex-wrap relative">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON AT TOP-LEFT CORNER */}
+                <button
+                  type="button"
+                  onClick={() => setIsDashboardOpen(prev => !prev)}
+                  className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border shadow-lg cursor-pointer active:scale-95 ${
+                    isDashboardOpen
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 border-cyan-300 shadow-cyan-500/40 ring-2 ring-cyan-400'
+                      : 'bg-slate-900/90 hover:bg-slate-800 text-cyan-400 hover:text-cyan-300 border-cyan-500/40 hover:border-cyan-400 shadow-cyan-950/40'
+                  }`}
+                  title={isDashboardOpen ? "Click to Close Dashboard & Go Back" : "Click 3-Line Bar to Display Dashboard"}
+                  aria-label="Toggle Dashboard Menu"
+                >
+                  <Menu className="w-5 h-5 text-current shrink-0 stroke-[2.5]" />
+                  <span className="font-black uppercase tracking-wider text-[11px] hidden xs:inline">
+                    {isDashboardOpen ? 'Go Back' : 'Dashboard'}
+                  </span>
+                  <span className={`w-2 h-2 rounded-full ${isDashboardOpen ? 'bg-slate-950 animate-ping' : 'bg-cyan-400 animate-pulse'}`} />
+                </button>
+
                 <button
                   type="button"
                   onClick={handleStepBack}
-                  className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-200 text-slate-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-700/60 shadow-2xs cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-700/60 shadow-2xs cursor-pointer active:scale-95"
                   title="Step Back one screen"
                 >
                   <ArrowLeft className="w-3.5 h-3.5 text-slate-200" />
                   <span className="hidden sm:inline">Back</span>
                 </button>
-                <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400 hidden sm:inline">
                   {currentRole === 'REPORTER' ? 'Campus Resident Portal' : currentRole === 'STAFF' ? 'Department Workplace' : 'Administrative Center'}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800/80 text-slate-300 border border-slate-700/60">
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800/80 text-cyan-300 border border-slate-700/60">
                   {activeTab.toUpperCase()}
                 </span>
               </div>
