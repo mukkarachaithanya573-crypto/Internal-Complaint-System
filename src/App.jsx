@@ -653,11 +653,30 @@ export default function CampusMaintenanceApp() {
   // Check if department user has an active daily workday session for today
   const initialDeptSession = getActiveDepartmentDailySession();
 
+  // Check if student user has an active session from this device
+  const initialStudentSession = (() => {
+    try {
+      const raw = localStorage.getItem('rgukt_active_session_user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && (parsed.role === 'REPORTER' || parsed.userTab === 'student') && (parsed.idNo || parsed.email)) {
+          const userKey = (parsed.idNo || parsed.email).toUpperCase();
+          const customRaw = localStorage.getItem(`rgukt_saved_profile_${userKey}`);
+          if (customRaw) {
+            return { ...parsed, ...JSON.parse(customRaw) };
+          }
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return null;
+  })();
+
+  const initialUser = initialDeptSession ? initialDeptSession.user : initialStudentSession;
+
   // Authentication State:
-  // - Students: ALWAYS false on start / app entry (ask login every time)
-  // - Department: true if already logged in today, false otherwise (login once a day)
-  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialDeptSession));
-  const [currentUser, setCurrentUser] = useState(initialDeptSession ? initialDeptSession.user : null);
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialDeptSession || initialStudentSession));
+  const [currentUser, setCurrentUser] = useState(initialUser);
 
   // Global & Role State
   const [currentRole, setCurrentRole] = useState(
@@ -1308,11 +1327,20 @@ export default function CampusMaintenanceApp() {
 
       saveDepartmentDailySession(user, targetProfile);
     } else {
-      // STUDENT LOGIN: ask login every time upon entering app (session-only, never persisted)
+      // STUDENT LOGIN: Hydrate and establish persistent active session
       clearDepartmentDailySession();
       setCurrentRole('REPORTER');
       setActiveProfileKey('REPORTER');
       setActiveTab('tracker');
+
+      const userKey = (user.idNo || user.email || '').trim().toUpperCase();
+      let customSaved = null;
+      if (userKey) {
+        try {
+          const raw = localStorage.getItem(`rgukt_saved_profile_${userKey}`);
+          if (raw) customSaved = JSON.parse(raw);
+        } catch (e) {}
+      }
 
       // Hydrate student currentUser with custom edited profile fields from registered accounts
       const regUsers = getRegisteredAccounts();
@@ -1320,29 +1348,34 @@ export default function CampusMaintenanceApp() {
         ((user.idNo && u.idNo?.toUpperCase() === user.idNo.toUpperCase()) ||
          (user.email && u.collegeEmail?.toLowerCase() === user.email.toLowerCase()))
       );
-      if (existing) {
-        setCurrentUser(prev => ({
-          ...user,
-          ...(prev || {}),
-          ...existing,
-          fullName: existing.fullName || user.name || user.fullName,
-          name: existing.fullName || user.name || user.fullName,
-          branch: existing.branch || user.branch || 'Computer Science & Engineering',
-          studyingYear: existing.studyingYear || user.studyingYear || 'E3 (3rd Year)',
-          className: existing.className || user.className || 'E3 (3rd Year)',
-          hostelBlock: existing.hostelBlock || user.hostelBlock || 'K2-Block',
-          roomNumber: existing.roomNumber || user.roomNumber || '304',
-          hostelRoom: existing.hostelRoom || user.hostelRoom || '304',
-          mobileNumber: existing.mobileNumber || user.mobileNumber || '',
-          profilePic: existing.profilePic || user.profilePic || null,
-          role: 'REPORTER',
-          userTab: 'student'
-        }));
+
+      const resolvedStudent = {
+        ...user,
+        ...(existing || {}),
+        ...(customSaved || {}),
+        fullName: customSaved?.fullName || customSaved?.name || existing?.fullName || existing?.name || user.fullName || user.name,
+        name: customSaved?.name || customSaved?.fullName || existing?.name || existing?.fullName || user.name || user.fullName,
+        branch: customSaved?.branch || existing?.branch || user.branch || 'CSE Dept',
+        studyingYear: customSaved?.studyingYear || existing?.studyingYear || user.studyingYear || 'B.Tech 1st Year',
+        className: customSaved?.className || customSaved?.studyingYear || existing?.className || existing?.studyingYear || user.className || 'B.Tech 1st Year',
+        hostelBlock: customSaved?.hostelBlock || existing?.hostelBlock || user.hostelBlock || 'Penna BH-1 (Back Side)',
+        roomNumber: customSaved?.roomNumber || existing?.roomNumber || user.roomNumber || '108',
+        hostelRoom: customSaved?.hostelRoom || existing?.hostelRoom || user.hostelRoom || 'Penna BH-1 • 108',
+        mobileNumber: customSaved?.mobileNumber || existing?.mobileNumber || user.mobileNumber || '',
+        profilePic: customSaved?.profilePic !== undefined ? customSaved?.profilePic : (existing?.profilePic || user.profilePic || null),
+        role: 'REPORTER',
+        userTab: 'student'
+      };
+
+      setCurrentUser(resolvedStudent);
+      if (resolvedStudent.email) {
+        setReporterEmail(resolvedStudent.email);
       }
+      try {
+        localStorage.setItem('rgukt_active_session_user', JSON.stringify(resolvedStudent));
+      } catch (e) {}
     }
   };
-
-
 
   // Auto-dismiss profile update toast
   useEffect(() => {
@@ -1355,17 +1388,39 @@ export default function CampusMaintenanceApp() {
   // Handle saving and persisting updated user profile
   const handleSaveUserProfile = async (updatedProfile) => {
     if (!currentUser) return;
+    const userKey = (currentUser.idNo || currentUser.staffId || currentUser.email || '').trim().toUpperCase();
+    const compiledHostelRoom = updatedProfile.hostelRoom || 
+      `${(updatedProfile.hostelBlock || '').replace(/\s*\(.*?\)/g, '')} • ${(updatedProfile.roomNumber || '').trim() || '108'}`;
+
     const mergedUser = {
       ...currentUser,
       ...updatedProfile,
       name: updatedProfile.name || updatedProfile.fullName || currentUser.name,
-      fullName: updatedProfile.fullName || updatedProfile.name || currentUser.fullName || currentUser.name
+      fullName: updatedProfile.fullName || updatedProfile.name || currentUser.fullName || currentUser.name,
+      hostelRoom: compiledHostelRoom,
+      branch: updatedProfile.branch || currentUser.branch || 'CSE Dept',
+      studyingYear: updatedProfile.studyingYear || currentUser.studyingYear || 'B.Tech 1st Year',
+      className: updatedProfile.studyingYear || currentUser.className || currentUser.studyingYear || 'B.Tech 1st Year',
+      hostelBlock: updatedProfile.hostelBlock || currentUser.hostelBlock || 'Penna BH-1 (Back Side)',
+      roomNumber: updatedProfile.roomNumber || currentUser.roomNumber || '108',
+      mobileNumber: updatedProfile.mobileNumber || currentUser.mobileNumber || '',
+      profilePic: updatedProfile.profilePic !== undefined ? updatedProfile.profilePic : currentUser.profilePic
     };
 
     // Update in-memory user immediately
     setCurrentUser(mergedUser);
     if (mergedUser.email) {
       setReporterEmail(mergedUser.email);
+    }
+
+    // Persist specifically for this user account forever in localStorage
+    if (userKey) {
+      try {
+        localStorage.setItem(`rgukt_saved_profile_${userKey}`, JSON.stringify(mergedUser));
+        localStorage.setItem('rgukt_active_session_user', JSON.stringify(mergedUser));
+      } catch (err) {
+        console.warn('LocalStorage user profile save error:', err);
+      }
     }
 
     // Persist to LocalStorage registered accounts list
@@ -1464,6 +1519,9 @@ export default function CampusMaintenanceApp() {
   const handleLogout = () => {
     // Both department workday and student sessions are cleanly terminated upon logout
     clearDepartmentDailySession();
+    try {
+      localStorage.removeItem('rgukt_active_session_user');
+    } catch (e) {}
     setIsAuthenticated(false);
     setCurrentUser(null);
     setSelectedTicket(null);
@@ -6902,6 +6960,16 @@ export function syncCloudUsersWithLocal(remoteUsers, currentUser = null, setCurr
 
     saveRegisteredAccounts(mergedList);
 
+    // Also cache each cloud-synced profile to its userKey in localStorage
+    mergedList.forEach(u => {
+      const uKey = (u.idNo || u.staffId || u.id || u.collegeEmail || u.email || '').trim().toUpperCase();
+      if (uKey) {
+        try {
+          localStorage.setItem(`rgukt_saved_profile_${uKey}`, JSON.stringify(u));
+        } catch (e) {}
+      }
+    });
+
     // 3. Dynamically update live currentUser in React state if logged in
     if (currentUser && typeof setCurrentUser === 'function') {
       const pId = (currentUser.idNo || currentUser.staffId || currentUser.id || '').trim().toUpperCase();
@@ -6910,7 +6978,7 @@ export function syncCloudUsersWithLocal(remoteUsers, currentUser = null, setCurr
       if (remote) {
         setCurrentUser(prevUser => {
           if (!prevUser) return prevUser;
-          return {
+          const merged = {
             ...prevUser,
             ...remote,
             name: remote.fullName || remote.name || prevUser.name,
@@ -6926,6 +6994,10 @@ export function syncCloudUsersWithLocal(remoteUsers, currentUser = null, setCurr
             department: remote.department || prevUser.department,
             zone: remote.zone || prevUser.zone
           };
+          try {
+            localStorage.setItem('rgukt_active_session_user', JSON.stringify(merged));
+          } catch (e) {}
+          return merged;
         });
       }
     }
@@ -7642,20 +7714,28 @@ function AuthScreen({ onLoginSuccess }) {
       setIsSubmitting(true);
       setTimeout(() => {
         setIsSubmitting(false);
+        const userKey = matched.idNo?.toUpperCase();
+        let customSaved = null;
+        if (userKey) {
+          try {
+            const raw = localStorage.getItem(`rgukt_saved_profile_${userKey}`);
+            if (raw) customSaved = JSON.parse(raw);
+          } catch (e) {}
+        }
         onLoginSuccess({
-          name: matched.fullName || matched.name || `Student (${matched.idNo})`,
-          email: matched.collegeEmail || matched.email || `${matched.idNo.toLowerCase()}@rgukt.ac.in`,
+          name: customSaved?.name || customSaved?.fullName || matched.fullName || matched.name || `Student (${matched.idNo})`,
+          email: customSaved?.email || customSaved?.collegeEmail || matched.collegeEmail || matched.email || `${matched.idNo.toLowerCase()}@rgukt.ac.in`,
           idNo: matched.idNo,
           role: 'REPORTER',
           profileKey: 'REPORTER',
-          profilePic: matched.profilePic || null,
-          mobileNumber: matched.mobileNumber || null,
-          branch: matched.branch || 'Computer Science & Engineering',
-          studyingYear: matched.studyingYear || matched.className || 'E3 (3rd Year)',
-          className: matched.className || matched.studyingYear || 'E3 (3rd Year)',
-          hostelBlock: matched.hostelBlock || 'K2-Block',
-          roomNumber: matched.roomNumber || matched.hostelRoom || '304',
-          hostelRoom: matched.hostelRoom || matched.roomNumber || '304',
+          profilePic: customSaved?.profilePic !== undefined ? customSaved?.profilePic : (matched.profilePic || null),
+          mobileNumber: customSaved?.mobileNumber || matched.mobileNumber || null,
+          branch: customSaved?.branch || matched.branch || 'CSE Dept',
+          studyingYear: customSaved?.studyingYear || matched.studyingYear || matched.className || 'B.Tech 1st Year',
+          className: customSaved?.className || customSaved?.studyingYear || matched.className || matched.studyingYear || 'B.Tech 1st Year',
+          hostelBlock: customSaved?.hostelBlock || matched.hostelBlock || 'Penna BH-1 (Back Side)',
+          roomNumber: customSaved?.roomNumber || matched.roomNumber || '108',
+          hostelRoom: customSaved?.hostelRoom || matched.hostelRoom || 'Penna BH-1 • 108',
           staffId: null,
           category: null,
           userTab: 'student'

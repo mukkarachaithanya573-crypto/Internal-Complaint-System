@@ -234,7 +234,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-blue-600" />
+              <User className="w-3.5 h-3.5 text-blue-500" />
               <span>Full Name <span className="text-rose-500">*</span></span>
             </label>
             <input
@@ -245,7 +245,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                 setValidationError('');
               }}
               placeholder="e.g. M.Chaithanya Yadav"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+              style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
               required
             />
           </div>
@@ -256,32 +257,34 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                    <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
                     <span>Branch / Dept <span className="text-rose-500">*</span></span>
                   </label>
                   <select
                     value={formData.branch}
                     onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none cyber-card"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                   >
                     {BRANCH_OPTIONS.map(b => (
-                      <option key={b} value={b}>{b}</option>
+                      <option key={b} value={b} className="bg-slate-900 text-white" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>{b}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-blue-600" />
+                    <Clock className="w-3.5 h-3.5 text-blue-500" />
                     <span>Studying Year / Class <span className="text-rose-500">*</span></span>
                   </label>
                   <select
                     value={formData.studyingYear}
                     onChange={(e) => setFormData({ ...formData, studyingYear: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none cyber-card"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                   >
                     {STUDYING_YEAR_OPTIONS.map(y => (
-                      <option key={y} value={y}>{y}</option>
+                      <option key={y} value={y} className="bg-slate-900 text-white" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>{y}</option>
                     ))}
                   </select>
                 </div>
@@ -291,23 +294,24 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                    <Building2 className="w-3.5 h-3.5 text-blue-500" />
                     <span>Hostel Block</span>
                   </label>
                   <select
                     value={formData.hostelBlock}
                     onChange={(e) => setFormData({ ...formData, hostelBlock: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none cyber-card"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                   >
                     {HOSTEL_BLOCK_OPTIONS.map(h => (
-                      <option key={h} value={h}>{h}</option>
+                      <option key={h} value={h} className="bg-slate-900 text-white" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>{h}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                    <MapPin className="w-3.5 h-3.5 text-blue-500" />
                     <span>Room Number</span>
                   </label>
                   <input
@@ -315,7 +319,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                     value={formData.roomNumber}
                     onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
                     placeholder="e.g. 108"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                   />
                 </div>
               </div>
@@ -330,7 +335,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   placeholder="e.g. Electrical / Estate Office"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                 />
               </div>
               <div>
@@ -340,7 +346,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                   value={formData.zone}
                   onChange={(e) => setFormData({ ...formData, zone: e.target.value })}
                   placeholder="e.g. Academics & Hostels"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                 />
               </div>
             </div>
@@ -350,13 +357,13 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           <div>
             <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <PhoneCall className="w-3.5 h-3.5 text-blue-600" />
+                <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
                 <span>Mobile Number <span className="text-rose-500">*</span></span>
               </span>
               <span className="text-[10px] text-slate-400 font-semibold">10 Digits</span>
             </label>
             <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 text-xs font-bold text-slate-600">
+              <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-700 bg-slate-800 text-xs font-bold text-slate-300">
                 +91
               </span>
               <input
@@ -368,24 +375,25 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                   setValidationError('');
                 }}
                 placeholder="8247532907"
-                className="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-xs font-bold text-white transition-all outline-none"
+                className="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
+                style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                 required
               />
             </div>
           </div>
 
           {/* Footer buttons */}
-          <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center gap-3 pt-3 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-slate-300 hover:cyber-card-subtle text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Save Profile Changes</span>
