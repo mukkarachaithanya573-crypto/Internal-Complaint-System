@@ -530,6 +530,16 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
+                <User className="w-4 h-4 text-blue-600" />
+                <span>Student Name</span>
+              </div>
+              <span className="text-xs font-bold text-white">
+                {currentUser?.fullName || currentUser?.name || 'M.Chaithanya'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
+              <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
                 <GraduationCap className="w-4 h-4 text-blue-600" />
                 <span>Department / Branch</span>
               </div>
