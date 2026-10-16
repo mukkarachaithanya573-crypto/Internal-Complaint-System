@@ -3714,63 +3714,82 @@ export default function CampusMaintenanceApp() {
                     const rejectedCount = visibleComplaints.filter(c => c.status === 'REJECTED').length;
 
                     return (
-                      <div className="grid grid-cols-4 gap-2 p-1.5 bg-slate-900/90 rounded-2xl border border-slate-800">
+                      <div className="grid grid-cols-4 gap-2.5 p-2 bg-slate-900/95 rounded-2xl border border-slate-800 shadow-lg">
+                        {/* 1. ALL */}
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('ALL')}
-                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                             studentStatusFilter === 'ALL'
-                              ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/30 ring-1 ring-blue-400'
-                              : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                              ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/40 border border-blue-400'
+                              : 'bg-slate-800/80 border border-slate-700/80 text-slate-100 hover:text-white hover:bg-slate-800 hover:border-slate-600'
                           }`}
                         >
-                          <span className="text-[10px] uppercase tracking-wider font-extrabold">All</span>
-                          <span className="text-sm font-black">{visibleComplaints.length}</span>
+                          <span className="text-[11px] uppercase tracking-wider font-extrabold text-white">ALL</span>
+                          <span className="text-sm font-black text-white">{visibleComplaints.length}</span>
                         </button>
 
+                        {/* 2. PENDING */}
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('PENDING')}
-                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                             studentStatusFilter === 'PENDING'
-                              ? 'bg-amber-500 text-white font-black shadow-lg shadow-amber-500/30 ring-1 ring-amber-300'
-                              : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                              ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/40 border border-amber-300'
+                              : 'bg-slate-800/80 border border-slate-700/80 text-amber-300 hover:text-amber-200 hover:bg-amber-500/20 hover:border-amber-500/40'
                           }`}
                         >
-                          <span className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-amber-400" /> Pending
+                          <span className={`text-[11px] uppercase tracking-wider font-extrabold flex items-center gap-1.5 ${
+                            studentStatusFilter === 'PENDING' ? 'text-slate-950 font-black' : 'text-amber-300'
+                          }`}>
+                            <Clock className={`w-3.5 h-3.5 ${studentStatusFilter === 'PENDING' ? 'text-slate-950' : 'text-amber-400'}`} />
+                            <span>PENDING</span>
                           </span>
-                          <span className="text-sm font-black">{pendingCount}</span>
+                          <span className={`text-sm font-black ${studentStatusFilter === 'PENDING' ? 'text-slate-950' : 'text-amber-300'}`}>
+                            {pendingCount}
+                          </span>
                         </button>
 
+                        {/* 3. RESOLVED */}
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('SOLVED')}
-                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                             studentStatusFilter === 'SOLVED'
-                              ? 'bg-emerald-600 text-white font-black shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-300'
-                              : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                              ? 'bg-emerald-600 text-white font-black shadow-lg shadow-emerald-600/40 border border-emerald-400'
+                              : 'bg-slate-800/80 border border-slate-700/80 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/20 hover:border-emerald-500/40'
                           }`}
                         >
-                          <span className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Solved
+                          <span className={`text-[11px] uppercase tracking-wider font-extrabold flex items-center gap-1.5 ${
+                            studentStatusFilter === 'SOLVED' ? 'text-white' : 'text-emerald-300'
+                          }`}>
+                            <CheckCircle2 className={`w-3.5 h-3.5 ${studentStatusFilter === 'SOLVED' ? 'text-white' : 'text-emerald-400'}`} />
+                            <span>RESOLVED</span>
                           </span>
-                          <span className="text-sm font-black">{solvedCount}</span>
+                          <span className={`text-sm font-black ${studentStatusFilter === 'SOLVED' ? 'text-white' : 'text-emerald-300'}`}>
+                            {solvedCount}
+                          </span>
                         </button>
 
+                        {/* 4. REJECTED */}
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('REJECTED')}
-                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer ${
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                             studentStatusFilter === 'REJECTED'
-                              ? 'bg-rose-600 text-white font-black shadow-lg shadow-rose-600/30 ring-1 ring-rose-300'
-                              : 'text-rose-400 hover:text-rose-300 hover:bg-rose-500/10'
+                              ? 'bg-rose-600 text-white font-black shadow-lg shadow-rose-600/40 border border-rose-400'
+                              : 'bg-slate-800/80 border border-slate-700/80 text-rose-300 hover:text-rose-200 hover:bg-rose-500/20 hover:border-rose-500/40'
                           }`}
                         >
-                          <span className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
-                            <Ban className="w-3 h-3 text-rose-400" /> Rejected
+                          <span className={`text-[11px] uppercase tracking-wider font-extrabold flex items-center gap-1.5 ${
+                            studentStatusFilter === 'REJECTED' ? 'text-white' : 'text-rose-300'
+                          }`}>
+                            <Ban className={`w-3.5 h-3.5 ${studentStatusFilter === 'REJECTED' ? 'text-white' : 'text-rose-400'}`} />
+                            <span>REJECTED</span>
                           </span>
-                          <span className="text-sm font-black">{rejectedCount}</span>
+                          <span className={`text-sm font-black ${studentStatusFilter === 'REJECTED' ? 'text-white' : 'text-rose-300'}`}>
+                            {rejectedCount}
+                          </span>
                         </button>
                       </div>
                     );
@@ -4880,20 +4899,20 @@ export default function CampusMaintenanceApp() {
                   const rejectedCount = deptAll.filter(c => c.status === 'REJECTED').length;
 
                   return (
-                    <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-800/80/90 rounded-xl">
+                    <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-900/90 rounded-2xl border border-slate-800">
                       <button
                         type="button"
                         onClick={() => setDeptStatusFilter('PENDING')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                           deptStatusFilter === 'PENDING'
-                            ? 'bg-amber-500 text-white shadow-2xs'
-                            : 'text-amber-900 hover:bg-amber-50'
+                            ? 'bg-amber-500 text-slate-950 font-black shadow-md border border-amber-300'
+                            : 'bg-slate-800/80 border border-slate-700/80 text-amber-300 hover:bg-amber-500/20'
                         }`}
                       >
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Pending</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                          deptStatusFilter === 'PENDING' ? 'bg-amber-600 text-white' : 'bg-amber-200/80 text-amber-900'
+                        <span>PENDING</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                          deptStatusFilter === 'PENDING' ? 'bg-slate-950 text-amber-300' : 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
                         }`}>
                           {pendingCount}
                         </span>
@@ -4902,16 +4921,16 @@ export default function CampusMaintenanceApp() {
                       <button
                         type="button"
                         onClick={() => setDeptStatusFilter('SOLVED')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                           deptStatusFilter === 'SOLVED'
-                            ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'text-emerald-900 hover:bg-emerald-50'
+                            ? 'bg-emerald-600 text-white font-black shadow-md border border-emerald-400'
+                            : 'bg-slate-800/80 border border-slate-700/80 text-emerald-300 hover:bg-emerald-500/20'
                         }`}
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Solved</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                          deptStatusFilter === 'SOLVED' ? 'bg-emerald-700 text-white' : 'bg-emerald-200/80 text-emerald-900'
+                        <span>RESOLVED</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                          deptStatusFilter === 'SOLVED' ? 'bg-emerald-800 text-white' : 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/40'
                         }`}>
                           {solvedCount}
                         </span>
@@ -4920,16 +4939,16 @@ export default function CampusMaintenanceApp() {
                       <button
                         type="button"
                         onClick={() => setDeptStatusFilter('REJECTED')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                           deptStatusFilter === 'REJECTED'
-                            ? 'bg-rose-600 text-white shadow-2xs'
-                            : 'text-rose-900 hover:bg-rose-50'
+                            ? 'bg-rose-600 text-white font-black shadow-md border border-rose-400'
+                            : 'bg-slate-800/80 border border-slate-700/80 text-rose-300 hover:bg-rose-500/20'
                         }`}
                       >
                         <Ban className="w-3.5 h-3.5" />
-                        <span>Rejected</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                          deptStatusFilter === 'REJECTED' ? 'bg-rose-700 text-white' : 'bg-rose-200/80 text-rose-900'
+                        <span>REJECTED</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                          deptStatusFilter === 'REJECTED' ? 'bg-rose-800 text-white' : 'bg-rose-400/20 text-rose-300 border border-rose-400/40'
                         }`}>
                           {rejectedCount}
                         </span>
@@ -4938,14 +4957,14 @@ export default function CampusMaintenanceApp() {
                       <button
                         type="button"
                         onClick={() => setDeptStatusFilter('ALL')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                           deptStatusFilter === 'ALL'
-                            ? 'bg-slate-900 text-white shadow-2xs'
-                            : 'text-slate-300 hover:bg-slate-200'
+                            ? 'bg-blue-600 text-white font-black shadow-md border border-blue-400'
+                            : 'bg-slate-800/80 border border-slate-700/80 text-slate-200 hover:bg-slate-700'
                         }`}
                       >
-                        <span>All</span>
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-slate-200 text-slate-900">
+                        <span>ALL</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-black bg-slate-700 text-white">
                           {deptAll.length}
                         </span>
                       </button>
