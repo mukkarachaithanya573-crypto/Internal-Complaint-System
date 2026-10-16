@@ -40,6 +40,7 @@ import {
 import CinematicIntro from './CinematicIntro';
 import InteractiveConstellation from './InteractiveConstellation';
 import OfflinePage from './OfflinePage';
+import ProjectDemoVideoModal from './ProjectDemoVideoModal';
 import { 
   saveComplaintToFirestore, 
   updateComplaintInFirestore, 
@@ -864,6 +865,8 @@ export default function CampusMaintenanceApp() {
   const [showSmtpModal, setShowSmtpModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [profileEditSuccessToast, setProfileEditSuccessToast] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoInitialPrompt, setDemoInitialPrompt] = useState(true);
   const [smtpConfig, setSmtpConfig] = useState(null);
   const [emailLog, setEmailLog] = useState([]);
   const [reporterEmail, setReporterEmail] = useState(() => {
@@ -879,6 +882,19 @@ export default function CampusMaintenanceApp() {
       }
     }
   }, [currentUser]);
+
+  // Prompt first-time visitors for demo tour after entering the app
+  useEffect(() => {
+    if (isAuthenticated && !showIntro) {
+      try {
+        const prompted = localStorage.getItem('rgukt_demo_tour_prompted');
+        if (!prompted) {
+          setDemoInitialPrompt(true);
+          setShowDemoModal(true);
+        }
+      } catch (e) {}
+    }
+  }, [isAuthenticated, showIntro]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [appVersion, setAppVersion] = useState(null);
@@ -908,6 +924,10 @@ export default function CampusMaintenanceApp() {
   // Step-back navigation handler: goes back one step in tab/modal history instead of kicking user out to main starting page
   const handleStepBack = () => {
     // 1. If any modal is open, close that modal first as a step back
+    if (showDemoModal) {
+      setShowDemoModal(false);
+      return;
+    }
     if (showMediumCommitteeModal) {
       setShowMediumCommitteeModal(false);
       return;
@@ -981,7 +1001,7 @@ export default function CampusMaintenanceApp() {
   }, [
     activeTab, tabHistory, 
     showMediumCommitteeModal, showHostelEscalationModal, 
-    showProfileEditModal, showMailboxModal, showSmtpModal,
+    showProfileEditModal, showMailboxModal, showSmtpModal, showDemoModal,
     resolveModalTicket, rejectModalTicket, feedbackModalTicket
   ]);
 
@@ -1334,6 +1354,15 @@ export default function CampusMaintenanceApp() {
     if (user.email) {
       setReporterEmail(user.email);
     }
+
+    // Check if first-time visitor should be prompted with Demo Tour
+    try {
+      const prompted = localStorage.getItem('rgukt_demo_tour_prompted');
+      if (!prompted) {
+        setDemoInitialPrompt(true);
+        setShowDemoModal(true);
+      }
+    } catch (e) {}
 
     const isDept = isDepartmentRoleOrUser(user) || user.userTab === 'department';
     if (isDept) {
@@ -2840,6 +2869,20 @@ export default function CampusMaintenanceApp() {
 
               {/* TOP RIGHT CORNER: NOTIFICATIONS + REAL-TIME REFRESH + IDENTITY + LOGOUT BUTTON */}
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                {/* Watch Demo Video / Project Tour Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDemoInitialPrompt(false);
+                    setShowDemoModal(true);
+                  }}
+                  className="px-2.5 py-1.5 bg-cyan-950/70 hover:bg-cyan-900/90 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                  title="Watch Project Demo Video & Feature Walkthrough"
+                >
+                  <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                  <span className="hidden sm:inline">Demo Tour</span>
+                </button>
+
                 {/* Notification Center Bell Trigger */}
                 <button
                   type="button"
@@ -6569,6 +6612,19 @@ export default function CampusMaintenanceApp() {
         </div>
       )}
 
+      {/* MODAL: FIRST-TIME & HELP DEMO VIDEO TOUR MODAL */}
+      <ProjectDemoVideoModal
+        isOpen={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
+        initialPrompt={demoInitialPrompt}
+        onCompleteTour={() => {
+          try {
+            localStorage.setItem('rgukt_demo_tour_seen', 'true');
+            localStorage.setItem('rgukt_demo_tour_prompted', 'true');
+          } catch (e) {}
+        }}
+      />
+
     </div>
   );
 }
@@ -7186,6 +7242,7 @@ function AuthScreen({ onLoginSuccess }) {
 
   // Policy & Guidelines Modal State ('terms' | 'privacy' | null)
   const [policyModalType, setPolicyModalType] = useState(null);
+  const [showAuthDemoModal, setShowAuthDemoModal] = useState(false);
 
   // PixelFlow V3 OTP: Auto-focus first box when entering OTP verification step
   useEffect(() => {
@@ -8130,6 +8187,19 @@ function AuthScreen({ onLoginSuccess }) {
     <div className="relative min-h-screen bg-[#070b16] overflow-hidden flex flex-col items-center justify-center p-2 sm:p-3 font-sans select-none">
       {/* Dynamic Interactive Constellation / Particle Network with Cosmic Nebula */}
       <InteractiveConstellation />
+
+      {/* Top Floating Demo Video & Help Access */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-40 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowAuthDemoModal(true)}
+          className="px-3 py-1.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition-all shadow-lg flex items-center gap-1.5 cursor-pointer backdrop-blur-md hover:scale-105 active:scale-95"
+          title="Watch Project Demo Video & Feature Walkthrough"
+        >
+          <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+          <span>Demo Video</span>
+        </button>
+      </div>
 
       {/* Ambient background glow orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none animate-pulse" />
@@ -9171,6 +9241,13 @@ function AuthScreen({ onLoginSuccess }) {
           </div>
         </div>
       )}
+
+      {/* MODAL: DEMO VIDEO TOUR MODAL ACCESSIBLE FROM AUTH SCREEN */}
+      <ProjectDemoVideoModal
+        isOpen={showAuthDemoModal}
+        onClose={() => setShowAuthDemoModal(false)}
+        initialPrompt={false}
+      />
     </div>
   );
 }
