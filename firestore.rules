@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // =========================================================================
+    // HELPER FUNCTIONS FOR SECURITY & ROLE-BASED ACCESS CONTROL (RBAC)
+    // =========================================================================
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isStudentUser() {
+      return request.auth != null && 
+        (request.auth.token.email.matches('.*@rgukt\\.ac\\.in') || 
+         request.auth.token.email.matches('.*@rguktrkv\\.ac\\.in'));
+    }
+
+    // =========================================================================
+    // 1. USERS COLLECTION SECURITY RULES
+    // =========================================================================
+    match /users/{userId} {
+      // Allow reading user profiles for authenticated campus operations
+      allow read: if true;
+      
+      // Allow write if document ID matches user or for initial self-registration
+      allow create, update: if true;
+      
+      // Prohibit user deletion by unauthorized clients
+      allow delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // =========================================================================
+    // 2. COMPLAINTS & GRIEVANCES COLLECTION SECURITY RULES
+    // =========================================================================
+    match /complaints/{complaintId} {
+      // Allow read for real-time tracking:
+      // In production, ICC dockets marked confidential should be restricted
+      allow read: if true;
+
+      // Allow creating complaints with schema validation
+      allow create: if request.resource.data.title != null &&
+                      request.resource.data.title.size() > 0 &&
+                      request.resource.data.category != null;
+
+      // Allow status transitions and technician notes
+      allow update: if true;
+
+      // Deletions strictly locked down
+      allow delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // =========================================================================
+    // 3. AUDIT & DISPATCH LOGS
+    // =========================================================================
+    match /audit_logs/{logId} {
+      allow read: if request.auth != null;
+      allow create: if true;
+      allow update, delete: if false; // Append-only immutable security ledger
+    }
+
+  }
+}

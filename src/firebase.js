@@ -176,9 +176,14 @@ export async function saveUserToFirestore(user) {
     const docRef = doc(db, "users", docId);
     const sanitized = cleanForFirestore(user) || {};
     
+    // 🛡️ SECURITY: Never persist plain text passwords to cloud database!
+    const { password: _plainPassword, ...safeSanitized } = sanitized;
+
     const dataToSave = {
-      ...sanitized,
-      idNo: idKey || sanitized.idNo || null,
+      ...safeSanitized,
+      passwordHash: user.passwordHash || null,
+      passwordSalt: user.passwordSalt || null,
+      idNo: idKey || safeSanitized.idNo || null,
       collegeEmail: emailKey || sanitized.collegeEmail || null,
       email: emailKey || sanitized.email || null,
       fullName: user.fullName || user.name || sanitized.fullName || sanitized.name || null,

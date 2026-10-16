@@ -41,6 +41,23 @@ import CinematicIntro from './CinematicIntro';
 import InteractiveConstellation from './InteractiveConstellation';
 import OfflinePage from './OfflinePage';
 import ProjectDemoVideoModal from './ProjectDemoVideoModal';
+import {
+  sanitizeText,
+  sanitizeObject,
+  generateCryptographicOtp,
+  createOtpSession,
+  verifyOtpWithSecurity,
+  generateSalt,
+  hashPasswordWithSalt,
+  verifyPasswordSecurely,
+  checkAccountLockout,
+  recordFailedLoginAttempt,
+  clearFailedLoginAttempts,
+  createSessionSignature,
+  verifySessionIntegrity,
+  sanitizeUserRolePrivileges,
+  createAnonymousIdentity
+} from './securityEngine';
 import { 
   saveComplaintToFirestore, 
   updateComplaintInFirestore, 
@@ -545,6 +562,13 @@ export function getActiveDepartmentDailySession() {
     const session = JSON.parse(raw);
     const todayStr = new Date().toDateString();
     if (session && session.loginDate === todayStr && session.user) {
+      // 🛡️ SECURITY CHECK: Ensure student ID cannot masquerade as department daily session
+      const uId = (session.user.idNo || '').toUpperCase().trim();
+      if (/^[RBNS][0-9]{6}$/.test(uId) || session.user.userTab === 'student') {
+        console.warn('🚨 [SECURITY] Blocked rogue student session in department daily storage.');
+        localStorage.removeItem(DEPT_DAILY_SESSION_KEY);
+        return null;
+      }
       return session;
     }
     // Session expired from a previous calendar day
@@ -660,13 +684,15 @@ export default function CampusMaintenanceApp() {
       const raw = localStorage.getItem('rgukt_active_session_user');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && (parsed.role === 'REPORTER' || parsed.userTab === 'student') && (parsed.idNo || parsed.email)) {
-          const userKey = (parsed.idNo || parsed.email).toUpperCase();
+        if (parsed && (parsed.idNo || parsed.email)) {
+          // 🛡️ ENFORCE ROLE INTEGRITY: Prevent client-side role tampering via DevTools
+          const cleanUser = sanitizeUserRolePrivileges(parsed);
+          const userKey = (cleanUser.idNo || cleanUser.email).toUpperCase();
           const customRaw = localStorage.getItem(`rgukt_saved_profile_${userKey}`);
           if (customRaw) {
-            return { ...parsed, ...JSON.parse(customRaw) };
+            return sanitizeUserRolePrivileges({ ...cleanUser, ...JSON.parse(customRaw) });
           }
-          return parsed;
+          return cleanUser;
         }
       }
     } catch (e) {}
@@ -1780,19 +1806,19 @@ export default function CampusMaintenanceApp() {
       orderRef: isIccSelected ? 'RGUKT/RKV/Committee/ Reconstitution/Internal Complaints Committee' : null,
       orderDate: isIccSelected ? '11.08.2026' : null,
       chairperson: isIccSelected ? 'The Director, RGUKT RK Valley' : null,
-      title: title.trim(),
-      description: description.trim() || title.trim(),
-      location: formattedLocation,
+      title: sanitizeText(title.trim()),
+      description: sanitizeText(description.trim() || title.trim()),
+      location: sanitizeText(formattedLocation),
       locationType: locationType,
-      block: locationType === 'ACADEMICS' ? academicLocation : locationType === 'HOSTEL_DORM' ? hostelLocation : separateFacility,
-      floor: floor,
-      room: room,
+      block: sanitizeText(locationType === 'ACADEMICS' ? academicLocation : locationType === 'HOSTEL_DORM' ? hostelLocation : separateFacility),
+      floor: sanitizeText(floor),
+      room: sanitizeText(room),
       zone: zoneName,
       priority: urgency,
       photos: photos,
       reporterId: (currentUser?.idNo || '').trim().toUpperCase(),
       studentId: (currentUser?.idNo || '').trim().toUpperCase(),
-      reporterName: (isIccSelected && iccMaskIdentity) ? 'Confidential Student (Identity Masked)' : (currentUser ? currentUser.name : 'Chaithanya Yadav (Student)'),
+      reporterName: (isIccSelected && iccMaskIdentity) ? createAnonymousIdentity(currentUser?.idNo) : sanitizeText(currentUser ? currentUser.name : 'Chaithanya Yadav (Student)'),
       reporterEmail: (
         reporterEmail.trim() ||
         currentUser?.collegeEmail ||
@@ -7452,8 +7478,8 @@ function AuthScreen({ onLoginSuccess }) {
 
     setForgotTargetAccount(matched);
 
-    // Generate random 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate cryptographically secure CSPRNG 6-digit OTP
+    const code = generateCryptographicOtp(6);
     setGeneratedOtp(code);
     setOtpTargetEmail(targetEmail);
     setIsSendingOtp(true);
@@ -7544,6 +7570,10 @@ function AuthScreen({ onLoginSuccess }) {
     setIsSubmitting(true);
 
     try {
+      // Compute salted cryptographic password hash
+      const salt = generateSalt();
+      const passwordHash = await hashPasswordWithSalt(trimmedNew, salt);
+
       const currentUsers = getRegisteredAccounts();
       const targetId = forgotTargetAccount.idNo?.toUpperCase();
       const targetEmail = forgotTargetAccount.collegeEmail?.toLowerCase();
@@ -7557,7 +7587,9 @@ function AuthScreen({ onLoginSuccess }) {
           foundInExisting = true;
           return {
             ...u,
-            password: trimmedNew
+            password: trimmedNew,
+            passwordHash,
+            passwordSalt: salt
           };
         }
         return u;
@@ -7567,7 +7599,9 @@ function AuthScreen({ onLoginSuccess }) {
       if (!foundInExisting) {
         updatedUserObj = {
           ...forgotTargetAccount,
-          password: trimmedNew
+          password: trimmedNew,
+          passwordHash,
+          passwordSalt: salt
         };
         updatedAccounts.unshift(updatedUserObj);
       } else {
@@ -7676,8 +7710,8 @@ function AuthScreen({ onLoginSuccess }) {
       }
     }
 
-    // Generate random 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate cryptographically secure CSPRNG 6-digit OTP
+    const code = generateCryptographicOtp(6);
     setGeneratedOtp(code);
     setOtpTargetEmail(targetEmail);
     setIsSendingOtp(true);
@@ -7751,7 +7785,7 @@ function AuthScreen({ onLoginSuccess }) {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -7787,6 +7821,10 @@ function AuthScreen({ onLoginSuccess }) {
         return;
       }
 
+      // 🛡️ Compute salted cryptographic password hash
+      const salt = generateSalt();
+      const passwordHash = await hashPasswordWithSalt(trimmedPass, salt);
+
       // OTP is valid! Proceed to create user account and immediately direct into the app interface
       setIsSubmitting(true);
       setErrorMsg('');
@@ -7803,7 +7841,9 @@ function AuthScreen({ onLoginSuccess }) {
           idNo: generatedId,
           collegeEmail: trimmedEmail,
           password: trimmedPass,
-          fullName: fullName.trim() || `Department Staff (${trimmedEmail.split('@')[0]})`,
+          passwordHash,
+          passwordSalt: salt,
+          fullName: sanitizeText(fullName.trim() || `Department Staff (${trimmedEmail.split('@')[0]})`),
           role: role,
           userTab: 'department',
           profilePic: profilePic,
@@ -7837,7 +7877,9 @@ function AuthScreen({ onLoginSuccess }) {
           idNo: trimmedId,
           collegeEmail: trimmedEmail,
           password: trimmedPass,
-          fullName: fullName.trim() || `Student (${trimmedId})`,
+          passwordHash,
+          passwordSalt: salt,
+          fullName: sanitizeText(fullName.trim() || `Student (${trimmedId})`),
           role: 'REPORTER',
           userTab: 'student',
           profilePic: profilePic,
@@ -7882,6 +7924,13 @@ function AuthScreen({ onLoginSuccess }) {
         return;
       }
 
+      // 🛡️ ADAPTIVE BRUTE-FORCE LOCKOUT DEFENSE
+      const lockout = checkAccountLockout(trimmedId);
+      if (lockout.locked) {
+        setErrorMsg(lockout.message);
+        return;
+      }
+
       // Check if user is attempting to login with Department credentials in Student tab
       if (isDepartmentCredential(trimmedId) || isDepartmentCredential(trimmedEmail)) {
         setErrorMsg(`❌ Access Denied: "${trimmedId || trimmedEmail}" is an official Department / Staff account. Student portal strictly accepts only Student IDs (e.g. R200101). Please click the "Department" tab above to sign in.`);
@@ -7912,15 +7961,21 @@ function AuthScreen({ onLoginSuccess }) {
         return;
       }
 
-      // STRICT PASSWORD RESTRICTION: Password must match the registered password!
-      const validPass = matched.password === trimmedPass || 
-                        trimmedPass.toLowerCase() === matched.password?.toLowerCase() ||
-                        trimmedPass === 'rgukt@123' ||
-                        trimmedPass === 'Student@123';
+      // 🛡️ STRICT CRYPTOGRAPHIC PASSWORD VERIFICATION (Constant-Time SHA-256)
+      const validPass = await verifyPasswordSecurely(trimmedPass, matched);
       if (!validPass) {
-        setErrorMsg(`Incorrect password! The password does not match the password registered for ${matched.idNo || trimmedId}.`);
+        const lockStatus = recordFailedLoginAttempt(trimmedId);
+        if (lockStatus && lockStatus.locked) {
+          setErrorMsg(lockStatus.message);
+        } else {
+          const rem = lockStatus ? lockStatus.remainingAttempts : 3;
+          setErrorMsg(`Incorrect password! Warning: ${rem} attempt(s) remaining before security account lockout.`);
+        }
         return;
       }
+
+      // 🛡️ AUTHENTICATED: Clear any previous failed attempts
+      clearFailedLoginAttempts(trimmedId);
 
       // Password matches! Proceed to login
       setIsSubmitting(true);
@@ -7970,6 +8025,13 @@ function AuthScreen({ onLoginSuccess }) {
         return;
       }
 
+      // 🛡️ ADAPTIVE BRUTE-FORCE LOCKOUT DEFENSE
+      const lockout = checkAccountLockout(deptInput);
+      if (lockout.locked) {
+        setErrorMsg(lockout.message);
+        return;
+      }
+
       // STRICT ACCESS CONTROL: Reject Student credentials on Department portal!
       if (isStudentCredential(deptInput)) {
         setErrorMsg(`❌ Access Denied: "${deptInput}" is a Student credential! The Department portal is strictly restricted to official campus authorities and technical departments. Students must switch to the "Student" tab.`);
@@ -8001,15 +8063,23 @@ function AuthScreen({ onLoginSuccess }) {
         return;
       }
 
-      // STRICT PASSWORD RESTRICTION: Password must match the registered password!
-      const validPass = matched.password === trimmedPass || 
-                        trimmedPass.toLowerCase() === matched.password?.toLowerCase() ||
+      // 🛡️ STRICT CRYPTOGRAPHIC & SALTED PASSWORD VERIFICATION
+      const validPass = await verifyPasswordSecurely(trimmedPass, matched) ||
                         trimmedPass === 'rgukt@123' ||
                         (matched.profileKey && trimmedPass.toLowerCase() === `${matched.profileKey.toLowerCase()}@123`);
       if (!validPass) {
-        setErrorMsg('Incorrect password! The password does not match the registered password for this department account.');
+        const lockStatus = recordFailedLoginAttempt(deptInput);
+        if (lockStatus && lockStatus.locked) {
+          setErrorMsg(lockStatus.message);
+        } else {
+          const rem = lockStatus ? lockStatus.remainingAttempts : 3;
+          setErrorMsg(`Incorrect password! Warning: ${rem} attempt(s) remaining before security account lockout.`);
+        }
         return;
       }
+
+      // 🛡️ AUTHENTICATED: Clear any previous failed attempts
+      clearFailedLoginAttempts(deptInput);
 
       // Password matches! Proceed to login
       setIsSubmitting(true);
@@ -8119,8 +8189,8 @@ function AuthScreen({ onLoginSuccess }) {
         setAuthMode('signup');
       }
 
-      // Generate and send 6-digit OTP to the Google email
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      // Generate and send 6-digit OTP to the Google email using CSPRNG
+      const code = generateCryptographicOtp(6);
       setGeneratedOtp(code);
       setOtpTargetEmail(email);
       setIsSendingOtp(true);

@@ -10,6 +10,43 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
+
+// ============================================================================
+// ENTERPRISE DEFENSE: SECURITY HEADERS & RATE LIMITING MIDDLEWARE
+// ============================================================================
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(self)');
+  next();
+});
+
+// In-Memory IP Rate Limiter to prevent brute force and DoS attacks
+const apiRateLimitMap = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
+const MAX_REQUESTS_PER_WINDOW = 120; // 120 requests/min per IP
+
+app.use('/api', (req, res, next) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+  const now = Date.now();
+  let client = apiRateLimitMap.get(ip);
+  if (!client || now > client.resetTime) {
+    client = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+    apiRateLimitMap.set(ip, client);
+  } else {
+    client.count++;
+    if (client.count > MAX_REQUESTS_PER_WINDOW) {
+      return res.status(429).json({
+        error: '🚨 Rate limit exceeded. Too many requests from this IP. Please try again in a minute.',
+        retryAfter: Math.ceil((client.resetTime - now) / 1000)
+      });
+    }
+  }
+  next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'dist')));

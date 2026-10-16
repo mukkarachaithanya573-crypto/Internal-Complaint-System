@@ -3,6 +3,7 @@ import {
   User, Mail, PhoneCall, GraduationCap, Clock, Building2, MapPin, 
   Edit3, Save, X, CheckCircle2, ShieldCheck, Camera, Sparkles, AlertCircle 
 } from 'lucide-react';
+import { sanitizeText } from './securityEngine';
 
 const BRANCH_OPTIONS = [
   'CSE Dept',
@@ -136,18 +137,18 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
     const compiledHostelRoom = `${formData.hostelBlock.replace(/\s*\(.*?\)/g, '')} • ${formData.roomNumber.trim() || '108'}`;
 
     onSave({
-      name: formData.name.trim(),
-      fullName: formData.name.trim(),
+      name: sanitizeText(formData.name.trim()),
+      fullName: sanitizeText(formData.name.trim()),
       branch: formData.branch,
       studyingYear: formData.studyingYear,
       className: formData.studyingYear,
       hostelBlock: formData.hostelBlock,
-      roomNumber: formData.roomNumber.trim(),
-      hostelRoom: compiledHostelRoom,
+      roomNumber: sanitizeText(formData.roomNumber.trim()),
+      hostelRoom: sanitizeText(compiledHostelRoom),
       mobileNumber: cleanMobile,
       profilePic: formData.profilePic,
-      department: formData.department,
-      zone: formData.zone
+      department: sanitizeText(formData.department),
+      zone: sanitizeText(formData.zone)
     });
   };
 
