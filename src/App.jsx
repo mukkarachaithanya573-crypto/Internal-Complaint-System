@@ -66,7 +66,9 @@ import {
   subscribeToComplaints, 
   saveUserToFirestore, 
   fetchUsersFromFirestore,
-  signInWithGooglePopup
+  signInWithGooglePopup,
+  signInWithGoogleRedirect,
+  getGoogleRedirectUser
 } from './firebase';
 import {
   sendEmailOnComplaintSubmission,
@@ -8178,124 +8180,168 @@ function AuthScreen({ onLoginSuccess }) {
     }
   };
 
+  const processGoogleUser = async (googleUser) => {
+    if (!googleUser || !googleUser.email) return;
+
+    const email = googleUser.email.toLowerCase().trim();
+
+    // RESTRICT TO OFFICIAL COLLEGE MAILS ONLY:
+    if (!isCollegeEmail(email)) {
+      setErrorMsg(`Access restricted: "${email}" is not an authorized college email. Only official college emails (@rgukt.ac.in or @rguktrkv.ac.in) are permitted.`);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const isDept = userTab === 'department';
+
+    if (!isDept && isDepartmentCredential(email)) {
+      setErrorMsg('❌ Access Denied: Department email detected. Please switch to "Department" tab above.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (isDept && isStudentCredential(email)) {
+      setErrorMsg('❌ Access Denied: Student email detected. Students cannot log in through Department portal. Please switch to "Student" tab above.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const role = isDept ? (email.includes('admin') ? 'ADMIN' : 'STAFF') : 'REPORTER';
+    const idNo = (isDept ? 'DEPT-' : 'R-') + email.split('@')[0].toUpperCase();
+    const fullName = googleUser.displayName || email.split('@')[0];
+    const profilePic = googleUser.photoURL || null;
+
+    // Check if user is already registered in system
+    const registeredUsers = getRegisteredAccounts();
+    const existingAccount = registeredUsers.find(u => 
+      (u.collegeEmail && u.collegeEmail.toLowerCase() === email) ||
+      (u.idNo && u.idNo.toUpperCase() === idNo)
+    );
+
+    // If user is ALREADY registered and this is sign-in mode, let them sign in directly
+    if (authMode === 'signin' && existingAccount) {
+      setIsSubmitting(false);
+      onLoginSuccess({
+        name: existingAccount.fullName || fullName,
+        email: existingAccount.collegeEmail || email,
+        idNo: existingAccount.idNo || idNo,
+        role: existingAccount.role || role,
+        profilePic: existingAccount.profilePic || profilePic,
+        mobileNumber: existingAccount.mobileNumber || googleUser.phoneNumber || null,
+        branch: existingAccount.branch || (!isDept ? 'Computer Science & Engineering' : undefined),
+        studyingYear: existingAccount.studyingYear || (!isDept ? 'E3 (3rd Year)' : undefined),
+        className: existingAccount.className || (!isDept ? 'E3 (3rd Year)' : undefined),
+        hostelBlock: existingAccount.hostelBlock || (!isDept ? 'K2-Block' : undefined),
+        roomNumber: existingAccount.roomNumber || (!isDept ? '304' : undefined),
+        hostelRoom: existingAccount.hostelRoom || (!isDept ? '304' : undefined),
+        department: existingAccount.department || (isDept ? existingAccount.category || 'Maintenance' : undefined),
+        zone: existingAccount.zone || (isDept ? 'Campus-Wide' : undefined),
+        staffId: isDept ? (existingAccount.staffId || 'staff-1') : null,
+        category: isDept ? (existingAccount.category || 'Electrical') : null
+      });
+      return;
+    }
+
+    // If FIRST TIME REGISTRATION (or not registered yet): MUST VERIFY VIA OTP!
+    setCollegeEmail(email);
+    setFullName(fullName);
+    if (profilePic) setProfilePic(profilePic);
+    if (!userTab || userTab === 'student') {
+      setIdNo(email.split('@')[0].toUpperCase());
+    }
+    if (!password) {
+      setPassword('Google@' + Math.floor(1000 + Math.random() * 9000));
+    }
+    if (authMode !== 'signup') {
+      setAuthMode('signup');
+    }
+
+    // Generate and send 6-digit OTP to the Google email using CSPRNG
+    const code = generateCryptographicOtp(6);
+    setGeneratedOtp(code);
+    setOtpTargetEmail(email);
+    setIsSendingOtp(true);
+    setIsSubmitting(false);
+
+    try {
+      const res = await sendOtpEmail(email, code, fullName);
+      setOtpSent(true);
+      if (res && res.success) {
+        setSuccessMsg(`✅ Google account connected (${email})! We sent a 6-digit verification OTP to your mail. Please enter OTP below to complete registration.`);
+      } else {
+        setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
+      }
+    } catch (otpErr) {
+      console.error('Google registration OTP dispatch error:', otpErr);
+      setOtpSent(true);
+      setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  // Check for any returning Google redirect login on initial mount
+  useEffect(() => {
+    let isMounted = true;
+    getGoogleRedirectUser().then(user => {
+      if (isMounted && user) {
+        processGoogleUser(user);
+      }
+    }).catch(e => console.warn('Google redirect check notice:', e));
+    return () => { isMounted = false; };
+  }, []);
+
   const handleGoogleLogin = async () => {
     setErrorMsg('');
     try {
       setIsSubmitting(true);
-      const googleUser = await signInWithGooglePopup();
+      let googleUser = null;
+
+      try {
+        googleUser = await signInWithGooglePopup();
+      } catch (popupErr) {
+        if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
+          setIsSubmitting(false);
+          return;
+        }
+
+        // If popup was blocked or failed on a mobile device, fallback to signInWithRedirect
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+        if (isMobile || popupErr.code === 'auth/popup-blocked') {
+          try {
+            await signInWithGoogleRedirect();
+            return;
+          } catch (redirErr) {
+            console.warn('Google redirect fallback notice:', redirErr);
+            throw redirErr;
+          }
+        }
+        throw popupErr;
+      }
+
       if (!googleUser || !googleUser.email) {
         setIsSubmitting(false);
         return;
       }
 
-      const email = googleUser.email.toLowerCase().trim();
-
-      // RESTRICT TO OFFICIAL COLLEGE MAILS ONLY:
-      if (!isCollegeEmail(email)) {
-        setErrorMsg(`Access restricted: "${email}" is not an authorized college email. Only official college emails (@rgukt.ac.in or @rguktrkv.ac.in) are permitted.`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      const isDept = userTab === 'department';
-
-      if (!isDept && isDepartmentCredential(email)) {
-        setErrorMsg('❌ Access Denied: Department email detected. Please switch to "Department" tab above.');
-        setIsSubmitting(false);
-        return;
-      }
-      if (isDept && isStudentCredential(email)) {
-        setErrorMsg('❌ Access Denied: Student email detected. Students cannot log in through Department portal. Please switch to "Student" tab above.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const role = isDept ? (email.includes('admin') ? 'ADMIN' : 'STAFF') : 'REPORTER';
-      const idNo = (isDept ? 'DEPT-' : 'R-') + email.split('@')[0].toUpperCase();
-      const fullName = googleUser.displayName || email.split('@')[0];
-      const profilePic = googleUser.photoURL || null;
-
-      // Check if user is already registered in system
-      const registeredUsers = getRegisteredAccounts();
-      const existingAccount = registeredUsers.find(u => 
-        (u.collegeEmail && u.collegeEmail.toLowerCase() === email) ||
-        (u.idNo && u.idNo.toUpperCase() === idNo)
-      );
-
-      // If user is ALREADY registered and this is sign-in mode, let them sign in directly
-      if (authMode === 'signin' && existingAccount) {
-        setIsSubmitting(false);
-        onLoginSuccess({
-          name: existingAccount.fullName || fullName,
-          email: existingAccount.collegeEmail || email,
-          idNo: existingAccount.idNo || idNo,
-          role: existingAccount.role || role,
-          profilePic: existingAccount.profilePic || profilePic,
-          mobileNumber: existingAccount.mobileNumber || googleUser.phoneNumber || null,
-          branch: existingAccount.branch || (!isDept ? 'Computer Science & Engineering' : undefined),
-          studyingYear: existingAccount.studyingYear || (!isDept ? 'E3 (3rd Year)' : undefined),
-          className: existingAccount.className || (!isDept ? 'E3 (3rd Year)' : undefined),
-          hostelBlock: existingAccount.hostelBlock || (!isDept ? 'K2-Block' : undefined),
-          roomNumber: existingAccount.roomNumber || (!isDept ? '304' : undefined),
-          hostelRoom: existingAccount.hostelRoom || (!isDept ? '304' : undefined),
-          department: existingAccount.department || (isDept ? existingAccount.category || 'Maintenance' : undefined),
-          zone: existingAccount.zone || (isDept ? 'Campus-Wide' : undefined),
-          staffId: isDept ? (existingAccount.staffId || 'staff-1') : null,
-          category: isDept ? (existingAccount.category || 'Electrical') : null
-        });
-        return;
-      }
-
-      // If FIRST TIME REGISTRATION (or not registered yet): MUST VERIFY VIA OTP!
-      // Fill the registration form with Google details:
-      setCollegeEmail(email);
-      setFullName(fullName);
-      if (profilePic) setProfilePic(profilePic);
-      if (!userTab || userTab === 'student') {
-        setIdNo(email.split('@')[0].toUpperCase());
-      }
-      if (!password) {
-        setPassword('Google@' + Math.floor(1000 + Math.random() * 9000));
-      }
-      if (authMode !== 'signup') {
-        setAuthMode('signup');
-      }
-
-      // Generate and send 6-digit OTP to the Google email using CSPRNG
-      const code = generateCryptographicOtp(6);
-      setGeneratedOtp(code);
-      setOtpTargetEmail(email);
-      setIsSendingOtp(true);
-      setIsSubmitting(false);
-
-      try {
-        const res = await sendOtpEmail(email, code, fullName);
-        setOtpSent(true);
-        if (res && res.success) {
-          setSuccessMsg(`✅ Google account connected (${email})! We sent a 6-digit verification OTP to your mail. Please enter OTP below to complete registration.`);
-        } else {
-          setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
-        }
-      } catch (otpErr) {
-        console.error('Google registration OTP dispatch error:', otpErr);
-        setOtpSent(true);
-        setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
-      } finally {
-        setIsSendingOtp(false);
-      }
+      await processGoogleUser(googleUser);
     } catch (err) {
       console.warn('Google sign-in attempt notice:', err?.code || err);
       setIsSubmitting(false);
 
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        // User deliberately closed popup - no error message needed
+        return;
+      }
+
+      // Handle missing initial state due to storage partitioning in mobile browsers
+      if (err.code === 'auth/missing-initial-state' || err.message?.includes('missing initial state')) {
+        setErrorMsg('Mobile browser storage partitioning detected. Please log in directly with your Student ID & Password above, or open in Chrome without incognito.');
         return;
       }
 
       // Handle auth/internal-error, network failure, or unapproved origin in Firebase console
       if (err.code === 'auth/internal-error' || err.code === 'auth/network-request-failed' || err.message?.includes('network') || err.message?.includes('internal')) {
         const manualEmail = prompt(
-          "Google Popup could not reach the authentication network (net::ERR_CONNECTION_CLOSED / auth/internal-error).\n\nPlease enter your college email (@rgukt.ac.in or @rguktrkv.ac.in) to continue:",
+          "Google Auth could not reach the authentication network.\n\nPlease enter your college email (@rgukt.ac.in or @rguktrkv.ac.in) to continue:",
           collegeEmail || (idNo ? `${idNo.toLowerCase()}@rgukt.ac.in` : "")
         );
         if (manualEmail && manualEmail.trim()) {
@@ -8317,7 +8363,7 @@ function AuthScreen({ onLoginSuccess }) {
       }
 
       if (err.code === 'auth/unauthorized-domain') {
-        setErrorMsg('Domain not authorized in Firebase Console: Please add this origin (localhost/port) under Firebase Auth > Settings > Authorized Domains.');
+        setErrorMsg('Domain not authorized in Firebase Console: Please ensure this domain is added under Firebase Auth > Settings > Authorized Domains.');
         return;
       }
 

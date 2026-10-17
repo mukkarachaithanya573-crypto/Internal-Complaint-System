@@ -2,7 +2,9 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
   getAuth, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from "firebase/auth";
 import { 
   getFirestore,
@@ -19,10 +21,25 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 
-// Your web app's Firebase configuration provided by the user
+// Dynamic authDomain resolver:
+// In mobile browsers (Chrome on Android, Safari on iOS), third-party storage partitioning blocks cross-origin sessionStorage
+// when using the default firebaseapp.com domain. By routing through the same-origin domain (via Vercel rewrite /__/auth/*),
+// auth requests become strictly first-party, completely resolving "missing initial state" and storage partitioning errors.
+export function getEffectiveAuthDomain() {
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const host = window.location.hostname;
+    // When accessed via Vercel or custom domain, proxy through same-origin domain
+    if (host.includes('vercel.app') || host.includes('rguktrkv.ac.in')) {
+      return host;
+    }
+  }
+  return "internal-complaint-system.firebaseapp.com";
+}
+
+// Your web app's Firebase configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCwfI8Vcl4PWckgSZoN-Hcf5jaKJWalq7k",
-  authDomain: "internal-complaint-system.firebaseapp.com",
+  authDomain: getEffectiveAuthDomain(),
   projectId: "internal-complaint-system",
   storageBucket: "internal-complaint-system.firebasestorage.app",
   messagingSenderId: "594451897466",
@@ -248,4 +265,33 @@ export async function signInWithGooglePopup() {
     throw error;
   }
 }
+
+/**
+ * Fallback to sign in with redirect if popups are blocked on mobile devices
+ */
+export async function signInWithGoogleRedirect() {
+  try {
+    googleAuthProvider.setCustomParameters({ prompt: 'select_account' });
+    await signInWithRedirect(auth, googleAuthProvider);
+  } catch (error) {
+    console.warn("Firebase Google Redirect Auth error:", error?.code || error);
+    throw error;
+  }
+}
+
+/**
+ * Checks for any pending redirect result when returning from a redirect login flow
+ */
+export async function getGoogleRedirectUser() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result && result.user) {
+      return result.user;
+    }
+  } catch (error) {
+    console.warn("Firebase Redirect Result notice:", error?.code || error);
+  }
+  return null;
+}
+
 

@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/__/auth/(.*)",
+      "destination": "https://internal-complaint-system.firebaseapp.com/__/auth/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -11,7 +15,7 @@
       "headers": [
         {
           "key": "X-Frame-Options",
-          "value": "DENY"
+          "value": "SAMEORIGIN"
         },
         {
           "key": "X-Content-Type-Options",
@@ -35,7 +39,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com https://cdn.emailjs.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://api.emailjs.com wss://*.firebaseio.com https://*.openstreetmap.org https://maps.googleapis.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://*.openstreetmap.org https://maps.google.com https://accounts.google.com; frame-ancestors 'none';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://cdn.emailjs.com; connect-src 'self' https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://api.emailjs.com wss://*.firebaseio.com https://*.openstreetmap.org https://maps.googleapis.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.googleapis.com https://*.openstreetmap.org https://maps.google.com; frame-ancestors 'self';"
         }
       ]
     }
