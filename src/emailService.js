@@ -1,12 +1,14 @@
 import emailjs from '@emailjs/browser';
 
 // Official EmailJS Configuration provided by user
+// template_cjeu2jp has dynamic {{email}} recipient addressing, allowing direct user email delivery
+// template_rq4dnge is configured for campus authority / administrative notification
 export const EMAILJS_CONFIG = {
   PUBLIC_KEY: '51oMyQ381CWezzwtz',
   SERVICE_ID: 'service_eobhqld',
   TEMPLATES: {
-    USER_NOTIFICATION: 'template_rq4dnge', // template_rq4dnge verified working with 200 OK
-    AUTHORITY_NOTIFICATION: 'template_rq4dnge',
+    USER_NOTIFICATION: 'template_cjeu2jp', // Dynamic recipient {{email}} template for user delivery
+    AUTHORITY_NOTIFICATION: 'template_rq4dnge', // Administrative notification template
     OTP_VERIFICATION: 'template_cjeu2jp'
   }
 };
@@ -86,11 +88,11 @@ export const DEPARTMENT_OFFICERS = {
  */
 async function sendEmailJsMessage(templateId, templateParams) {
   try {
-    const cleanEmail = (templateParams.to_email || templateParams.email || templateParams.recipient_email || '').trim().toLowerCase();
+    const cleanEmail = (templateParams.email || templateParams.to_email || templateParams.recipient_email || templateParams.user_email || '').trim().toLowerCase();
     const cleanParams = {
       ...templateParams,
-      to_email: cleanEmail,
       email: cleanEmail,
+      to_email: cleanEmail,
       recipient_email: cleanEmail,
       user_email: cleanEmail,
       to: cleanEmail,
@@ -126,15 +128,26 @@ export async function sendEmailOnComplaintSubmission(ticket) {
 
   const authority = isIcc ? HIERARCHY_OFFICERS.ICC_PRESIDING : HIERARCHY_OFFICERS.WARDEN;
 
-  // 1. Email to the Student / User raising the complaint (Template: template_rq4dnge / template_cjeu2jp)
+  // 1. Email to the Student / User raising the complaint (Template: template_cjeu2jp with dynamic {{email}})
+  const confirmationMsg = isIcc
+    ? `Your grievance has been officially registered with the RGUKT RK Valley Internal Complaints Committee under Office Order 11.08.2026. The Presiding Officer and Committee have been notified.`
+    : `Your complaint #${ticket.ticketNumber} has been successfully lodged and assigned to the Hostel Resident Warden (Stage 1) to inspect and resolve based on severity.`;
+
   const studentParams = {
     to_name: reporterName,
+    user_name: reporterName,
+    name: reporterName,
     to_email: reporterEmail,
     recipient_email: reporterEmail,
     email: reporterEmail,
     user_email: reporterEmail,
     ticket_number: ticket.ticketNumber,
-    title: ticket.title,
+    otp: ticket.ticketNumber,
+    passcode: ticket.ticketNumber,
+    code: ticket.ticketNumber,
+    verification_code: ticket.ticketNumber,
+    title: `Complaint #${ticket.ticketNumber} Successfully Registered`,
+    subject: `Complaint Registered: #${ticket.ticketNumber} - ${ticket.title}`,
     category: ticket.category,
     location: ticket.location,
     priority: ticket.priority,
@@ -143,9 +156,9 @@ export async function sendEmailOnComplaintSubmission(ticket) {
     authority_designation: authority.designation,
     system_type: isIcc ? 'Internal Complaints Committee (ICC)' : 'Hostel Maintenance & Facilities',
     status: ticket.status || 'ASSIGNED',
-    message: isIcc
-      ? `Your grievance has been officially registered with the RGUKT RK Valley Internal Complaints Committee under Office Order 11.08.2026. The Presiding Officer and Committee have been notified.`
-      : `Your complaint #${ticket.ticketNumber} has been successfully lodged and assigned to the Hostel Resident Warden (Stage 1) to inspect and resolve based on severity.`,
+    message: confirmationMsg,
+    body: `Your complaint #${ticket.ticketNumber} (${ticket.title}) has been registered and assigned to ${authority.name}. Location: ${ticket.location}. Priority: ${ticket.priority}.`,
+    notes: `Ticket #${ticket.ticketNumber} - Status: ${ticket.status || 'ASSIGNED'}`,
     next_step: isIcc
       ? 'The Committee will review and hold preliminary appraisal under the designated committee quorum.'
       : 'The Warden will review and record an official response. If unresolved, you may tag and escalate to DSW & Department.',
@@ -178,11 +191,6 @@ export async function sendEmailOnComplaintSubmission(ticket) {
   };
 
   let studentRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, studentParams);
-  if (!studentRes.success && EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION) {
-    // Graceful fallback to OTP template if user notification encounters transient issue
-    studentRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION, studentParams);
-  }
-
   let authorityRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION, authorityParams);
 
   return { studentRes, authorityRes };
@@ -221,14 +229,22 @@ export async function sendEmailOnHierarchyEscalation(ticket, escalationData) {
     };
   }
 
-  // 1. Email to Student (Template: template_9djhg3n)
+  // 1. Email to Student (Template: template_cjeu2jp with dynamic {{email}})
   const studentParams = {
     to_name: reporterName,
+    user_name: reporterName,
+    name: reporterName,
     to_email: reporterEmail,
     recipient_email: reporterEmail,
     email: reporterEmail,
+    user_email: reporterEmail,
     ticket_number: ticket.ticketNumber,
-    title: ticket.title,
+    otp: ticket.ticketNumber,
+    passcode: ticket.ticketNumber,
+    code: ticket.ticketNumber,
+    verification_code: ticket.ticketNumber,
+    title: `Ticket #${ticket.ticketNumber} Escalated to ${toStage}`,
+    subject: `Ticket #${ticket.ticketNumber} Escalated to ${toStage}`,
     category: ticket.category,
     location: ticket.location,
     priority: ticket.priority,
@@ -242,6 +258,8 @@ export async function sendEmailOnHierarchyEscalation(ticket, escalationData) {
     escalation_reason: reason,
     tagged_response: taggedPriorResponse,
     message: `Your complaint #${ticket.ticketNumber} has been officially tagged and escalated from ${fromStage} to ${targetOfficer.name}.\nReason: "${reason}"\nAttached Response from ${fromStage}: "${taggedPriorResponse}"`,
+    body: `Your complaint #${ticket.ticketNumber} has been escalated to ${targetOfficer.name}. Reason: ${reason}`,
+    notes: `Escalated to ${targetOfficer.name} (${toStage})`,
     next_step: `${targetOfficer.name} will review the attached history and initiate departmental intervention.`,
     date_time: new Date().toLocaleString()
   };
@@ -252,6 +270,7 @@ export async function sendEmailOnHierarchyEscalation(ticket, escalationData) {
     to_email: targetOfficer.email,
     recipient_email: targetOfficer.email,
     email: targetOfficer.email,
+    user_email: targetOfficer.email,
     officer_name: targetOfficer.name,
     officer_designation: targetOfficer.designation,
     ticket_number: ticket.ticketNumber,
@@ -292,11 +311,19 @@ export async function sendEmailOnAuthorityResponse(ticket, responseText, authori
 
   const studentParams = {
     to_name: reporterName,
+    user_name: reporterName,
+    name: reporterName,
     to_email: reporterEmail,
     recipient_email: reporterEmail,
     email: reporterEmail,
+    user_email: reporterEmail,
     ticket_number: ticket.ticketNumber,
-    title: ticket.title,
+    otp: ticket.ticketNumber,
+    passcode: ticket.ticketNumber,
+    code: ticket.ticketNumber,
+    verification_code: ticket.ticketNumber,
+    title: `Official Update on Ticket #${ticket.ticketNumber} from ${authorityStage}`,
+    subject: `Official Update on Ticket #${ticket.ticketNumber} from ${authorityStage}`,
     category: ticket.category,
     location: ticket.location,
     priority: ticket.priority,
@@ -307,6 +334,8 @@ export async function sendEmailOnAuthorityResponse(ticket, responseText, authori
     status: ticket.status || 'IN_PROGRESS',
     authority_response: responseText,
     message: `An official inspection update has been recorded by ${authorityStage}:\n\n"${responseText}"`,
+    body: `Inspection update on ticket #${ticket.ticketNumber} recorded by ${authorityStage}: "${responseText}"`,
+    notes: `Official Response: ${responseText}`,
     next_step: `Review the progress. If satisfactory, await completion. If unresolved, you may tag and escalate to the next authority.`,
     date_time: new Date().toLocaleString()
   };
@@ -325,14 +354,26 @@ export async function sendEmailOnProblemSolved(ticket, resolutionNotes = '') {
   const reporterName = ticket.reporterName || 'Student Resident';
   const isIcc = ticket.isIcc || ticket.categoryType === 'ICC';
 
-  // 1. Email to Student confirming fix & requesting review (Template: template_9djhg3n)
+  // 1. Email to Student confirming fix & requesting review (Template: template_cjeu2jp with dynamic {{email}})
+  const solvedMsg = isIcc
+    ? `The Executive Disposal Order for ICC ticket #${ticket.ticketNumber} has been promulgated and enforced by the Chairperson / Director.`
+    : `The maintenance team has completed the required physical repairs for ticket #${ticket.ticketNumber} at ${ticket.location}.\n\nResolution Notes: "${resolutionNotes || 'Works successfully completed.'}"`;
+
   const studentParams = {
     to_name: reporterName,
+    user_name: reporterName,
+    name: reporterName,
     to_email: reporterEmail,
     recipient_email: reporterEmail,
     email: reporterEmail,
+    user_email: reporterEmail,
     ticket_number: ticket.ticketNumber,
-    title: ticket.title,
+    otp: ticket.ticketNumber,
+    passcode: ticket.ticketNumber,
+    code: ticket.ticketNumber,
+    verification_code: ticket.ticketNumber,
+    title: `Problem Solved: Ticket #${ticket.ticketNumber}`,
+    subject: `Problem Solved: Ticket #${ticket.ticketNumber} at ${ticket.location}`,
     category: ticket.category,
     location: ticket.location,
     priority: ticket.priority,
@@ -342,9 +383,9 @@ export async function sendEmailOnProblemSolved(ticket, resolutionNotes = '') {
     system_type: isIcc ? 'Internal Complaints Committee (ICC)' : 'Campus Facility Maintenance',
     status: 'RESOLVED / SOLVED',
     resolution_notes: resolutionNotes || ticket.resolutionNotes || 'Repair completed and on-site fix verified by maintenance engineer.',
-    message: isIcc
-      ? `The Executive Disposal Order for ICC ticket #${ticket.ticketNumber} has been promulgated and enforced by the Chairperson / Director.`
-      : `The maintenance team has completed the required physical repairs for ticket #${ticket.ticketNumber} at ${ticket.location}.\n\nResolution Notes: "${resolutionNotes || 'Works successfully completed.'}"`,
+    message: solvedMsg,
+    body: `Problem solved for ticket #${ticket.ticketNumber} at ${ticket.location}. Notes: ${resolutionNotes || 'Completed'}`,
+    notes: resolutionNotes || 'Works successfully completed.',
     next_step: 'Please inspect the physical location and confirm resolution on the portal. You can rate the technician or reopen if the defect persists.',
     date_time: new Date().toLocaleString()
   };

@@ -49,11 +49,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Bypass third-party, APIs, and authentication endpoints completely
+  // Bypass third-party, APIs, email delivery, and authentication endpoints completely
   if (
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('firebase') ||
     url.hostname.includes('accounts.google.com') ||
+    url.hostname.includes('emailjs.com') ||
     url.pathname.startsWith('/__/auth') ||
     url.pathname.startsWith('/api')
   ) {
