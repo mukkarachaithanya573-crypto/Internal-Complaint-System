@@ -3,7 +3,6 @@
   "appName": "Internal Complaint System",
   "webDir": "dist",
   "server": {
-    "url": "https://internal-complaint-system.vercel.app",
-    "cleartext": true
+    "androidScheme": "https"
   }
 }

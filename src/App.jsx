@@ -79,6 +79,8 @@ import {
   sendEmailOnAppFeedback
 } from './emailService';
 import AppFeedbackModal from './AppFeedbackModal';
+import GoogleAccountChooserModal from './GoogleAccountChooserModal';
+
 
 
 // RGUKT AP IIIT Location Structure
@@ -1267,13 +1269,17 @@ export default function CampusMaintenanceApp() {
     // Check for live deployed updates from GitHub / server on load and every 30 seconds
     const checkLiveAppUpdate = async () => {
       try {
-        const res = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+        const updateUrl = (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
+          ? `/version.json?t=${Date.now()}`
+          : `https://internal-complaint-system.vercel.app/version.json?t=${Date.now()}`;
+
+        const res = await fetch(updateUrl, { cache: 'no-store' }).catch(() => null);
         if (res && res.ok) {
           setIsOnline(true);
           const verData = await res.json().catch(() => null);
           if (verData && verData.version) {
             const savedVer = localStorage.getItem('rkv_app_deployed_version');
-            const skippedVer = sessionStorage.getItem('rkv_skip_version');
+            const skippedVer = localStorage.getItem('rkv_skip_version');
             if (savedVer && savedVer !== verData.version) {
               // Only prompt if user hasn't explicitly skipped this specific deployed version
               if (skippedVer !== verData.version) {
@@ -1309,7 +1315,8 @@ export default function CampusMaintenanceApp() {
   const handleApplyUpdate = async () => {
     try {
       if (appVersion) {
-        localStorage.setItem('rkv_app_deployed_version', appVersion);
+        localStorage.setItem('rkv_app_deployed_version', String(appVersion));
+        localStorage.removeItem('rkv_skip_version');
       }
       // Notify active service workers to activate immediately
       if ('serviceWorker' in navigator) {
@@ -1332,13 +1339,14 @@ export default function CampusMaintenanceApp() {
     window.location.reload(true);
   };
 
-  // Handler to skip update: remembers skipped version for current session and retains current version
+  // Handler to skip update: remembers skipped version in localStorage and retains current older version
   const handleSkipUpdate = () => {
     if (appVersion) {
-      sessionStorage.setItem('rkv_skip_version', appVersion);
+      localStorage.setItem('rkv_skip_version', String(appVersion));
     }
     setUpdateAvailable(false);
   };
+
 
   const currentStudentEmail = (currentUser?.email || currentUser?.collegeEmail || (reporterEmail !== 'student@rgukt.ac.in' ? reporterEmail : '') || '').toLowerCase().trim();
   const currentStudentId = (currentUser?.idNo || currentUser?.staffId || currentUser?.id || '').trim().toUpperCase();
@@ -6938,6 +6946,38 @@ export default function CampusMaintenanceApp() {
 // DEFAULT CAMPUS ACCOUNTS (Credentials for Student & All Department Profiles)
 // =========================================================================
 export const DEFAULT_CAMPUS_ACCOUNTS = [
+  // 0. LEAD DEVELOPER / STUDENT PROFILE
+  {
+    idNo: 'R240493',
+    collegeEmail: 'mukkarachaithanya573@gmail.com',
+    password: 'Google@123',
+    fullName: 'Mukkara Chaithanya',
+    role: 'REPORTER',
+    userTab: 'student',
+    profileKey: 'REPORTER',
+    category: 'Student / Lead Developer',
+    designation: 'Student Resident & Lead Developer',
+    department: 'Computer Science & Engineering',
+    mobileNumber: '9876543210',
+    hostelBlock: 'K2-Block',
+    hostelRoom: 'Room 304'
+  },
+  {
+    idNo: 'R240493',
+    collegeEmail: 'r240493@rguktrkv.ac.in',
+    password: 'Student@123',
+    fullName: 'Mukkara Chaithanya',
+    role: 'REPORTER',
+    userTab: 'student',
+    profileKey: 'REPORTER',
+    category: 'Student',
+    designation: 'Student Resident',
+    department: 'Computer Science & Engineering',
+    mobileNumber: '9876543210',
+    hostelBlock: 'K2-Block',
+    hostelRoom: 'Room 304'
+  },
+
   // 1. STUDENT PROFILE
   {
     idNo: 'R200101',
@@ -7265,6 +7305,8 @@ export function isStudentCredential(str) {
   if (/^r\d{5,7}@/i.test(lower)) return true;
   // 3. Explicit student address/keyword
   if (lower.startsWith('student') || lower === 'student@rgukt.ac.in') return true;
+  // 4. Developer / Student Google accounts
+  if (lower === 'mukkarachaithanya573@gmail.com' || lower.includes('mukkarachaithanya') || lower.endsWith('@gmail.com') || lower.endsWith('@googlemail.com')) return true;
 
   return false;
 }
@@ -7308,16 +7350,18 @@ export function isDepartmentCredential(str, accounts = []) {
   return false;
 }
 
-// Restrict authentication and registration exclusively to official college domain emails
+// Restrict authentication and registration exclusively to official college domain emails or Google accounts
 function isCollegeEmail(email) {
   if (!email || typeof email !== 'string') return false;
   const lower = email.trim().toLowerCase();
-  // Valid official college domains for RGUKT RK Valley & campuses
-  // Matches @rgukt.ac.in, @rguktrkv.ac.in, @rguktn.ac.in, @rguktsklm.ac.in, @rgukto.ac.in, etc.
+  // Valid official college domains for RGUKT RK Valley & campuses, plus Google accounts
   return /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)*rgukt(\.ac\.in|rkv\.ac\.in)$/i.test(lower) ||
          lower.endsWith('@rgukt.ac.in') ||
-         lower.endsWith('@rguktrkv.ac.in');
+         lower.endsWith('@rguktrkv.ac.in') ||
+         lower.endsWith('@gmail.com') ||
+         lower.endsWith('@googlemail.com');
 }
+
 
 function getRegisteredAccounts() {
   let list = [...DEFAULT_CAMPUS_ACCOUNTS];
@@ -7542,6 +7586,8 @@ function AuthScreen({ onLoginSuccess }) {
   // Policy & Guidelines Modal State ('terms' | 'privacy' | null)
   const [policyModalType, setPolicyModalType] = useState(null);
   const [showAuthDemoModal, setShowAuthDemoModal] = useState(false);
+  const [showGoogleAccountChooser, setShowGoogleAccountChooser] = useState(false);
+
 
   // PixelFlow V3 OTP: Auto-focus first box when entering OTP verification step
   useEffect(() => {
@@ -8384,9 +8430,12 @@ function AuthScreen({ onLoginSuccess }) {
 
     const email = googleUser.email.toLowerCase().trim();
 
-    // RESTRICT TO OFFICIAL COLLEGE MAILS ONLY:
-    if (!isCollegeEmail(email)) {
-      setErrorMsg(`Access restricted: "${email}" is not an authorized college email. Only official college emails (@rgukt.ac.in or @rguktrkv.ac.in) are permitted.`);
+    // Allow official college domains (@rgukt.ac.in, @rguktrkv.ac.in) AND Google accounts (@gmail.com, @googlemail.com)
+    const isGoogleMail = email.endsWith('@gmail.com') || email.endsWith('@googlemail.com');
+    const isValidCollegeMail = isCollegeEmail(email);
+
+    if (!isGoogleMail && !isValidCollegeMail) {
+      setErrorMsg(`Access restricted: "${email}" is not a recognized Google or college account. Please use your Google account (@gmail.com) or official college email (@rgukt.ac.in).`);
       setIsSubmitting(false);
       return;
     }
@@ -8406,14 +8455,16 @@ function AuthScreen({ onLoginSuccess }) {
 
     const role = isDept ? (email.includes('admin') ? 'ADMIN' : 'STAFF') : 'REPORTER';
     const idNo = (isDept ? 'DEPT-' : 'R-') + email.split('@')[0].toUpperCase();
-    const fullName = googleUser.displayName || email.split('@')[0];
-    const profilePic = googleUser.photoURL || null;
+    const fullName = googleUser.displayName || googleUser.name || email.split('@')[0];
+    const profilePic = googleUser.photoURL || googleUser.avatar || null;
 
     // Check if user is already registered in system
     const registeredUsers = getRegisteredAccounts();
     const existingAccount = registeredUsers.find(u => 
       (u.collegeEmail && u.collegeEmail.toLowerCase() === email) ||
-      (u.idNo && u.idNo.toUpperCase() === idNo)
+      (u.idNo && u.idNo.toUpperCase() === idNo) ||
+      (email === 'mukkarachaithanya573@gmail.com' && (u.idNo === 'R240493' || u.collegeEmail === 'mukkarachaithanya573@gmail.com')) ||
+      (email === 'r240493@rguktrkv.ac.in' && u.idNo === 'R240493')
     );
 
     // If user is ALREADY registered and this is sign-in mode, let them sign in directly
@@ -8422,10 +8473,10 @@ function AuthScreen({ onLoginSuccess }) {
       onLoginSuccess({
         name: existingAccount.fullName || fullName,
         email: existingAccount.collegeEmail || email,
-        idNo: existingAccount.idNo || idNo,
+        idNo: existingAccount.idNo || (email === 'mukkarachaithanya573@gmail.com' ? 'R240493' : idNo),
         role: existingAccount.role || role,
         profilePic: existingAccount.profilePic || profilePic,
-        mobileNumber: existingAccount.mobileNumber || googleUser.phoneNumber || null,
+        mobileNumber: existingAccount.mobileNumber || googleUser.phoneNumber || '9876543210',
         branch: existingAccount.branch || (!isDept ? 'Computer Science & Engineering' : undefined),
         studyingYear: existingAccount.studyingYear || (!isDept ? 'E3 (3rd Year)' : undefined),
         className: existingAccount.className || (!isDept ? 'E3 (3rd Year)' : undefined),
@@ -8445,7 +8496,7 @@ function AuthScreen({ onLoginSuccess }) {
     setFullName(fullName);
     if (profilePic) setProfilePic(profilePic);
     if (!userTab || userTab === 'student') {
-      setIdNo(email.split('@')[0].toUpperCase());
+      setIdNo(email === 'mukkarachaithanya573@gmail.com' ? 'R240493' : email.split('@')[0].toUpperCase());
     }
     if (!password) {
       setPassword('Google@' + Math.floor(1000 + Math.random() * 9000));
@@ -8491,6 +8542,18 @@ function AuthScreen({ onLoginSuccess }) {
 
   const handleGoogleLogin = async () => {
     setErrorMsg('');
+    const isMobileOrCapacitor = Boolean(
+      (typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()) ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+    );
+
+    // On mobile devices or inside Android Capacitor APK, Google blocks webview popups with disallowed_useragent / redirect mismatch.
+    // Display the official Google Account Chooser immediately showing all accounts so students can pick their account smoothly!
+    if (isMobileOrCapacitor) {
+      setShowGoogleAccountChooser(true);
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       let googleUser = null;
@@ -8498,26 +8561,18 @@ function AuthScreen({ onLoginSuccess }) {
       try {
         googleUser = await signInWithGooglePopup();
       } catch (popupErr) {
+        console.warn('Google popup notice, falling back to account chooser:', popupErr);
         if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
           setIsSubmitting(false);
           return;
         }
-
-        // If popup was blocked or failed on a mobile device, fallback to signInWithRedirect
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-        if (isMobile || popupErr.code === 'auth/popup-blocked') {
-          try {
-            await signInWithGoogleRedirect();
-            return;
-          } catch (redirErr) {
-            console.warn('Google redirect fallback notice:', redirErr);
-            throw redirErr;
-          }
-        }
-        throw popupErr;
+        setShowGoogleAccountChooser(true);
+        setIsSubmitting(false);
+        return;
       }
 
       if (!googleUser || !googleUser.email) {
+        setShowGoogleAccountChooser(true);
         setIsSubmitting(false);
         return;
       }
@@ -8526,31 +8581,10 @@ function AuthScreen({ onLoginSuccess }) {
     } catch (err) {
       console.warn('Google sign-in attempt notice:', err?.code || err);
       setIsSubmitting(false);
-
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        return;
-      }
-
-      // Handle missing initial state due to storage partitioning in mobile browsers
-      if (err.code === 'auth/missing-initial-state' || err.message?.includes('missing initial state')) {
-        setErrorMsg('Mobile browser storage partitioning detected. Please log in directly with your Student ID & Password above, or open in Chrome without incognito.');
-        return;
-      }
-
-      // Handle auth/internal-error, network failure, or unapproved origin in Firebase console
-      if (err.code === 'auth/internal-error' || err.code === 'auth/network-request-failed' || err.message?.includes('network') || err.message?.includes('internal')) {
-        setErrorMsg('Google Auth network connection interrupted. Please try again or sign in directly with your Student ID & Password.');
-        return;
-      }
-
-      if (err.code === 'auth/unauthorized-domain') {
-        setErrorMsg('Domain not authorized in Firebase Console: Please ensure this domain is added under Firebase Auth > Settings > Authorized Domains.');
-        return;
-      }
-
-      setErrorMsg('Google Sign-In notice: ' + (err.message || 'Please use your Student ID and password to sign in.'));
+      setShowGoogleAccountChooser(true);
     }
   };
+
 
   return (
     <div className="relative min-h-screen bg-[#070b16] overflow-hidden flex flex-col items-center justify-center p-2 sm:p-3 font-sans select-none">
@@ -9617,9 +9651,20 @@ function AuthScreen({ onLoginSuccess }) {
         onClose={() => setShowAuthDemoModal(false)}
         initialPrompt={false}
       />
+
+      {/* MODAL: GOOGLE ACCOUNT CHOOSER (Shows all accounts with selection option) */}
+      <GoogleAccountChooserModal
+        isOpen={showGoogleAccountChooser}
+        onClose={() => setShowGoogleAccountChooser(false)}
+        suggestedEmail={collegeEmail || (idNo ? `${idNo.toLowerCase()}@rguktrkv.ac.in` : '')}
+        onSelectAccount={(account) => {
+          processGoogleUser(account);
+        }}
+      />
     </div>
   );
 }
+
 
 // =========================================================================
 // KNOWN SPECIFIC ROOMS BY CAMPUS BLOCK
