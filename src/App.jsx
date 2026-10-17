@@ -75,8 +75,11 @@ import {
   sendEmailOnHierarchyEscalation,
   sendEmailOnAuthorityResponse,
   sendEmailOnProblemSolved,
-  sendOtpEmail
+  sendOtpEmail,
+  sendEmailOnAppFeedback
 } from './emailService';
+import AppFeedbackModal from './AppFeedbackModal';
+
 
 // RGUKT AP IIIT Location Structure
 const ACADEMIC_BUILDINGS = [
@@ -798,7 +801,11 @@ export default function CampusMaintenanceApp() {
   const [activeToast, setActiveToast] = useState(null);
   const [scanSuccessToast, setScanSuccessToast] = useState(null);
   const [feedbackModalTicket, setFeedbackModalTicket] = useState(null);
+  // App Improvement Feedback & Feature Ideas Modal State (Direct to Developer)
+  const [isAppFeedbackOpen, setIsAppFeedbackOpen] = useState(false);
+  const [postSubmitFeedbackTicket, setPostSubmitFeedbackTicket] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState('staff-1');
+
 
   // Push System Notification helper across Toast, Local Storage, and Browser Push
   const pushSystemNotification = (title, body, channel = 'CAMPUS') => {
@@ -2050,8 +2057,12 @@ export default function CampusMaintenanceApp() {
     setComplaints(prev => [newComplaint, ...prev.filter(c => c.id !== newComplaint.id)]);
     setSelectedTicket(newComplaint);
     setActiveTab('my-complaints');
+    // Open Post-Submission App Feedback & Ideas Dialog for Student
+    setPostSubmitFeedbackTicket(newComplaint);
+    setIsAppFeedbackOpen(true);
     fetchData();
   };
+
 
   // Staff Transitions
   const handleUpdateStatus = async (ticketId, nextStatus, notes = '', photo = '', spareParts = '') => {
@@ -2713,8 +2724,26 @@ export default function CampusMaintenanceApp() {
                       Editable
                     </span>
                   </button>
+
+                  <button
+                    onClick={() => {
+                      setIsDashboardOpen(false);
+                      setPostSubmitFeedbackTicket(null);
+                      setIsAppFeedbackOpen(true);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all text-amber-300 hover:bg-amber-500/10 border border-amber-500/20 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Lightbulb className="w-4 h-4 text-amber-400" />
+                      <span className="font-black text-amber-200">App Feedback & Ideas</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-lg font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      Share Ideas
+                    </span>
+                  </button>
                 </>
               )}
+
 
               {currentRole === 'STAFF' && (
                 <>
@@ -3077,6 +3106,20 @@ export default function CampusMaintenanceApp() {
 
               {/* TOP RIGHT CORNER: NOTIFICATIONS + REAL-TIME REFRESH + IDENTITY + LOGOUT BUTTON */}
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                {/* App Feedback & Ideas Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPostSubmitFeedbackTicket(null);
+                    setIsAppFeedbackOpen(true);
+                  }}
+                  className="px-2.5 py-1.5 bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                  title="Submit Ideas, Suggestions & Changes Needed in this App"
+                >
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden md:inline">App Ideas</span>
+                </button>
+
                 {/* Watch Demo Video / Project Tour Button */}
                 <button
                   type="button"
@@ -3090,6 +3133,7 @@ export default function CampusMaintenanceApp() {
                   <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
                   <span className="hidden sm:inline">Demo Tour</span>
                 </button>
+
 
                 {/* Notification Center Bell Trigger */}
                 <button
@@ -4161,8 +4205,37 @@ export default function CampusMaintenanceApp() {
                   })()}
                 </div>
 
+                {/* APP FEEDBACK & SUGGESTIONS INVITATION BANNER */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-900 to-cyan-500/10 border border-amber-500/30 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap shadow-lg">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0 shadow-md">
+                      <Lightbulb className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">Help Us Improve</span>
+                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Direct to Developer</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-bold text-white truncate">Any changes needed in this app? Submit your ideas!</p>
+                      <p className="text-[11px] text-slate-300 truncate">We review every suggestion and implement valuable ones in future releases.</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPostSubmitFeedbackTicket(null);
+                      setIsAppFeedbackOpen(true);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 text-slate-950 font-black text-xs uppercase tracking-wider shrink-0 cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Suggest Ideas</span>
+                  </button>
+                </div>
+
                 {/* Complaints Stored and Displayed Under This Card */}
                 <div className="space-y-3">
+
                   {(() => {
                     const filteredStudentComplaints = visibleComplaints.filter(c => {
                       if (studentStatusFilter === 'PENDING') return !['RESOLVED', 'CLOSED', 'REJECTED'].includes(c.status);
@@ -6743,6 +6816,24 @@ export default function CampusMaintenanceApp() {
           }}
         />
       )}
+
+      {/* MODAL: APP FEEDBACK & FEATURE IDEAS DIRECT TO DEVELOPER */}
+      <AppFeedbackModal
+        isOpen={isAppFeedbackOpen}
+        onClose={() => {
+          setIsAppFeedbackOpen(false);
+          setPostSubmitFeedbackTicket(null);
+        }}
+        currentUser={currentUser}
+        postSubmitTicket={postSubmitFeedbackTicket}
+        onProceedToTicket={() => {
+          if (postSubmitFeedbackTicket) {
+            setSelectedTicket(postSubmitFeedbackTicket);
+            setActiveTab('my-complaints');
+          }
+        }}
+      />
+
 
       {/* MODAL: TECHNICIAN MARK RESOLVED WITH FIX & PHOTO PROOF */}
       {resolveModalTicket && (

@@ -129,6 +129,31 @@ export async function deleteComplaintFromFirestore(complaintId) {
 }
 
 /**
+ * Save student app feedback & feature ideas in Firebase Cloud Firestore
+ */
+export async function saveFeedbackToFirestore(feedback) {
+  if (!feedback) return null;
+  try {
+    const feedbackId = feedback.id || `feedback-${Date.now()}`;
+    const docRef = doc(db, "app_feedbacks", String(feedbackId));
+    const sanitized = cleanForFirestore(feedback);
+    const payload = {
+      ...sanitized,
+      id: feedbackId,
+      submittedAt: new Date().toISOString(),
+      createdAtFirestore: serverTimestamp()
+    };
+    await setDoc(docRef, payload, { merge: true });
+    console.log("✅ [Cloud Firestore] App feedback stored successfully:", feedbackId);
+    return feedbackId;
+  } catch (error) {
+    console.error("Firestore saveFeedback error:", error);
+    return null;
+  }
+}
+
+
+/**
  * Fetch all complaints once from Firebase Cloud Firestore
  */
 export async function fetchComplaintsFromFirestore() {

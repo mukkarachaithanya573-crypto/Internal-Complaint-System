@@ -511,3 +511,107 @@ export async function sendOtpEmail(recipientEmail, otpCode, recipientName = 'Stu
 
   return { ...(emailJsRes || {}), otp: formattedOtp, email: cleanEmail };
 }
+
+/**
+ * Developer Contact for App Feedback & Idea Implementations
+ */
+export const DEVELOPER_INFO = {
+  name: 'Mukkara Chaithanya',
+  role: 'Lead Developer & Architect, ICS',
+  email: 'r240493@rguktrkv.ac.in'
+};
+
+/**
+ * Dispatches student suggestions, app feedback, and feature ideas directly to the developer
+ */
+export async function sendEmailOnAppFeedback(feedback) {
+  const studentName = feedback.studentName || 'Student Resident';
+  const studentId = feedback.studentId || 'N/A';
+  const studentEmail = (feedback.studentEmail || '').trim();
+  const category = feedback.category || 'Feature Idea / Enhancement';
+  const title = feedback.title || 'App Improvement Idea';
+  const description = feedback.description || '';
+  const rating = feedback.rating ? `${feedback.rating} / 5 Stars` : 'Not rated';
+  const platform = feedback.platform || 'Android / Web';
+  const version = feedback.version || '1.0.0';
+
+  const fullSummary = `
+💡 NEW APP FEEDBACK & SUGGESTION SUBMITTED
+------------------------------------------
+👤 Student Name : ${studentName}
+🆔 Student ID   : ${studentId}
+📧 Student Email: ${studentEmail || 'Not provided'}
+📱 Platform     : ${platform} (v${version})
+⭐ Rating       : ${rating}
+🏷️ Category     : ${category}
+
+📌 Idea / Suggestion:
+${title}
+
+📝 Detailed Feedback & Proposed Changes:
+${description}
+
+⏱️ Timestamp: ${new Date().toLocaleString()}
+------------------------------------------
+Submitted from RGUKT RK Valley Internal Complaint System
+`.trim();
+
+  const developerParams = {
+    to_name: DEVELOPER_INFO.name,
+    user_name: DEVELOPER_INFO.name,
+    name: DEVELOPER_INFO.name,
+    to_email: DEVELOPER_INFO.email,
+    recipient_email: DEVELOPER_INFO.email,
+    email: DEVELOPER_INFO.email,
+    user_email: DEVELOPER_INFO.email,
+    developer_email: DEVELOPER_INFO.email,
+    title: `[App Feedback] ${category}: ${title}`,
+    subject: `💡 New Student App Idea from ${studentName} (${studentId})`,
+    category: `App Feedback: ${category}`,
+    feedback_type: category,
+    student_name: studentName,
+    student_id: studentId,
+    student_email: studentEmail,
+    rating: rating,
+    platform: platform,
+    location: 'Internal Complaint System App',
+    priority: 'HIGH',
+    status: 'NEW IDEA',
+    message: fullSummary,
+    body: fullSummary,
+    notes: `Submitted by ${studentName} (${studentId}) - ${studentEmail}`,
+    next_step: 'Developer will review suggestion and schedule implementation.',
+    otp: studentId,
+    code: studentId,
+    passcode: studentId,
+    date_time: new Date().toLocaleString()
+  };
+
+  console.log(`💡 [App Feedback] Dispatching student suggestion to developer ${DEVELOPER_INFO.email}...`);
+
+  // 1. Dispatch to developer using dynamic template
+  let devRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, developerParams);
+
+  // 2. Also send via administrative template (routes to developer EmailJS account)
+  if (EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION) {
+    sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION, developerParams).catch(() => {});
+  }
+
+  // 3. Forward to backend dispatcher if active
+  try {
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...feedback,
+        developerEmail: DEVELOPER_INFO.email,
+        submittedAt: new Date().toISOString()
+      })
+    }).catch(() => {});
+  } catch (e) {
+    // Non-blocking
+  }
+
+  return { success: devRes?.success ?? true, res: devRes };
+}
+
