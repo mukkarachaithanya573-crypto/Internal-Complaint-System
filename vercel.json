@@ -11,6 +11,28 @@
   ],
   "headers": [
     {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    },
+    {
+      "source": "/version.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
@@ -39,7 +61,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://cdn.emailjs.com; connect-src 'self' https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://api.emailjs.com wss://*.firebaseio.com https://*.openstreetmap.org https://maps.googleapis.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.googleapis.com https://*.openstreetmap.org https://maps.google.com; frame-ancestors 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://cdn.emailjs.com; connect-src 'self' https://*.firebaseapp.com https://*.firebaseio.com https://*.googleapis.com https://api.emailjs.com wss://*.firebaseio.com https://*.openstreetmap.org https://maps.googleapis.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://*.googleapis.com https://*.openstreetmap.org https://maps.google.com; frame-ancestors 'self';"
         }
       ]
     }

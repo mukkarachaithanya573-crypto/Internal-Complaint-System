@@ -676,6 +676,73 @@ export function isIccComplaint(c) {
   );
 }
 
+// MODAL: High-visibility GitHub Deployment Update Notification Modal
+export function AppUpdateModal({ appVersion, onUpdate, onSkip }) {
+  return (
+    <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="relative w-full max-w-md bg-gradient-to-b from-[#111c38] to-[#090f20] border border-cyan-500/40 rounded-2xl p-6 shadow-2xl shadow-cyan-950/70 text-slate-100 flex flex-col gap-4">
+        {/* Subtle glowing accents */}
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div className="flex items-start gap-3.5 relative z-10">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border border-cyan-400/50 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/20">
+            <Sparkles className="w-6 h-6 text-cyan-300 animate-pulse" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                🚀 GitHub Update
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono truncate">
+                v{appVersion ? String(appVersion).slice(-6) : 'latest'}
+              </span>
+            </div>
+            <h3 className="text-base font-bold text-white mt-1">
+              New Version Available!
+            </h3>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-300 leading-relaxed relative z-10">
+          A new version has been deployed from GitHub with the latest features, enhancements, and fixes. Would you like to update now or keep your current version?
+        </p>
+
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-[11px] text-slate-400 space-y-2 relative z-10">
+          <div className="flex items-center gap-2 text-cyan-300 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0"></span>
+            <span className="text-cyan-200">Update Now:</span>
+            <span className="text-slate-300 font-normal">Loads the latest features & updates instantly.</span>
+          </div>
+          <div className="flex items-center gap-2 text-slate-300 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500 shrink-0"></span>
+            <span className="text-slate-200">Skip / Keep Current:</span>
+            <span className="text-slate-400 font-normal">Continue using current version as usual.</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2.5 pt-1 relative z-10">
+          <button
+            type="button"
+            onClick={onUpdate}
+            className="flex-1 py-2.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs rounded-xl transition-all shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Update Now</span>
+          </button>
+          <button
+            type="button"
+            onClick={onSkip}
+            className="py-2.5 px-4 bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <span>Skip for Now</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CampusMaintenanceApp() {
   // Check if department user has an active daily workday session for today
   const initialDeptSession = getActiveDepartmentDailySession();
@@ -1190,7 +1257,7 @@ export default function CampusMaintenanceApp() {
       setIsOnline(false);
     }
 
-    // Check for live deployed updates from GitHub / server on load and every 45 seconds
+    // Check for live deployed updates from GitHub / server on load and every 30 seconds
     const checkLiveAppUpdate = async () => {
       try {
         const res = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
@@ -1199,8 +1266,12 @@ export default function CampusMaintenanceApp() {
           const verData = await res.json().catch(() => null);
           if (verData && verData.version) {
             const savedVer = localStorage.getItem('rkv_app_deployed_version');
+            const skippedVer = sessionStorage.getItem('rkv_skip_version');
             if (savedVer && savedVer !== verData.version) {
-              setUpdateAvailable(true);
+              // Only prompt if user hasn't explicitly skipped this specific deployed version
+              if (skippedVer !== verData.version) {
+                setUpdateAvailable(true);
+              }
             } else if (!savedVer) {
               localStorage.setItem('rkv_app_deployed_version', verData.version);
             }
@@ -1217,7 +1288,7 @@ export default function CampusMaintenanceApp() {
     };
 
     checkLiveAppUpdate();
-    const updateInterval = setInterval(checkLiveAppUpdate, 45000);
+    const updateInterval = setInterval(checkLiveAppUpdate, 30000);
 
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
@@ -1226,6 +1297,41 @@ export default function CampusMaintenanceApp() {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Handler to apply updates: updates stored version, activates new ServiceWorker, purges caches, and reloads
+  const handleApplyUpdate = async () => {
+    try {
+      if (appVersion) {
+        localStorage.setItem('rkv_app_deployed_version', appVersion);
+      }
+      // Notify active service workers to activate immediately
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      }
+      // Purge old HTTP and asset caches
+      if ('caches' in window) {
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map(k => caches.delete(k)));
+      }
+    } catch (e) {
+      console.warn('Update purge notice:', e);
+    }
+    // Hard reload from network
+    window.location.reload(true);
+  };
+
+  // Handler to skip update: remembers skipped version for current session and retains current version
+  const handleSkipUpdate = () => {
+    if (appVersion) {
+      sessionStorage.setItem('rkv_skip_version', appVersion);
+    }
+    setUpdateAvailable(false);
+  };
 
   const currentStudentEmail = (currentUser?.email || currentUser?.collegeEmail || (reporterEmail !== 'student@rgukt.ac.in' ? reporterEmail : '') || '').toLowerCase().trim();
   const currentStudentId = (currentUser?.idNo || currentUser?.staffId || currentUser?.id || '').trim().toUpperCase();
@@ -2347,35 +2453,66 @@ export default function CampusMaintenanceApp() {
   // Show dedicated professional Offline Page when network is disconnected
   if (!isOnline && !dismissOfflinePage) {
     return (
-      <OfflinePage
-        onRetry={async () => {
-          try {
-            const res = await fetch('/version.json?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
-            if (res && res.ok) {
-              setIsOnline(true);
-              setDismissOfflinePage(false);
-              fetchData();
-              return true;
+      <>
+        {updateAvailable && (
+          <AppUpdateModal
+            appVersion={appVersion}
+            onUpdate={handleApplyUpdate}
+            onSkip={handleSkipUpdate}
+          />
+        )}
+        <OfflinePage
+          onRetry={async () => {
+            try {
+              const res = await fetch('/version.json?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+              if (res && res.ok) {
+                setIsOnline(true);
+                setDismissOfflinePage(false);
+                fetchData();
+                return true;
+              }
+            } catch (e) {
+              // still offline
             }
-          } catch (e) {
-            // still offline
-          }
-          return false;
-        }}
-        onDismiss={() => setDismissOfflinePage(true)}
-        offlineQueueCount={offlineOutbox.length}
-      />
+            return false;
+          }}
+          onDismiss={() => setDismissOfflinePage(true)}
+          offlineQueueCount={offlineOutbox.length}
+        />
+      </>
     );
   }
 
   // Show Cinematic Intro Screen before login page
   if (showIntro) {
-    return <CinematicIntro onEnter={() => setShowIntro(false)} />;
+    return (
+      <>
+        {updateAvailable && (
+          <AppUpdateModal
+            appVersion={appVersion}
+            onUpdate={handleApplyUpdate}
+            onSkip={handleSkipUpdate}
+          />
+        )}
+        <CinematicIntro onEnter={() => setShowIntro(false)} />
+      </>
+    );
   }
 
   // If user is not yet logged in, render the Auth Screen as designed in the reference image
   if (!isAuthenticated) {
-    return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <>
+        {updateAvailable && (
+          <AppUpdateModal
+            appVersion={appVersion}
+            onUpdate={handleApplyUpdate}
+            onSkip={handleSkipUpdate}
+          />
+        )}
+        <AuthScreen onLoginSuccess={handleLoginSuccess} />
+      </>
+    );
   }
 
   return (
@@ -2385,42 +2522,13 @@ export default function CampusMaintenanceApp() {
       <div className="ambient-neon-purple w-[36rem] h-[36rem] top-1/4 -right-40 opacity-70 z-0"></div>
       <div className="ambient-neon-cyan w-96 h-96 -bottom-24 left-1/3 opacity-40 z-0"></div>
       
-      {/* LIVE DEPLOYMENT UPDATE NOTIFICATION POPUP */}
+      {/* LIVE DEPLOYMENT UPDATE NOTIFICATION POPUP & MODAL */}
       {updateAvailable && (
-        <div className="shrink-0 bg-gradient-to-r from-cyan-900/90 via-indigo-950/95 to-purple-950/90 backdrop-blur-xl text-white px-4 py-2.5 text-xs flex items-center justify-between z-40 border-b border-cyan-400/50 shadow-xl shadow-cyan-900/30 animate-in slide-in-from-top duration-300">
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center justify-center shrink-0">
-                <Sparkles className="w-3.5 h-3.5 animate-spin" />
-              </div>
-              <div className="truncate">
-                <span className="font-extrabold text-cyan-300 mr-1.5">🚀 New Version Deployed!</span>
-                <span className="text-slate-300 hidden sm:inline">A fresh system update was just released from GitHub. Refresh now to view all changes.</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  if (appVersion) localStorage.setItem('rkv_app_deployed_version', appVersion);
-                  window.location.reload();
-                }}
-                className="px-3 py-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-lg font-black text-xs transition-all shadow-md shadow-cyan-500/40 cursor-pointer flex items-center gap-1 active:scale-95"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span>Update Now</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setUpdateAvailable(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                title="Dismiss"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </div>
+        <AppUpdateModal
+          appVersion={appVersion}
+          onUpdate={handleApplyUpdate}
+          onSkip={handleSkipUpdate}
+        />
       )}
 
       {/* PERSISTENT OFFLINE CONTINGENCY BANNER */}
@@ -8340,25 +8448,7 @@ function AuthScreen({ onLoginSuccess }) {
 
       // Handle auth/internal-error, network failure, or unapproved origin in Firebase console
       if (err.code === 'auth/internal-error' || err.code === 'auth/network-request-failed' || err.message?.includes('network') || err.message?.includes('internal')) {
-        const manualEmail = prompt(
-          "Google Auth could not reach the authentication network.\n\nPlease enter your college email (@rgukt.ac.in or @rguktrkv.ac.in) to continue:",
-          collegeEmail || (idNo ? `${idNo.toLowerCase()}@rgukt.ac.in` : "")
-        );
-        if (manualEmail && manualEmail.trim()) {
-          const cleanEmail = manualEmail.trim().toLowerCase();
-          if (isCollegeEmail(cleanEmail)) {
-            setCollegeEmail(cleanEmail);
-            setIdNo(cleanEmail.split('@')[0].toUpperCase());
-            if (authMode !== 'signup') setAuthMode('signup');
-            setErrorMsg('');
-            setSuccessMsg(`Entered ${cleanEmail}. Please complete registration form with your password.`);
-            return;
-          } else {
-            setErrorMsg(`"${cleanEmail}" is not an authorized college email address (@rgukt.ac.in or @rguktrkv.ac.in).`);
-            return;
-          }
-        }
-        setErrorMsg('Google Sign-In connection closed by browser/network. Please sign in or register directly using your ID NO and college email.');
+        setErrorMsg('Google Auth network connection interrupted. Please try again or sign in directly with your Student ID & Password.');
         return;
       }
 

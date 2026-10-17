@@ -21,25 +21,16 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 
-// Dynamic authDomain resolver:
-// In mobile browsers (Chrome on Android, Safari on iOS), third-party storage partitioning blocks cross-origin sessionStorage
-// when using the default firebaseapp.com domain. By routing through the same-origin domain (via Vercel rewrite /__/auth/*),
-// auth requests become strictly first-party, completely resolving "missing initial state" and storage partitioning errors.
+// Firebase Auth Domain must match the Authorized Redirect URI in Google Cloud Console OAuth 2.0 Credentials:
+// https://internal-complaint-system.firebaseapp.com/__/auth/handler
 export function getEffectiveAuthDomain() {
-  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-    const host = window.location.hostname;
-    // When accessed via Vercel or custom domain, proxy through same-origin domain
-    if (host.includes('vercel.app') || host.includes('rguktrkv.ac.in')) {
-      return host;
-    }
-  }
   return "internal-complaint-system.firebaseapp.com";
 }
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCwfI8Vcl4PWckgSZoN-Hcf5jaKJWalq7k",
-  authDomain: getEffectiveAuthDomain(),
+  authDomain: "internal-complaint-system.firebaseapp.com",
   projectId: "internal-complaint-system",
   storageBucket: "internal-complaint-system.firebasestorage.app",
   messagingSenderId: "594451897466",
@@ -50,9 +41,13 @@ export const firebaseConfig = {
 // Initialize Firebase App singleton
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firebase Authentication
+// Initialize Firebase Authentication with explicit account chooser parameter
 export const auth = getAuth(app);
 export const googleAuthProvider = new GoogleAuthProvider();
+// Force Google to show the account chooser listing all signed-in accounts
+googleAuthProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 // Initialize Cloud Firestore Database singleton with automatic connection management
 export const db = getFirestore(app);
