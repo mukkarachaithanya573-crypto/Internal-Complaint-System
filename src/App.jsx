@@ -943,7 +943,17 @@ function SlaHierarchyStepper({ ticket }) {
 export default function CampusMaintenanceApp() {
 
   // Check if department user has an active daily workday session for today
-  const initialDeptSession = getActiveDepartmentDailySession();
+  const initialDeptSession = (() => {
+    try {
+      if (isAppEnvironment()) {
+        const explicitLoggedOut = localStorage.getItem('rgukt_app_explicit_logged_out') === 'true' || sessionStorage.getItem('rgukt_app_manual_account_switch') === 'true';
+        if (explicitLoggedOut) return null;
+      }
+      return getActiveDepartmentDailySession();
+    } catch (e) {
+      return null;
+    }
+  })();
 
   // Check if student user has an active session from this device
   const initialStudentSession = (() => {
@@ -952,6 +962,12 @@ export default function CampusMaintenanceApp() {
 
       if (isApp) {
         // 📱 IN MOBILE APP:
+        // If user explicitly logged out of account to log in with another account, do NOT auto-restore
+        const explicitLoggedOut = localStorage.getItem('rgukt_app_explicit_logged_out') === 'true' || sessionStorage.getItem('rgukt_app_manual_account_switch') === 'true';
+        if (explicitLoggedOut) {
+          return null;
+        }
+
         // Once student is registered or logged in, do NOT ask for logins every time!
         // Automatically hydrate and restore their session permanently on this mobile device.
         let raw = localStorage.getItem('rgukt_active_session_user');
@@ -1853,6 +1869,12 @@ export default function CampusMaintenanceApp() {
         }));
       }
 
+      // Clear any prior explicit logout flag so subsequent app launches keep session
+      try {
+        localStorage.removeItem('rgukt_app_explicit_logged_out');
+        sessionStorage.removeItem('rgukt_app_manual_account_switch');
+      } catch (e) {}
+
       saveDepartmentDailySession(user, targetProfile);
     } else {
       // STUDENT LOGIN: Hydrate and establish persistent active session
@@ -1900,6 +1922,8 @@ export default function CampusMaintenanceApp() {
         setReporterEmail(resolvedStudent.email);
       }
       try {
+        localStorage.removeItem('rgukt_app_explicit_logged_out');
+        sessionStorage.removeItem('rgukt_app_manual_account_switch');
         if (isAppEnvironment()) {
           // 📱 IN MOBILE APP: Persist permanently so student is not asked to login every time
           localStorage.setItem('rgukt_active_session_user', JSON.stringify(resolvedStudent));
@@ -2058,6 +2082,7 @@ export default function CampusMaintenanceApp() {
     setProfileEditSuccessToast(true);
   };
 
+  // 🌐 WEBSITE ONLY: Standard Logout
   const handleLogout = () => {
     // Both department workday and student sessions are cleanly terminated upon logout
     clearDepartmentDailySession();
@@ -2065,6 +2090,27 @@ export default function CampusMaintenanceApp() {
       localStorage.removeItem('rgukt_active_session_user');
       localStorage.removeItem('rgukt_app_registered_student');
       sessionStorage.removeItem('rgukt_web_active_student_session');
+    } catch (e) {}
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setSelectedTicket(null);
+    setActiveProfileKey('REPORTER');
+    setShowIntro(false);
+  };
+
+  // 📱 MOBILE APP ONLY: Log out of current account to sign in with another account
+  const handleAppAccountLogout = () => {
+    const userIdentifier = currentUser?.idNo || currentUser?.staffId || currentUser?.email || 'this account';
+    if (!window.confirm(`Log out of account (${userIdentifier}) to sign in with another account?`)) {
+      return;
+    }
+    // Set explicit logout flag so App auto-login does NOT immediately re-hydrate this account
+    try {
+      localStorage.setItem('rgukt_app_explicit_logged_out', 'true');
+      sessionStorage.setItem('rgukt_app_manual_account_switch', 'true');
+      localStorage.removeItem('rgukt_active_session_user');
+      localStorage.removeItem('rgukt_app_registered_student');
+      clearDepartmentDailySession();
     } catch (e) {}
     setIsAuthenticated(false);
     setCurrentUser(null);
@@ -3339,6 +3385,35 @@ export default function CampusMaintenanceApp() {
                   <span>48h SLA</span>
                 </div>
               </div>
+
+              {/* Account Action in Drawer Footer: Website Logout vs App Log Out Account */}
+              <div className="pt-2 pb-1">
+                {!isAppEnvironment() ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDashboardOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-rose-950/40 hover:bg-rose-950/70 text-rose-300 border border-rose-500/30 transition-all cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 shrink-0" />
+                    <span>{isDepartmentRoleOrUser(currentUser) ? 'Leave Work (Logout)' : 'Logout'}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDashboardOpen(false);
+                      handleAppAccountLogout();
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-amber-950/40 hover:bg-amber-950/70 text-amber-300 border border-amber-500/30 transition-all cursor-pointer"
+                  >
+                    <UserCheck className="w-4 h-4 shrink-0 text-amber-400" />
+                    <span>Log Out Account (Switch User)</span>
+                  </button>
+                )}
+              </div>
             </div>
           </aside>
 
@@ -3480,21 +3555,34 @@ export default function CampusMaintenanceApp() {
                   <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
                 </button>
 
-                {/* Logout Button */}
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-all border cursor-pointer bg-[#1A1D26] hover:bg-rose-950/60 text-rose-300 hover:text-rose-200 border-rose-500/30"
-                  title={
-                    isDepartmentRoleOrUser(currentUser)
-                      ? 'Leave Work (Logout): Ends your workday session.'
-                      : 'Logout & Exit: Closes student session.'
-                  }
-                >
-                  <LogOut className="w-3.5 h-3.5 shrink-0" />
-                  <span className="font-semibold">
-                    {isDepartmentRoleOrUser(currentUser) ? 'Leave Work' : 'Logout & Exit'}
-                  </span>
-                </button>
+                {/* Auth Session Button: ONLY in website give option for logout; in app give logout for account to login with another account */}
+                {!isAppEnvironment() ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-all border cursor-pointer bg-[#1A1D26] hover:bg-rose-950/60 text-rose-300 hover:text-rose-200 border-rose-500/30 active:scale-95 shadow-sm"
+                    title={
+                      isDepartmentRoleOrUser(currentUser)
+                        ? 'Leave Work (Logout): Ends your workday session.'
+                        : 'Logout & Exit: Closes student session.'
+                    }
+                  >
+                    <LogOut className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-semibold">
+                      {isDepartmentRoleOrUser(currentUser) ? 'Leave Work' : 'Logout'}
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleAppAccountLogout}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-all border cursor-pointer bg-[#1A1D26] hover:bg-amber-950/40 text-amber-300 hover:text-amber-200 border-amber-500/30 active:scale-95 shadow-sm"
+                    title="Log out of this account to login with another account"
+                  >
+                    <UserCheck className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                    <span className="font-semibold">Log Out Account</span>
+                  </button>
+                )}
               </div>
             </header>
 
