@@ -39,7 +39,6 @@ import {
   LEVEL3_COMMITTEE_ORDER_INFO
 } from './MediumCommitteeFlow';
 import CinematicIntro from './CinematicIntro';
-import InteractiveConstellation from './InteractiveConstellation';
 import OfflinePage from './OfflinePage';
 import ProjectDemoVideoModal from './ProjectDemoVideoModal';
 import {
@@ -8698,16 +8697,14 @@ function AuthScreen({ onLoginSuccess }) {
     }
   };
 
-  // ============================================================================
-  // SLEEK MINIMALISTIC DARK OBSIDIAN FLOATING AUTH MODAL (Zero-Gravity Ambient Aesthetic)
-  // Clean backdrop blur, hairline borders, Student/Faculty segmented control, white CTA, Google SSO
-  // ============================================================================
-  return (
-    <div className="fixed inset-0 min-h-screen bg-[#04060c] overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 font-sans select-none relative z-10">
-      {/* Dynamic Interactive Constellation background */}
-      <InteractiveConstellation />
+  const isApp = isAppEnvironment();
 
-      {/* Zero-Gravity Ambient Back-Glow (Subtle, diffused atmospheric orbs) */}
+  // --------------------------------------------------------------------------
+  // 📱 MOBILE APP VIEW: Sleek Dark Obsidian Floating Modal (No Constellation)
+  // --------------------------------------------------------------------------
+  const renderMobileAppView = () => (
+    <div className="fixed inset-0 min-h-screen bg-[#04060c] overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 font-sans select-none relative z-10">
+      {/* Zero-Gravity Ambient Back-Glow (Subtle diffused atmospheric orbs, zero particle canvas) */}
       <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-indigo-900/20 via-blue-950/10 to-transparent blur-[140px] pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-cyan-900/15 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-white/[0.015] blur-[120px] pointer-events-none" />
@@ -8726,7 +8723,7 @@ function AuthScreen({ onLoginSuccess }) {
       </div>
 
       {/* Floating Dark Obsidian Modal Card (Zero-Gravity Ambient Style) */}
-      <div className="relative z-20 w-full max-w-[420px] rounded-3xl bg-[#090d16]/85 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.08] border-t-white/[0.2] shadow-[0_30px_100px_-15px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.05)] p-6 sm:p-8 transition-all zero-gravity-modal my-auto">
+      <div className="relative z-20 w-full max-w-[420px] rounded-3xl bg-[#090d16]/90 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.08] border-t-white/[0.2] shadow-[0_30px_100px_-15px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.05)] p-6 sm:p-8 transition-all zero-gravity-modal my-auto">
         
         {/* Brand Insignia & Title */}
         <div className="flex flex-col items-center text-center mb-6">
@@ -8795,11 +8792,10 @@ function AuthScreen({ onLoginSuccess }) {
           </div>
         )}
 
-        {/* MODE 1: SIGN IN (Default Floating Modal Flow) */}
+        {/* MODE 1: SIGN IN */}
         {authMode === 'signin' && (
           <>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* ID Field with Subtle Hairline Border */}
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                   {userTab === 'student' ? 'Student ID NO' : 'Faculty ID / Email'}
@@ -8826,7 +8822,6 @@ function AuthScreen({ onLoginSuccess }) {
                 </div>
               </div>
 
-              {/* Password Field with Subtle Hairline Border */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
@@ -8865,7 +8860,6 @@ function AuthScreen({ onLoginSuccess }) {
                 </div>
               </div>
 
-              {/* White Primary CTA */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -8879,7 +8873,6 @@ function AuthScreen({ onLoginSuccess }) {
               </button>
             </form>
 
-            {/* Clean Divider */}
             <div className="flex items-center my-4 gap-3">
               <div className="h-px flex-1 bg-white/[0.08]"></div>
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
@@ -8888,7 +8881,6 @@ function AuthScreen({ onLoginSuccess }) {
               <div className="h-px flex-1 bg-white/[0.08]"></div>
             </div>
 
-            {/* Google SSO */}
             <button
               type="button"
               onClick={handleGoogleLogin}
@@ -8916,7 +8908,6 @@ function AuthScreen({ onLoginSuccess }) {
               <span>Google SSO</span>
             </button>
 
-            {/* Footer Switcher */}
             <div className="mt-5 text-center text-xs text-zinc-400">
               <span>First time here? </span>
               <button
@@ -8935,7 +8926,7 @@ function AuthScreen({ onLoginSuccess }) {
           </>
         )}
 
-        {/* MODE 2: SIGN UP (Registration Modal Flow) */}
+        {/* MODE 2: SIGN UP */}
         {authMode === 'signup' && (
           <>
             {signupStep === 'form' ? (
@@ -9040,7 +9031,6 @@ function AuthScreen({ onLoginSuccess }) {
                   </p>
                 </div>
 
-                {/* Segmented OTP Boxes with Hairline Borders */}
                 <div className="flex items-center justify-center gap-2 my-4">
                   {[0, 1, 2, 3, 4, 5].map((index) => (
                     <input
@@ -9113,7 +9103,6 @@ function AuthScreen({ onLoginSuccess }) {
               </form>
             )}
 
-            {/* Switch back to Sign In */}
             <div className="mt-5 text-center text-xs text-zinc-400">
               <span>Already registered? </span>
               <button
@@ -9334,6 +9323,777 @@ function AuthScreen({ onLoginSuccess }) {
         </p>
 
       </div>
+    </div>
+  );
+
+  // --------------------------------------------------------------------------
+  // 🌐 DESKTOP WEBSITE VIEW: MODERN SPLIT-LAYOUT IN SAFARI BROWSER MOCKUP
+  // Deep Forest-Green / Matte-Black Institutional Branding + Auth Form
+  // --------------------------------------------------------------------------
+  const renderDesktopSafariView = () => (
+    <div className="min-h-screen w-full bg-[#030607] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] flex flex-col items-center justify-center p-3 sm:p-5 md:p-8 lg:p-10 font-sans select-none relative overflow-y-auto z-10">
+
+      {/* Subtle Atmospheric Back-Glows (No interactive constellation) */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-emerald-950/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-teal-950/20 rounded-full blur-[140px] pointer-events-none" />
+
+      {/* Top Global Campus Redressal Header Pill */}
+      <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md text-[11px] text-zinc-400 mb-4 sm:mb-6 shadow-md">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+        <span className="font-semibold text-zinc-200">RGUKT RK Valley</span>
+        <span className="text-zinc-600">•</span>
+        <span>Internal Complaint System (ICS) Portal</span>
+        <span className="text-zinc-600">•</span>
+        <span className="text-emerald-400 font-mono">Institutional Redressal</span>
+      </div>
+
+      {/* Safari Browser Mockup Window Container */}
+      <div className="w-full max-w-5xl xl:max-w-6xl rounded-2xl md:rounded-3xl border border-white/10 bg-[#070b10] shadow-[0_35px_100px_-20px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.06)] overflow-hidden transition-all my-auto">
+
+        {/* Safari Window Header / Chrome Toolbar */}
+        <div className="h-12 bg-[#0c1117] border-b border-white/[0.08] px-4 flex items-center justify-between gap-3 select-none">
+          
+          {/* Left: macOS Traffic Light Window Controls & Nav Buttons */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]/40 shadow-xs cursor-default" title="Close" />
+              <div className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]/40 shadow-xs cursor-default" title="Minimize" />
+              <div className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]/40 shadow-xs cursor-default" title="Maximize" />
+            </div>
+            <div className="hidden md:flex items-center gap-1 ml-2 text-zinc-500">
+              <button type="button" disabled className="p-1 rounded hover:bg-white/[0.04] text-zinc-600 cursor-default">
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </button>
+              <button type="button" disabled className="p-1 rounded hover:bg-white/[0.04] text-zinc-600 cursor-default">
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Center: Safari Address & Search Bar */}
+          <div className="flex-1 max-w-md mx-2 sm:mx-4">
+            <div className="w-full bg-[#05080d] border border-white/[0.08] hover:border-white/[0.15] rounded-lg px-3 py-1 flex items-center justify-between text-xs text-zinc-400 font-mono shadow-inner transition-all">
+              <div className="flex items-center gap-2 truncate">
+                <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
+                <span className="truncate">
+                  <span className="text-zinc-500">https://</span>
+                  <span className="text-zinc-200 font-medium">internal-complaint-system.rguktrkv.ac.in</span>
+                </span>
+              </div>
+              <RefreshCw className="w-3 h-3 text-zinc-500 hover:text-zinc-300 shrink-0 cursor-pointer ml-1.5 transition-colors" />
+            </div>
+          </div>
+
+          {/* Right: Safari Action Controls & Demo Video */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowAuthDemoModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Watch Feature Walkthrough Video"
+            >
+              <Play className="w-3 h-3 fill-emerald-400 text-emerald-400" />
+              <span className="hidden sm:inline">Demo Video</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Safari Window Content: Split Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
+
+          {/* LEFT PANEL: Deep Forest-Green / Matte-Black Institutional Branding */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-[#041a12] via-[#052016] to-[#020d08] border-b lg:border-b-0 lg:border-r border-emerald-900/30 p-6 sm:p-8 lg:p-10 flex flex-col justify-between relative overflow-hidden text-white">
+            
+            {/* Ambient subtle back-glows inside left panel */}
+            <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-teal-600/15 blur-3xl pointer-events-none" />
+
+            {/* Top: University Crest & Heading */}
+            <div className="relative z-10">
+              <div className="flex items-center gap-3.5 mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-emerald-500/20 to-black/60 border border-emerald-500/30 p-2 shadow-[0_0_30px_rgba(16,185,129,0.25)] flex items-center justify-center shrink-0">
+                  <img 
+                    src="/logo.png?v=original" 
+                    alt="RGUKT RK Valley Crest" 
+                    className="w-full h-full object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+                  />
+                </div>
+                <div>
+                  <p className="text-[10px] sm:text-[10.5px] uppercase font-bold tracking-widest text-emerald-400 leading-tight">
+                    RAJIV GANDHI UNIVERSITY OF KNOWLEDGE TECHNOLOGIES
+                  </p>
+                  <h2 className="text-xs sm:text-[13px] font-black tracking-wider text-white uppercase mt-0.5">
+                    RK VALLEY CAMPUS • AP
+                  </h2>
+                </div>
+              </div>
+
+              {/* Institutional Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-4">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Central Redressal Governance</span>
+              </div>
+
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-tight mb-2">
+                Internal Complaint System
+              </h1>
+              <p className="text-xs text-zinc-300 leading-relaxed mb-6">
+                Official institutional portal for reporting, tracking, and resolving campus grievances across academic and residential facilities.
+              </p>
+
+              {/* Institutional Feature Highlights */}
+              <div className="space-y-3.5 pt-4 border-t border-emerald-900/40">
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5 text-emerald-400">
+                    <Zap className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-zinc-100">4-Tier Redressal SLA Escalation</h4>
+                    <p className="text-[11px] text-zinc-400 leading-snug">Warden ➔ DSW ➔ Administrative Officer ➔ Campus Director</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5 text-emerald-400">
+                    <Building className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-zinc-100">Multi-Facility Maintenance Coverage</h4>
+                    <p className="text-[11px] text-zinc-400 leading-snug">Electrical, Plumbing, Civil, IT Infrastructure & Hostels</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5 text-emerald-400">
+                    <Scale className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-zinc-100">Statutory ICC Confidentiality</h4>
+                    <p className="text-[11px] text-zinc-400 leading-snug">Classified handling under institutional privacy rules</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Institutional Seal & SLA Tagline */}
+            <div className="relative z-10 pt-6 mt-6 border-t border-emerald-900/40 flex items-center justify-between text-[11px] text-emerald-400/80 font-mono">
+              <span>Campus Redressal SLA Enforced</span>
+              <span>RGUKT RKV</span>
+            </div>
+          </div>
+
+          {/* RIGHT PANEL: Modern Authentication Form Panel (Matte-Black / Dark Obsidian) */}
+          <div className="lg:col-span-7 bg-[#060910] p-6 sm:p-8 lg:p-10 flex flex-col justify-center relative text-zinc-100">
+            <div className="w-full max-w-md mx-auto">
+              
+              {/* Header */}
+              <div className="mb-6">
+                <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">
+                  {authMode === 'forgot'
+                    ? 'Account Recovery'
+                    : authMode === 'signup'
+                      ? 'First Time Registration'
+                      : 'Account Sign In'}
+                </h3>
+                <p className="text-xs text-zinc-400 mt-1">
+                  {authMode === 'forgot'
+                    ? 'Reset your password via 6-digit webmail OTP verification'
+                    : authMode === 'signup'
+                      ? 'Create an institutional account with your college webmail'
+                      : 'Enter your ID and password or continue with Google SSO'}
+                </p>
+              </div>
+
+              {/* Segmented Student / Department Toggle */}
+              <div className="flex p-1 bg-white/[0.03] border border-white/[0.08] rounded-xl mb-5 relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserTab('student');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    userTab === 'student'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  <span>Student</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserTab('department');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    userTab === 'department'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Department / Faculty</span>
+                </button>
+              </div>
+
+              {/* Alerts: Error / Success */}
+              {errorMsg && (
+                <div className="mb-4 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2 backdrop-blur-md animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 font-normal leading-relaxed">{errorMsg}</div>
+                </div>
+              )}
+              {successMsg && (
+                <div className="mb-4 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2 backdrop-blur-md animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 font-normal leading-relaxed">{successMsg}</div>
+                </div>
+              )}
+
+              {/* MODE 1: SIGN IN */}
+              {authMode === 'signin' && (
+                <>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+                        {userTab === 'student' ? 'Student ID NO' : 'Department / Faculty Email'}
+                      </label>
+                      <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                        <input
+                          type="text"
+                          value={userTab === 'student' ? idNo : (idNo || collegeEmail)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (userTab === 'student') {
+                              setIdNo(val);
+                            } else {
+                              setIdNo(val);
+                              setCollegeEmail(val);
+                            }
+                          }}
+                          placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. warden@rgukt.ac.in'}
+                          className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                          required
+                          autoCapitalize={userTab === 'student' ? 'characters' : 'none'}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                          Password
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode('forgot');
+                            setForgotStep('request');
+                            setErrorMsg('');
+                            setSuccessMsg('');
+                          }}
+                          className="text-[11px] text-zinc-400 hover:text-emerald-400 transition-colors cursor-pointer"
+                        >
+                          Forgot?
+                        </button>
+                      </div>
+                      <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••••••"
+                          className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    >
+                      {isSubmitting ? (
+                        <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <span>Sign In to Redressal Portal</span>
+                      )}
+                    </button>
+                  </form>
+
+                  <div className="flex items-center my-4 gap-3">
+                    <div className="h-px flex-1 bg-white/[0.08]"></div>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+                      or continue with
+                    </span>
+                    <div className="h-px flex-1 bg-white/[0.08]"></div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/[0.16] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      />
+                    </svg>
+                    <span>Continue with Google SSO</span>
+                  </button>
+
+                  <div className="mt-5 text-center text-xs text-zinc-400">
+                    <span>First time here? </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('signup');
+                        setSignupStep('form');
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                      }}
+                      className="text-emerald-400 hover:text-emerald-300 hover:underline font-semibold cursor-pointer"
+                    >
+                      Register New Account
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* MODE 2: SIGN UP */}
+              {authMode === 'signup' && (
+                <>
+                  {signupStep === 'form' ? (
+                    <div className="space-y-3.5">
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                          Full Name
+                        </label>
+                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <User className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                          <input
+                            type="text"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            placeholder="e.g. Chaithanya Yadav"
+                            className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                          {userTab === 'student' ? 'Student ID NO' : 'Faculty / Staff ID'}
+                        </label>
+                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                          <input
+                            type="text"
+                            value={idNo}
+                            onChange={(e) => setIdNo(e.target.value.toUpperCase())}
+                            placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. WARDEN-01'}
+                            className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                          Official Email (@rgukt.ac.in)
+                        </label>
+                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <Mail className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                          <input
+                            type="email"
+                            value={collegeEmail}
+                            onChange={(e) => setCollegeEmail(e.target.value)}
+                            placeholder={userTab === 'student' ? 'r200101@rguktrkv.ac.in' : 'warden@rgukt.ac.in'}
+                            className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                          Create Password
+                        </label>
+                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••••••"
+                            className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isSendingOtp}
+                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                      >
+                        {isSendingOtp ? (
+                          <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <span>Request Verification OTP</span>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    /* OTP Verification Step */
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="text-center">
+                        <p className="text-xs text-zinc-300">
+                          Enter the 6-digit verification code sent to
+                        </p>
+                        <p className="text-xs font-mono text-emerald-400 font-semibold mt-0.5">
+                          {otpTargetEmail || collegeEmail}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2 my-4">
+                        {[0, 1, 2, 3, 4, 5].map((index) => (
+                          <input
+                            key={index}
+                            ref={(el) => (otpInputRefs.current[index] = el)}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength="1"
+                            value={(enteredOtp || '')[index] || ''}
+                            onChange={(e) => handleOtpBoxChange(e, index)}
+                            onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
+                            onPaste={handleOtpBoxPaste}
+                            className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 rounded-xl outline-none transition-all"
+                          />
+                        ))}
+                      </div>
+
+                      {generatedOtp && (
+                        <div className="text-center my-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEnteredOtp(generatedOtp);
+                              setErrorMsg('');
+                              if (otpInputRefs.current[5]) {
+                                otpInputRefs.current[5].focus();
+                              }
+                            }}
+                            className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
+                          >
+                            Auto-fill OTP ({generatedOtp})
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+                        <span>
+                          {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Didn't get OTP?"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={!canResendOtp || isSendingOtp}
+                          className="text-emerald-400 hover:underline font-semibold disabled:opacity-40 cursor-pointer"
+                        >
+                          Resend Code
+                        </button>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || (enteredOtp || '').length < 6}
+                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        {isSubmitting ? (
+                          <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <span>Verify & Enter Portal</span>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSignupStep('form')}
+                        className="w-full py-1.5 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        ← Edit Details
+                      </button>
+                    </form>
+                  )}
+
+                  <div className="mt-5 text-center text-xs text-zinc-400">
+                    <span>Already registered? </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('signin');
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                      }}
+                      className="text-emerald-400 hover:text-emerald-300 hover:underline font-semibold cursor-pointer"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* MODE 3: FORGOT PASSWORD */}
+              {authMode === 'forgot' && (
+                <div className="space-y-4">
+                  {forgotStep === 'request' ? (
+                    <>
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+                          Student ID or Registered Email
+                        </label>
+                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                          <input
+                            type="text"
+                            value={idNo || collegeEmail}
+                            onChange={(e) => {
+                              setIdNo(e.target.value);
+                              setCollegeEmail(e.target.value);
+                            }}
+                            placeholder="e.g. R200101 or email"
+                            className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleSendForgotOtp}
+                        disabled={isSendingOtp}
+                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                      >
+                        {isSendingOtp ? (
+                          <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <span>Send Recovery OTP</span>
+                        )}
+                      </button>
+                    </>
+                  ) : forgotStep === 'verify' ? (
+                    <>
+                      <div className="text-center">
+                        <p className="text-xs text-zinc-300">Enter the 6-digit recovery code sent to</p>
+                        <p className="text-xs font-mono text-emerald-400 font-semibold mt-0.5">{otpTargetEmail}</p>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 my-3">
+                        {[0, 1, 2, 3, 4, 5].map((index) => (
+                          <input
+                            key={index}
+                            ref={(el) => (otpInputRefs.current[index] = el)}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength="1"
+                            value={(enteredOtp || '')[index] || ''}
+                            onChange={(e) => handleOtpBoxChange(e, index)}
+                            onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
+                            onPaste={handleOtpBoxPaste}
+                            className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 rounded-xl outline-none transition-all"
+                          />
+                        ))}
+                      </div>
+
+                      {generatedOtp && (
+                        <div className="text-center my-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEnteredOtp(generatedOtp);
+                              setErrorMsg('');
+                              if (otpInputRefs.current[5]) {
+                                otpInputRefs.current[5].focus();
+                              }
+                            }}
+                            className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
+                          >
+                            Auto-fill OTP ({generatedOtp})
+                          </button>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleVerifyForgotOtp}
+                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Verify OTP & Continue</span>
+                      </button>
+
+                      <div className="text-center mt-2">
+                        <button
+                          type="button"
+                          onClick={() => setForgotStep('request')}
+                          className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                        >
+                          ← Change ID / Email
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                            New Password
+                          </label>
+                          <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                            <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                            <input
+                              type={showNewPassword ? 'text' : 'password'}
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              placeholder="••••••••••••"
+                              className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                              className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                            >
+                              {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                            Confirm New Password
+                          </label>
+                          <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                            <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                            <input
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              placeholder="••••••••••••"
+                              className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                              required
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                            >
+                              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleResetPasswordSubmit}
+                          disabled={isSubmitting}
+                          className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                        >
+                          {isSubmitting ? (
+                            <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <span>Save Password & Sign In</span>
+                          )}
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode('signin');
+                        setErrorMsg('');
+                        setSuccessMsg('');
+                      }}
+                      className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      ← Back to Sign In
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Footer Terms & Privacy Disclaimer */}
+              <p className="text-[10px] text-zinc-500 text-center mt-6 leading-snug">
+                By continuing, you indicate that you agree to ICS{' '}
+                <button
+                  type="button"
+                  onClick={() => setPolicyModalType('terms')}
+                  className="text-emerald-400 hover:text-emerald-300 hover:underline font-semibold cursor-pointer transition-colors"
+                >
+                  Terms of Service
+                </button>{' '}
+                and{' '}
+                <button
+                  type="button"
+                  onClick={() => setPolicyModalType('privacy')}
+                  className="text-emerald-400 hover:text-emerald-300 hover:underline font-semibold cursor-pointer transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {isApp ? renderMobileAppView() : renderDesktopSafariView()}
 
       {/* MODAL: INSTITUTIONAL GUIDELINES, TERMS OF SERVICE & PRIVACY POLICY */}
       {policyModalType && (
@@ -9502,9 +10262,10 @@ function AuthScreen({ onLoginSuccess }) {
         onClose={() => setShowAuthDemoModal(false)}
         initialPrompt={false}
       />
-    </div>
+    </>
   );
 }
+
 // =========================================================================
 // KNOWN SPECIFIC ROOMS BY CAMPUS BLOCK
 // =========================================================================
