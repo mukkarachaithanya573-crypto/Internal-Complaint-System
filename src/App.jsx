@@ -9,7 +9,7 @@ import {
   Ban, Inbox, Send, AlertCircle, IdCard, ExternalLink, Settings, Building, Building2,
   Search, Printer, Link2, GraduationCap, CheckCheck, MessageSquare, Play,
   Compass, Navigation, Map as MapIcon, Phone, KeyRound, Smartphone, Trash2,
-  Scale, Gavel, Plus, Edit3, Save, UserCheck, Menu, Lightbulb
+  Scale, Gavel, Plus, Edit3, Save, UserCheck, Menu, Lightbulb, Award, Bed, FileText
 } from 'lucide-react';
 
 import { 
@@ -791,7 +791,157 @@ export function AppUpdateModal({ appVersion, onUpdate, onSkip }) {
   );
 }
 
+
+// =========================================================================
+// 🏛️ INSTITUTIONAL 4-TIER REDRESSAL SLA HIERARCHY STEPPER WITH LIVE CLOCK
+// Warden (Tier 1: 4h) -> DSW (Tier 2: 24h) -> AO (Tier 3: 48h) -> Director (Tier 4: 72h)
+// =========================================================================
+function SlaHierarchyStepper({ ticket }) {
+  const createdAt = ticket?.createdAt ? new Date(ticket.createdAt).getTime() : Date.now() - 3600000;
+  const elapsedHours = Math.max(0, (Date.now() - createdAt) / (1000 * 60 * 60));
+
+  const TIERS = [
+    {
+      level: 1,
+      title: 'Warden',
+      role: 'Hostel Resident Warden',
+      slaTarget: '0h – 4h',
+      targetHours: 4,
+      description: 'Ground Inspection & Field Verification',
+      icon: Building
+    },
+    {
+      level: 2,
+      title: 'DSW',
+      role: 'Dean Student Welfare',
+      slaTarget: '4h – 24h',
+      targetHours: 24,
+      description: 'Department Escalation & Material Sanctions',
+      icon: ShieldCheck
+    },
+    {
+      level: 3,
+      title: 'Administrative Officer',
+      role: 'AO & Grievance Redressal Committee',
+      slaTarget: '24h – 48h',
+      targetHours: 48,
+      description: 'Central Administrative Intervention',
+      icon: Scale
+    },
+    {
+      level: 4,
+      title: 'Campus Director',
+      role: 'The Director / Vice Chancellor',
+      slaTarget: '48h – 72h',
+      targetHours: 72,
+      description: 'Statutory Apex Resolution & Inquiry Order',
+      icon: Award
+    }
+  ];
+
+  let currentTierIdx = 0;
+  if (elapsedHours > 48) currentTierIdx = 3;
+  else if (elapsedHours > 24) currentTierIdx = 2;
+  else if (elapsedHours > 4) currentTierIdx = 1;
+
+  const activeTier = TIERS[currentTierIdx];
+  const remainingHoursInTier = Math.max(0, activeTier.targetHours - elapsedHours);
+  const remainingMinutes = Math.floor((remainingHoursInTier % 1) * 60);
+  const hoursDisplay = Math.floor(remainingHoursInTier);
+
+  return (
+    <div className="bg-[#111319] border border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-xl mb-5 space-y-4 font-sans">
+      {/* Stepper Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#0D2821] border border-[#0F382E] text-emerald-400 flex items-center justify-center font-bold shrink-0">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                4-Tier Redressal SLA Hierarchy
+              </h4>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#0D2821] text-emerald-400 border border-[#0F382E]">
+                Live SLA Clock
+              </span>
+            </div>
+            <p className="text-[11px] text-zinc-400">
+              Sequential Escalation: Warden → DSW → Administrative Officer → Campus Director
+            </p>
+          </div>
+        </div>
+
+        {/* Active SLA Countdown Clock */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#14161C] border border-white/[0.08]">
+          <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
+          <div className="text-left">
+            <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block leading-none">
+              Tier {activeTier.level} ({activeTier.title}) SLA Clock
+            </span>
+            <span className="text-xs font-mono font-bold text-emerald-300">
+              {remainingHoursInTier > 0
+                ? `${String(hoursDisplay).padStart(2, '0')}h ${String(remainingMinutes).padStart(2, '0')}m Remaining`
+                : `SLA Breached (${Math.floor(elapsedHours - activeTier.targetHours)}h ago)`}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 4-Tier Interactive Steps */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+        {TIERS.map((tier, idx) => {
+          const isCompleted = idx < currentTierIdx;
+          const isCurrent = idx === currentTierIdx;
+          const TierIcon = tier.icon;
+
+          return (
+            <div
+              key={tier.level}
+              className={`p-3 rounded-xl border transition-all flex flex-col justify-between ${
+                isCurrent
+                  ? 'bg-[#0D2821] border-[#0F382E] ring-1 ring-emerald-500/50 shadow-lg'
+                  : isCompleted
+                  ? 'bg-[#14161C] border-white/[0.08] opacity-90'
+                  : 'bg-[#14161C]/50 border-white/[0.04] opacity-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className={`text-[9px] font-mono font-bold uppercase tracking-wider ${
+                    isCurrent ? 'text-emerald-300' : isCompleted ? 'text-zinc-400' : 'text-zinc-600'
+                  }`}>
+                    Tier {tier.level} • {tier.slaTarget}
+                  </span>
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : isCurrent ? (
+                    <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      Active
+                    </span>
+                  ) : (
+                    <Clock className="w-3 h-3 text-zinc-600" />
+                  )}
+                </div>
+                <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <TierIcon className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>{tier.title}</span>
+                </h5>
+                <p className="text-[10px] text-zinc-400 mt-1 leading-snug line-clamp-2">
+                  {tier.description}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function CampusMaintenanceApp() {
+
   // Check if department user has an active daily workday session for today
   const initialDeptSession = getActiveDepartmentDailySession();
 
@@ -2657,11 +2807,11 @@ export default function CampusMaintenanceApp() {
   }
 
   return (
-    <div className="h-screen cyber-canvas-bg text-slate-100 flex flex-col font-sans overflow-hidden relative">
-      {/* Floating Neon Ambient Accents for Cyber Glass Refraction */}
-      <div className="ambient-neon-cyan w-[32rem] h-[32rem] -top-32 -left-32 opacity-75 z-0"></div>
-      <div className="ambient-neon-purple w-[36rem] h-[36rem] top-1/4 -right-40 opacity-70 z-0"></div>
-      <div className="ambient-neon-cyan w-96 h-96 -bottom-24 left-1/3 opacity-40 z-0"></div>
+    <div className="h-screen bg-[#0A0C10] text-zinc-100 flex flex-col font-sans overflow-hidden relative">
+      {/* Zero-Gravity Ambient Back-Glow (Deep institutional emerald & slate atmospheric orbs) */}
+      <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-[#0D2821]/25 via-slate-900/15 to-transparent blur-[140px] pointer-events-none z-0" />
+      <div className="absolute top-1/3 -right-32 w-[600px] h-[600px] rounded-full bg-gradient-to-tl from-[#0D2821]/20 via-[#0A0C10] to-transparent blur-[150px] pointer-events-none z-0" />
+      <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] rounded-full bg-white/[0.015] blur-[120px] pointer-events-none z-0" />
       
       {/* LIVE DEPLOYMENT UPDATE NOTIFICATION POPUP & MODAL (App-Only) */}
       {updateAvailable && isAppEnvironment() && (
@@ -3196,46 +3346,85 @@ export default function CampusMaintenanceApp() {
           <div className="flex-1 min-w-0 w-full h-full flex flex-col overflow-hidden bg-transparent">
 
             {/* TOP HEADER BAR: 3-LINE BAR AT TOP-LEFT CORNER */}
-            <header className="shrink-0 z-30 px-3 sm:px-6 py-2.5 glass-header flex items-center justify-between gap-3 flex-wrap relative">
-              <div className="flex items-center gap-2 sm:gap-3">
+            <header className="shrink-0 z-30 px-3 sm:px-6 py-2.5 bg-[#111319] border-b border-white/[0.08] shadow-md flex items-center justify-between gap-3 flex-wrap relative font-sans">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON AT TOP-LEFT CORNER */}
                 <button
                   type="button"
                   onClick={() => setIsDashboardOpen(prev => !prev)}
-                  className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border shadow-lg cursor-pointer active:scale-95 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 border shadow-sm cursor-pointer active:scale-95 ${
                     isDashboardOpen
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 border-cyan-300 shadow-cyan-500/40 ring-2 ring-cyan-400'
-                      : 'bg-slate-900/90 hover:bg-slate-800 text-cyan-400 hover:text-cyan-300 border-cyan-500/40 hover:border-cyan-400 shadow-cyan-950/40'
+                      ? 'bg-white text-black border-white shadow-md'
+                      : 'bg-[#1A1D26] hover:bg-[#222736] text-zinc-200 border-white/[0.08]'
                   }`}
                   title={isDashboardOpen ? "Click to Close Dashboard & Go Back" : "Click 3-Line Bar to Display Dashboard"}
                   aria-label="Toggle Dashboard Menu"
                 >
-                  <Menu className="w-5 h-5 text-current shrink-0 stroke-[2.5]" />
-                  <span className="font-black uppercase tracking-wider text-[11px] hidden xs:inline">
+                  <Menu className="w-4 h-4 text-current shrink-0 stroke-[2.5]" />
+                  <span className="font-bold uppercase tracking-wider text-[11px] hidden xs:inline">
                     {isDashboardOpen ? 'Go Back' : 'Dashboard'}
                   </span>
-                  <span className={`w-2 h-2 rounded-full ${isDashboardOpen ? 'bg-slate-950 animate-ping' : 'bg-cyan-400 animate-pulse'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isDashboardOpen ? 'bg-black animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
                 </button>
 
                 <button
                   type="button"
                   onClick={handleStepBack}
-                  className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-700/60 shadow-2xs cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#1A1D26] hover:bg-[#222736] text-zinc-300 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-white/[0.08] shadow-xs cursor-pointer active:scale-95"
                   title="Step Back one screen"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5 text-slate-200" />
+                  <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
                   <span className="hidden sm:inline">Back</span>
                 </button>
-                <span className="text-xs font-black uppercase tracking-wider text-slate-400 hidden sm:inline">
-                  {currentRole === 'REPORTER' ? 'Campus Resident Portal' : currentRole === 'STAFF' ? 'Department Workplace' : 'Administrative Center'}
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800/80 text-cyan-300 border border-slate-700/60">
+
+                {/* RGUKT RK Valley Crest Emblem & Central Governance Badge */}
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1 flex items-center justify-center shrink-0 shadow-inner">
+                    <img 
+                      src="/logo.png?v=original" 
+                      alt="RGUKT Crest" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="hidden sm:flex flex-col text-left">
+                    <span className="text-xs font-bold text-white tracking-tight leading-tight">RGUKT RK VALLEY</span>
+                    <span className="text-[10px] text-zinc-400 font-medium leading-tight">Internal Complaint System</span>
+                  </div>
+                  <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-[11px] font-semibold tracking-wide">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Central Redressal Governance
+                  </span>
+                </div>
+
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-[#1A1D26] text-zinc-200 border border-white/[0.08]">
                   {activeTab.toUpperCase()}
                 </span>
+
+                {/* Real-time SLA Status Pill */}
+                <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D2821]/80 text-emerald-300 border border-[#0F382E] text-[11px] font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                  <span>SLA Active • 4-Tier Matrix</span>
+                </div>
               </div>
 
               {/* TOP RIGHT CORNER: NOTIFICATIONS + REAL-TIME REFRESH + IDENTITY + LOGOUT BUTTON */}
               <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                {/* Student Pill (Roll ID: R200101, Hostel/Block info) */}
+                {currentUser && (
+                  <div className="hidden xl:flex items-center gap-2 px-3 py-1 bg-[#1A1D26] rounded-full border border-white/[0.08] text-xs">
+                    <div className="w-5 h-5 rounded-full bg-[#0D2821] text-emerald-400 font-bold text-[10px] flex items-center justify-center shrink-0 border border-[#0F382E]">
+                      {(currentUser.name || currentUser.fullName || 'S').charAt(0).toUpperCase()}
+                    </div>
+                    <span className="font-semibold text-zinc-200">
+                      Roll ID: {currentUser.idNo || currentUser.staffId || 'R200101'}
+                    </span>
+                    <span className="text-zinc-600">•</span>
+                    <span className="text-zinc-400 truncate max-w-[140px]">
+                      {currentUser.hostelBlock ? `${currentUser.hostelBlock} • ${currentUser.roomNumber || ''}` : (currentUser.department || 'Resident')}
+                    </span>
+                  </div>
+                )}
+
                 {/* App Feedback & Ideas Button */}
                 <button
                   type="button"
@@ -3243,7 +3432,7 @@ export default function CampusMaintenanceApp() {
                     setPostSubmitFeedbackTicket(null);
                     setIsAppFeedbackOpen(true);
                   }}
-                  className="px-2.5 py-1.5 bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 border border-amber-500/40 hover:border-amber-400 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#1A1D26] hover:bg-[#222736] text-amber-300 border border-white/[0.08] rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Submit Ideas, Suggestions & Changes Needed in this App"
                 >
                   <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
@@ -3257,22 +3446,21 @@ export default function CampusMaintenanceApp() {
                     setDemoInitialPrompt(false);
                     setShowDemoModal(true);
                   }}
-                  className="px-2.5 py-1.5 bg-cyan-950/70 hover:bg-cyan-900/90 text-cyan-300 border border-cyan-500/40 hover:border-cyan-400 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#1A1D26] hover:bg-[#222736] text-zinc-200 hover:text-white border border-white/[0.08] rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Watch Project Demo Video & Feature Walkthrough"
                 >
-                  <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                  <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
                   <span className="hidden sm:inline">Demo Tour</span>
                 </button>
-
 
                 {/* Notification Center Bell Trigger */}
                 <button
                   type="button"
                   onClick={() => setShowMailboxModal(true)}
-                  className="relative p-2 bg-slate-900/90 hover:bg-slate-800 text-cyan-400 border border-cyan-500/40 rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center hover:border-cyan-300 hover:scale-105 active:scale-95"
+                  className="relative p-2 bg-[#1A1D26] hover:bg-[#222736] text-zinc-200 border border-white/[0.08] rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center active:scale-95"
                   title="View All Campus Notifications & Email Dispatches"
                 >
-                  <Bell className="w-4 h-4 text-cyan-400" />
+                  <Bell className="w-4 h-4 text-zinc-300" />
                   {notifications.length > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 border border-rose-400 text-white font-black text-[10px] flex items-center justify-center shadow-md animate-pulse">
                       {notifications.length > 99 ? '99+' : notifications.length}
@@ -3280,41 +3468,22 @@ export default function CampusMaintenanceApp() {
                   )}
                 </button>
 
+                {/* Solid White Sync/Refresh Button */}
                 <button
                   type="button"
                   onClick={fetchData}
                   disabled={isRefreshing}
-                  className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-2.5 py-1.5 bg-white hover:bg-neutral-200 text-black border border-white/20 rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
                   title="Refresh & sync campus complaints data in real-time"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-black ${isRefreshing ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
                 </button>
 
-                {currentUser && (
-                  <div className="flex items-center gap-2 px-3 py-1 cyber-card-subtle rounded-xl shadow-md border border-cyan-500/20">
-                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-black text-[10px] flex items-center justify-center shrink-0">
-                      {(currentUser.name || currentUser.fullName || 'U').charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex flex-col text-left leading-tight">
-                      <span className="text-xs font-bold text-slate-100 truncate max-w-[150px] sm:max-w-[200px]">
-                        {currentUser.name || currentUser.fullName || 'Student Resident'}
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-medium truncate max-w-[150px] sm:max-w-[200px]">
-                        {currentUser.idNo || currentUser.staffId || currentUser.email || 'Resident'}
-                        {currentUser.hostelBlock ? ` • ${currentUser.hostelBlock}-${currentUser.roomNumber || ''}` : ''}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
+                {/* Logout Button */}
                 <button
                   onClick={handleLogout}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all border cursor-pointer ${
-                    isDepartmentRoleOrUser(currentUser)
-                      ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200 hover:border-amber-300'
-                      : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200 hover:border-rose-300'
-                  }`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs transition-all border cursor-pointer bg-[#1A1D26] hover:bg-rose-950/60 text-rose-300 hover:text-rose-200 border-rose-500/30"
                   title={
                     isDepartmentRoleOrUser(currentUser)
                       ? 'Leave Work (Logout): Ends your workday session.'
@@ -3322,7 +3491,7 @@ export default function CampusMaintenanceApp() {
                   }
                 >
                   <LogOut className="w-3.5 h-3.5 shrink-0" />
-                  <span className="font-bold">
+                  <span className="font-semibold">
                     {isDepartmentRoleOrUser(currentUser) ? 'Leave Work' : 'Logout & Exit'}
                   </span>
                 </button>
@@ -3372,16 +3541,33 @@ export default function CampusMaintenanceApp() {
 
             {activeTab === 'submit' ? (
               /* SUBMIT COMPLAINT FORM */
-              <div className="max-w-4xl mx-auto w-full">
-                <div className="glass-panel p-5 sm:p-8 rounded-2xl">
-                  
-                  <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-800/60">
-                    <div>
-                      <h2 className="text-xl font-bold text-white tracking-tight">New Maintenance Complaint</h2>
-                      <p className="text-xs text-slate-400">Accessible across academic halls, labs, hostels, and grounds.</p>
+              <div className="max-w-4xl mx-auto w-full font-sans space-y-5">
+                {/* Institutional Accent & Hero Panel Matching Login Branding */}
+                <div className="bg-[#0D2821] border border-[#0F382E] p-5 sm:p-6 rounded-2xl shadow-xl flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-emerald-400 shrink-0">
+                      <Plus className="w-5 h-5 text-emerald-400" />
                     </div>
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                        New Redressal Grievance / Maintenance Complaint
+                      </h2>
+                      <p className="text-xs text-zinc-300">
+                        Official 4-Tier Redressal Hierarchy • Automated Warden, DSW & Committee Dispatch
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-[#111319] border border-white/[0.08] text-emerald-400 text-xs font-semibold">
+                    ⚡ 4-Tier SLA Enforced
+                  </span>
+                </div>
 
-                    
+                <div className="bg-[#111319] border border-white/[0.08] p-5 sm:p-8 rounded-2xl shadow-xl">
+                  <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/[0.08]">
+                    <div>
+                      <h3 className="text-base font-bold text-white tracking-tight">Lodgement Details</h3>
+                      <p className="text-xs text-zinc-400">Accessible across residential hostels, academic blocks, mess, and campus amenities.</p>
+                    </div>
                   </div>
 
                   {/* QR Scan Success Toast Banner */}
@@ -4197,20 +4383,16 @@ export default function CampusMaintenanceApp() {
                     {/* Submit Button */}
                     <button
                       type="submit"
-                      className={`w-full py-3.5 text-white font-bold rounded-xl shadow-md text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                        categoryType === 'ICC'
-                          ? 'bg-gradient-to-r from-purple-900 via-indigo-950 to-purple-950 hover:from-purple-950 hover:to-black ring-2 ring-purple-400/30'
-                          : 'bg-gradient-to-r from-teal-900 via-emerald-950 to-slate-900 hover:from-teal-950 hover:to-black ring-2 ring-teal-400/30'
-                      }`}
+                      className="w-full py-3.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl shadow-md text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
                     >
                       {categoryType === 'ICC' ? (
                         <>
-                          <ShieldCheck className="w-4 h-4 text-amber-300" />
+                          <ShieldCheck className="w-4 h-4 text-purple-700" />
                           <span>Submit Formal Grievance to ICC (Director Chaired)</span>
                         </>
                       ) : (
                         <>
-                          <Building className="w-4 h-4 text-emerald-300" />
+                          <Building className="w-4 h-4 text-emerald-800" />
                           <span>Submit to Hostel Warden (Hierarchy Stage 1)</span>
                         </>
                       )}
@@ -4221,6 +4403,8 @@ export default function CampusMaintenanceApp() {
             ) : activeTab === 'my-complaints' ? (
               /* DEDICATED SEPARATE CARD: MY COMPLAINTS */
               <div className="max-w-4xl mx-auto space-y-4 animate-in fade-in duration-200">
+                {/* 4-Tier Redressal SLA Stepper with Live Countdown Clock */}
+                <SlaHierarchyStepper ticket={visibleComplaints[0]} />
                 {/* My Complaints Standalone Card Header with Sub-Categories */}
                 <div className="glass-panel p-4 sm:p-5 rounded-2xl">
                   <div className="flex items-center justify-between mb-3.5 flex-wrap gap-2">
@@ -4238,7 +4422,7 @@ export default function CampusMaintenanceApp() {
                       <button
                         type="button"
                         onClick={() => navigateToTab('submit')}
-                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs transition-all shadow-sm cursor-pointer flex items-center gap-1.5 font-sans"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>New Complaint</span>
@@ -4260,12 +4444,12 @@ export default function CampusMaintenanceApp() {
                           onClick={() => setStudentStatusFilter('ALL')}
                           className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                             studentStatusFilter === 'ALL'
-                              ? 'bg-blue-600 text-white font-black shadow-lg shadow-blue-600/40 border border-blue-400'
-                              : 'bg-slate-800/80 border border-slate-700/80 text-slate-100 hover:text-white hover:bg-slate-800 hover:border-slate-600'
+                              ? 'bg-white text-black font-bold shadow-md'
+                              : 'bg-[#14161C] border border-white/[0.08] text-zinc-300 hover:text-white hover:bg-[#1A1D26]'
                           }`}
                         >
-                          <span className="text-[11px] uppercase tracking-wider font-extrabold text-white">ALL</span>
-                          <span className="text-sm font-black text-white">{visibleComplaints.length}</span>
+                          <span className={`text-[11px] uppercase tracking-wider font-extrabold ${studentStatusFilter === 'ALL' ? 'text-black' : 'text-zinc-200'}`}>ALL</span>
+                          <span className={`text-sm font-black ${studentStatusFilter === 'ALL' ? 'text-black' : 'text-white'}`}>{visibleComplaints.length}</span>
                         </button>
 
                         {/* 2. PENDING */}
@@ -4376,32 +4560,75 @@ export default function CampusMaintenanceApp() {
 
                     if (filteredStudentComplaints.length === 0) {
                       return (
-                        <div className="p-8 text-center glass-panel rounded-2xl">
-                          <div className="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto mb-3">
-                            <Layers className="w-6 h-6 text-blue-500" />
+                        <div className="p-8 sm:p-10 text-center bg-[#111319] border border-white/[0.08] rounded-2xl shadow-xl font-sans">
+                          {/* Institutional Emerald Badge */}
+                          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-xs font-semibold mb-3">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            <span>Central Redressal Governance • 4-Tier SLA Active</span>
                           </div>
-                          <h4 className="text-sm font-bold text-slate-200">
-                            {studentStatusFilter === 'PENDING' ? 'No Pending Complaints' :
+
+                          <h4 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                            {studentStatusFilter === 'PENDING' ? 'No Pending Grievances' :
                              studentStatusFilter === 'SOLVED' ? 'No Solved Complaints Yet' :
                              studentStatusFilter === 'REJECTED' ? 'No Rejected Complaints' :
-                             'No Complaints Lodged Yet'}
+                             'No Active Complaints Lodged'}
                           </h4>
-                          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                            {studentStatusFilter === 'PENDING' ? 'All your grievances have been addressed or resolved by the campus authorities.' :
-                             studentStatusFilter === 'SOLVED' ? 'Once complaints are inspected and fixed by staff, they appear under Solved Complaints.' :
-                             studentStatusFilter === 'REJECTED' ? 'No complaints have been rejected.' :
-                             'Complaints are private. Only complaints submitted by your account and official campus authorities are visible here.'}
+                          <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto leading-relaxed">
+                            {studentStatusFilter === 'PENDING' ? 'All your campus maintenance requests have been resolved by the designated warden or department authority.' :
+                             studentStatusFilter === 'SOLVED' ? 'Fixed issues with technician verification photo proof will appear here once resolved.' :
+                             studentStatusFilter === 'REJECTED' ? 'No complaints have been rejected by campus authorities.' :
+                             'Submit an issue across campus facilities for automated 4-tier tracking and SLA resolution countdown.'}
                           </p>
-                          {studentStatusFilter === 'ALL' && (
+
+                          {/* Clear Category Chips: Hostel, Academics, Civil/Electrical, Ragging/ICC */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-5 max-w-lg mx-auto text-left">
                             <button
                               type="button"
-                              onClick={() => setActiveTab('submit')}
-                              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                              onClick={() => { setLocationType('HOSTEL_DORM'); setActiveTab('submit'); }}
+                              className="p-3 bg-[#14161C] hover:bg-[#1A1D26] border border-white/[0.08] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
                             >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>Lodge a Complaint</span>
+                              <Bed className="w-4 h-4 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs font-bold text-white block">Hostel</span>
+                              <span className="text-[10px] text-zinc-400">BH-1, BH-2, GH</span>
                             </button>
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => { setLocationType('ACADEMICS'); setActiveTab('submit'); }}
+                              className="p-3 bg-[#14161C] hover:bg-[#1A1D26] border border-white/[0.08] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
+                            >
+                              <GraduationCap className="w-4 h-4 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs font-bold text-white block">Academics</span>
+                              <span className="text-[10px] text-zinc-400">AB-1, AB-2, Labs</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setLocationType('FACILITY'); setActiveTab('submit'); }}
+                              className="p-3 bg-[#14161C] hover:bg-[#1A1D26] border border-white/[0.08] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
+                            >
+                              <Wrench className="w-4 h-4 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs font-bold text-white block">Civil / Electrical</span>
+                              <span className="text-[10px] text-zinc-400">Power, Water, Fans</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setCategory('Internal Complaints Committee (ICC)'); setActiveTab('submit'); }}
+                              className="p-3 bg-[#0D2821]/60 hover:bg-[#0D2821] border border-[#0F382E] hover:border-emerald-500/50 rounded-xl transition-all cursor-pointer group"
+                            >
+                              <Scale className="w-4 h-4 text-purple-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs font-bold text-purple-200 block">Ragging / ICC</span>
+                              <span className="text-[10px] text-emerald-400 font-semibold">Confidential</span>
+                            </button>
+                          </div>
+
+                          {/* Executive Solid White Primary Button */}
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('submit')}
+                            className="px-6 py-3 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-2 font-sans"
+                          >
+                            <Plus className="w-4 h-4 text-black" />
+                            <span>+ Lodge a Complaint</span>
+                          </button>
                         </div>
                       );
                     }
@@ -4521,10 +4748,10 @@ export default function CampusMaintenanceApp() {
                                   [item.id]: !prev[item.id]
                                 }));
                               }}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer ${
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer font-sans ${
                                 Boolean(expandedTrackTickets[item.id])
-                                  ? 'bg-slate-800 text-cyan-300 border border-cyan-500/40 hover:bg-slate-700'
-                                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                  ? 'bg-[#1A1D26] text-white border border-white/[0.08] hover:bg-[#222736]'
+                                  : 'bg-white hover:bg-neutral-200 text-black font-bold'
                               }`}
                             >
                               {Boolean(expandedTrackTickets[item.id]) ? (
@@ -4616,32 +4843,36 @@ export default function CampusMaintenanceApp() {
                 )}
 
                 {/* Detail & Lifecycle Timeline Column */}
-                <div id="ticket-detail-view" className="glass-panel rounded-2xl p-5 md:p-7 shadow-xs">
+                <div id="ticket-detail-view" className="bg-[#111319] border border-white/[0.08] rounded-2xl p-5 md:p-7 shadow-xl font-sans">
                   {(() => {
                     const activeTrackedTicket = selectedTicket || visibleComplaints[0];
                     if (!activeTrackedTicket) {
                       return (
-                        <div className="p-8 text-center">
-                          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mx-auto mb-3">
-                            <Navigation className="w-6 h-6" />
+                        <div className="p-8 sm:p-10 text-center font-sans">
+                          {/* Institutional Emerald Badge */}
+                          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-xs font-semibold mb-3">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            <span>Central Redressal Governance • 4-Tier Tracking Active</span>
                           </div>
-                          <h4 className="text-sm font-bold text-slate-200">No Complaints to Track Yet</h4>
-                          <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
-                            Submit a complaint to view the real-time statutory resolution hierarchy and SLA countdown.
+                          <h4 className="text-base sm:text-lg font-bold text-white tracking-tight">No Active Complaints to Track</h4>
+                          <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                            Submit a campus grievance or maintenance request to inspect live 4-tier authority escalation and SLA countdown clocks.
                           </p>
                           <button
                             type="button"
                             onClick={() => navigateToTab('submit')}
-                            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+                            className="mt-4 px-6 py-2.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer inline-flex items-center gap-2 active:scale-95 font-sans"
                           >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Lodge a Complaint</span>
+                            <Plus className="w-4 h-4 text-black" />
+                            <span>+ Lodge a Complaint</span>
                           </button>
                         </div>
                       );
                     }
                     return (
                     <div>
+                      {/* Prominent 4-Tier Redressal SLA Stepper with Countdown Clock */}
+                      <SlaHierarchyStepper ticket={activeTrackedTicket} />
                       <div className="flex items-start justify-between pb-4 border-b border-slate-800/60">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
@@ -8703,408 +8934,362 @@ function AuthScreen({ onLoginSuccess }) {
   // 📱 MOBILE APP VIEW: Sleek Dark Obsidian Floating Modal (No Constellation)
   // --------------------------------------------------------------------------
   const renderMobileAppView = () => (
-    <div className="fixed inset-0 min-h-screen bg-[#04060c] overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 font-sans select-none relative z-10">
-      {/* Zero-Gravity Ambient Back-Glow (Subtle diffused atmospheric orbs, zero particle canvas) */}
-      <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-indigo-900/20 via-blue-950/10 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-cyan-900/15 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-white/[0.015] blur-[120px] pointer-events-none" />
+    <div className="fixed inset-0 min-h-screen bg-[#0A0C10] overflow-hidden flex flex-col justify-end font-sans select-none relative z-10">
+      {/* Zero-Gravity Ambient Back-Glow (Subtle diffused atmospheric orbs) */}
+      <div className="absolute -top-28 -left-28 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#0D2821]/30 via-slate-900/20 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 -right-28 w-[450px] h-[450px] rounded-full bg-gradient-to-tl from-cyan-950/20 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-xs pointer-events-none z-10" />
 
-      {/* Top-Right Demo Video Button */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-40 flex items-center gap-2">
+      {/* Top Ambient Branding Header (Visible in top half on taller screens) */}
+      <div className="absolute top-0 inset-x-0 p-5 sm:p-6 z-20 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1.5 flex items-center justify-center shadow-inner">
+            <img 
+              src="/logo.png?v=original" 
+              alt="RGUKT Crest" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-white tracking-tight block">RGUKT RK VALLEY</span>
+            <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider block">Central Redressal</span>
+          </div>
+        </div>
+
+        {/* Top-Right Demo Video Button */}
         <button
           type="button"
           onClick={() => setShowAuthDemoModal(true)}
           className="px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] text-xs font-medium transition-all backdrop-blur-xl flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
           title="Watch Project Demo Video & Feature Walkthrough"
         >
-          <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+          <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
           <span>Demo Video</span>
         </button>
       </div>
 
-      {/* Floating Dark Obsidian Modal Card (Zero-Gravity Ambient Style) */}
-      <div className="relative z-20 w-full max-w-[420px] rounded-3xl bg-[#090d16]/90 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.08] border-t-white/[0.2] shadow-[0_30px_100px_-15px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.05)] p-6 sm:p-8 transition-all zero-gravity-modal my-auto">
+      {/* 📱 EXECUTIVE NATIVE BOTTOM SHEET DRAWER PINNED TO BOTTOM */}
+      <div className="relative z-20 w-full max-w-lg mx-auto bg-[#111319] rounded-t-3xl sm:rounded-t-[32px] border-t border-white/[0.08] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.95)] px-5 pt-3 pb-8 sm:px-7 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
         
-        {/* Brand Insignia & Title */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.1] p-2 flex items-center justify-center shadow-inner mb-3">
+        {/* Pinned Top Grab Handle */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2 shrink-0 cursor-grab active:cursor-grabbing" />
+
+        {/* Centered RGUKT Emblem & Header */}
+        <div className="flex flex-col items-center text-center mt-2 mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] p-2 flex items-center justify-center mx-auto shadow-inner mb-2.5">
             <img 
               src="/logo.png?v=original" 
-              alt="ICS Logo" 
-              className="w-full h-full object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+              alt="RGUKT Crest" 
+              className="w-full h-full object-contain drop-shadow"
             />
           </div>
-          <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight font-sans">
             Internal Complaint System
           </h1>
-          <p className="text-[11px] font-medium tracking-wide text-zinc-400 uppercase mt-0.5">
-            RGUKT RK Valley • Campus Redressal
+          <p className="text-[10px] sm:text-[10.5px] font-semibold tracking-wider text-emerald-400 uppercase mt-0.5 font-sans">
+            RGUKT RK VALLEY • CAMPUS REDRESSAL
           </p>
         </div>
 
-        {/* Student / Faculty Segmented Control */}
-        <div className="flex p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl mb-5 relative">
-          <button
-            type="button"
-            onClick={() => {
-              setUserTab('student');
-              setErrorMsg('');
-              setSuccessMsg('');
-            }}
-            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              userTab === 'student'
-                ? 'bg-white/[0.12] text-white shadow-sm border border-white/[0.1]'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Student</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setUserTab('department');
-              setErrorMsg('');
-              setSuccessMsg('');
-            }}
-            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              userTab === 'department'
-                ? 'bg-white/[0.12] text-white shadow-sm border border-white/[0.1]'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Faculty</span>
-          </button>
-        </div>
+        {/* Global Feedback Notifications */}
+        {accountLockout && (
+          <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in">
+            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>Account locked for security. Try again in {lockoutTimeLeft}s.</span>
+          </div>
+        )}
 
-        {/* Alerts: Error / Success */}
         {errorMsg && (
-          <div className="mb-4 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2 backdrop-blur-md animate-in fade-in">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-            <div className="flex-1 font-normal leading-relaxed">{errorMsg}</div>
-          </div>
-        )}
-        {successMsg && (
-          <div className="mb-4 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2 backdrop-blur-md animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <div className="flex-1 font-normal leading-relaxed">{successMsg}</div>
+          <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span className="flex-1">{errorMsg}</span>
           </div>
         )}
 
-        {/* MODE 1: SIGN IN */}
+        {successMsg && (
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs flex items-center gap-2.5 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span className="flex-1">{successMsg}</span>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* VIEW A: SIGN IN MODE */}
+        {/* ------------------------------------------------------------- */}
         {authMode === 'signin' && (
-          <>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            {/* Dual Pill Segmented Role Selector */}
+            <div className="flex p-1 bg-[#161922] border border-white/[0.06] rounded-2xl mb-4 relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setUserTab('student');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer font-sans ${
+                  userTab === 'student'
+                    ? 'bg-[#1F2430] text-white border border-white/[0.1] shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Student</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUserTab('department');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer font-sans ${
+                  userTab === 'department'
+                    ? 'bg-[#1F2430] text-white border border-white/[0.1] shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Faculty</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              {/* ID Input Field */}
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-                  {userTab === 'student' ? 'Student ID NO' : 'Faculty ID / Email'}
+                <label className="block text-[11px] font-semibold text-zinc-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>{userTab === 'student' ? 'Student University ID' : 'Department Email / Staff ID'}</span>
+                  <span className="text-[10px] text-zinc-500 font-normal lowercase">required</span>
                 </label>
-                <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                  <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                <div className="relative flex items-center">
+                  <div className="absolute left-3.5 text-zinc-500 pointer-events-none">
+                    <IdCard className="w-4 h-4" />
+                  </div>
                   <input
-                    type="text"
-                    value={userTab === 'student' ? idNo : (idNo || collegeEmail)}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (userTab === 'student') {
-                        setIdNo(val);
-                      } else {
-                        setIdNo(val);
-                        setCollegeEmail(val);
-                      }
-                    }}
-                    placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. warden@rgukt.ac.in'}
-                    className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                    type={userTab === 'student' ? 'text' : 'text'}
+                    value={loginId}
+                    onChange={(e) => setLoginId(userTab === 'student' ? e.target.value.toUpperCase() : e.target.value)}
+                    placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. electrical@rguktrkv.ac.in'}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#14161C] border border-white/[0.08] text-white placeholder-zinc-500 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-sans"
                     required
-                    autoCapitalize={userTab === 'student' ? 'characters' : 'none'}
+                    disabled={isSubmitting || accountLockout}
                   />
                 </div>
               </div>
 
+              {/* Password Input Field */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                  <label className="block text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => {
                       setAuthMode('forgot');
-                      setForgotStep('request');
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}
-                    className="text-[11px] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
                   >
                     Forgot?
                   </button>
                 </div>
-                <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                  <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                <div className="relative flex items-center">
+                  <div className="absolute left-3.5 text-zinc-500 pointer-events-none">
+                    <Lock className="w-4 h-4" />
+                  </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#14161C] border border-white/[0.08] text-white placeholder-zinc-500 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-sans"
                     required
+                    disabled={isSubmitting || accountLockout}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    className="absolute right-3 text-zinc-500 hover:text-zinc-200 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
+              {/* Solid High-Contrast White Sign In Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                disabled={isSubmitting || accountLockout}
+                className="w-full py-3 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-neutral-200 active:scale-[0.99] transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2 font-sans"
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <span>Sign In</span>
                 )}
               </button>
+
+              {/* Divider: OR CONTINUE WITH */}
+              <div className="flex items-center gap-3 my-3.5">
+                <div className="flex-1 h-px bg-white/[0.08]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  OR CONTINUE WITH
+                </span>
+                <div className="flex-1 h-px bg-white/[0.08]" />
+              </div>
+
+              {/* Dark Google SSO Button with Google Multi-Color Icon */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isSubmitting || accountLockout}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#1A1D26] hover:bg-[#222736] border border-white/[0.08] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer font-sans"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>Continue with RGUKT Google SSO</span>
+              </button>
             </form>
 
-            <div className="flex items-center my-4 gap-3">
-              <div className="h-px flex-1 bg-white/[0.08]"></div>
-              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
-                or continue with
-              </span>
-              <div className="h-px flex-1 bg-white/[0.08]"></div>
+            {/* Footer Register Link */}
+            <div className="mt-4 text-center">
+              <p className="text-xs text-zinc-400">
+                First time here?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('register');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className="text-white hover:text-emerald-400 font-semibold cursor-pointer transition-colors underline-offset-2 hover:underline"
+                >
+                  Register Account
+                </button>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* VIEW B: REGISTRATION MODE */}
+        {/* ------------------------------------------------------------- */}
+        {authMode === 'register' && (
+          <form onSubmit={handleRegisterSubmit} className="space-y-3">
+            <div className="text-center pb-2 border-b border-white/[0.08]">
+              <h3 className="text-sm font-bold text-white">Create Resident Account</h3>
+              <p className="text-[11px] text-zinc-400">RGUKT RK Valley Campus Network Registration</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Student ID</label>
+                <input
+                  type="text"
+                  value={regId}
+                  onChange={(e) => setRegId(e.target.value.toUpperCase())}
+                  placeholder="e.g. R200101"
+                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  placeholder="Your Full Name"
+                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Institute Email</label>
+              <input
+                type="email"
+                value={regEmail}
+                onChange={(e) => setRegEmail(e.target.value)}
+                placeholder="r200101@rguktrkv.ac.in"
+                className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Hostel Block</label>
+                <select
+                  value={regHostelBlock}
+                  onChange={(e) => setRegHostelBlock(e.target.value)}
+                  className="w-full px-2.5 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                >
+                  <option value="BH-1">BH-1 (Penna)</option>
+                  <option value="BH-2">BH-2 (Papagni)</option>
+                  <option value="GH-1">GH-1 (Chitravati)</option>
+                  <option value="GH-2">GH-2 (Kundu)</option>
+                  <option value="Old Campus">Old Campus</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Room No.</label>
+                <input
+                  type="text"
+                  value={regRoomNumber}
+                  onChange={(e) => setRegRoomNumber(e.target.value)}
+                  placeholder="e.g. 108"
+                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Password</label>
+                <input
+                  type="password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Confirm</label>
+                <input
+                  type="password"
+                  value={regConfirmPassword}
+                  onChange={(e) => setRegConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                  required
+                />
+              </div>
             </div>
 
             <button
-              type="button"
-              onClick={handleGoogleLogin}
+              type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/[0.16] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 active:scale-[0.99] transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-1"
             >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              <span>Google SSO</span>
+              {isSubmitting ? (
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <span>Register & Send Verification Code</span>
+              )}
             </button>
 
-            <div className="mt-5 text-center text-xs text-zinc-400">
-              <span>First time here? </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode('signup');
-                  setSignupStep('form');
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                }}
-                className="text-white hover:underline font-semibold cursor-pointer"
-              >
-                Register Account
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* MODE 2: SIGN UP */}
-        {authMode === 'signup' && (
-          <>
-            {signupStep === 'form' ? (
-              <div className="space-y-3.5">
-                <div>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-                    Full Name
-                  </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <User className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Chaithanya Yadav"
-                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-                    {userTab === 'student' ? 'Student ID NO' : 'Faculty / Staff ID'}
-                  </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
-                    <input
-                      type="text"
-                      value={idNo}
-                      onChange={(e) => setIdNo(e.target.value.toUpperCase())}
-                      placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. WARDEN-01'}
-                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-                    Official Email (@rgukt.ac.in)
-                  </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <Mail className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
-                    <input
-                      type="email"
-                      value={collegeEmail}
-                      onChange={(e) => setCollegeEmail(e.target.value)}
-                      placeholder={userTab === 'student' ? 'r200101@rguktrkv.ac.in' : 'warden@rgukt.ac.in'}
-                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-                    Create Password
-                  </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  disabled={isSendingOtp}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
-                >
-                  {isSendingOtp ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <span>Request Verification OTP</span>
-                  )}
-                </button>
-              </div>
-            ) : (
-              /* OTP Verification Step */
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="text-center">
-                  <p className="text-xs text-zinc-300">
-                    Enter the 6-digit verification code sent to
-                  </p>
-                  <p className="text-xs font-mono text-cyan-300 font-semibold mt-0.5">
-                    {otpTargetEmail || collegeEmail}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-center gap-2 my-4">
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <input
-                      key={index}
-                      ref={(el) => (otpInputRefs.current[index] = el)}
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength="1"
-                      value={(enteredOtp || '')[index] || ''}
-                      onChange={(e) => handleOtpBoxChange(e, index)}
-                      onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
-                      onPaste={handleOtpBoxPaste}
-                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl outline-none transition-all"
-                    />
-                  ))}
-                </div>
-
-                {generatedOtp && (
-                  <div className="text-center my-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEnteredOtp(generatedOtp);
-                        setErrorMsg('');
-                        if (otpInputRefs.current[5]) {
-                          otpInputRefs.current[5].focus();
-                        }
-                      }}
-                      className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
-                    >
-                      Auto-fill OTP ({generatedOtp})
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
-                  <span>
-                    {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Didn't get OTP?"}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={!canResendOtp || isSendingOtp}
-                    className="text-white hover:underline font-semibold disabled:opacity-40 cursor-pointer"
-                  >
-                    Resend Code
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting || (enteredOtp || '').length < 6}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <span>Verify & Enter Portal</span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSignupStep('form')}
-                  className="w-full py-1.5 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  ← Edit Details
-                </button>
-              </form>
-            )}
-
-            <div className="mt-5 text-center text-xs text-zinc-400">
-              <span>Already registered? </span>
+            <div className="text-center pt-1">
               <button
                 type="button"
                 onClick={() => {
@@ -9112,34 +9297,84 @@ function AuthScreen({ onLoginSuccess }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="text-white hover:underline font-semibold cursor-pointer"
+                className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
               >
-                Sign In
+                ← Back to Sign In
               </button>
             </div>
-          </>
+          </form>
         )}
 
-        {/* MODE 3: FORGOT PASSWORD */}
-        {authMode === 'forgot' && (
-          <div className="space-y-4">
-            {forgotStep === 'request' ? (
-              <>
+        {/* ------------------------------------------------------------- */}
+        {/* VIEW C: FORGOT PASSWORD / OTP */}
+        {/* ------------------------------------------------------------- */}
+        {(authMode === 'forgot' || authMode === 'otp') && (
+          <div className="space-y-3.5">
+            <div className="text-center pb-2 border-b border-white/[0.08]">
+              <h3 className="text-sm font-bold text-white">Reset Account Password</h3>
+              <p className="text-[11px] text-zinc-400">Institutional Email OTP Recovery</p>
+            </div>
+
+            {authMode === 'forgot' ? (
+              <form onSubmit={handleForgotSubmit} className="space-y-3">
                 <div>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-                    Student ID or Registered Email
+                  <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">
+                    Your Registered College Email
                   </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="e.g. r200101@rguktrkv.ac.in"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  {isSubmitting ? 'Sending Code...' : 'Send Recovery OTP'}
+                </button>
+              </form>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">
+                    Enter 6-Digit OTP Code
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    placeholder="123456"
+                    className="w-full px-3.5 py-2.5 text-center font-mono tracking-widest rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-emerald-500/50"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">New Password</label>
                     <input
-                      type="text"
-                      value={idNo || collegeEmail}
-                      onChange={(e) => {
-                        setIdNo(e.target.value);
-                        setCollegeEmail(e.target.value);
-                      }}
-                      placeholder="e.g. R200101 or email"
-                      className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Confirm</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
                       required
                     />
                   </div>
@@ -9147,146 +9382,16 @@ function AuthScreen({ onLoginSuccess }) {
 
                 <button
                   type="button"
-                  onClick={handleSendForgotOtp}
-                  disabled={isSendingOtp}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  onClick={handleResetPasswordSubmit}
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
-                  {isSendingOtp ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <span>Send Recovery OTP</span>
-                  )}
+                  {isSubmitting ? 'Saving...' : 'Save New Password & Sign In'}
                 </button>
-              </>
-            ) : forgotStep === 'verify' ? (
-              <>
-                <div className="text-center">
-                  <p className="text-xs text-zinc-300">Enter the 6-digit recovery code sent to</p>
-                  <p className="text-xs font-mono text-cyan-300 font-semibold mt-0.5">{otpTargetEmail}</p>
-                </div>
-                <div className="flex items-center justify-center gap-2 my-3">
-                  {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <input
-                      key={index}
-                      ref={(el) => (otpInputRefs.current[index] = el)}
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength="1"
-                      value={(enteredOtp || '')[index] || ''}
-                      onChange={(e) => handleOtpBoxChange(e, index)}
-                      onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
-                      onPaste={handleOtpBoxPaste}
-                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl outline-none transition-all"
-                    />
-                  ))}
-                </div>
-
-                {generatedOtp && (
-                  <div className="text-center my-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEnteredOtp(generatedOtp);
-                        setErrorMsg('');
-                        if (otpInputRefs.current[5]) {
-                          otpInputRefs.current[5].focus();
-                        }
-                      }}
-                      className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
-                    >
-                      Auto-fill OTP ({generatedOtp})
-                    </button>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={handleVerifyForgotOtp}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Verify OTP & Continue</span>
-                </button>
-
-                <div className="text-center mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setForgotStep('request')}
-                    className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    ← Change ID / Email
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-                      New Password
-                    </label>
-                    <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                      <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
-                      <input
-                        type={showNewPassword ? 'text' : 'password'}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
-                      Confirm New Password
-                    </label>
-                    <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                      <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
-                      <input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleResetPasswordSubmit}
-                    disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
-                  >
-                    {isSubmitting ? (
-                      <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <span>Save Password & Sign In</span>
-                    )}
-                  </button>
-                </div>
-              </>
+              </div>
             )}
 
-            <div className="mt-4 text-center">
+            <div className="text-center pt-1">
               <button
                 type="button"
                 onClick={() => {

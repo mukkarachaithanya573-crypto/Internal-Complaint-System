@@ -158,7 +158,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl cyber-card rounded-3xl shadow-2xl border border-slate-700/60 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-gradient-to-r from-[#0D2821] via-[#0B1E19] to-[#081512] border-b border-[#0F382E] text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl cyber-card/10 backdrop-blur-xs flex items-center justify-center border border-white/20">
               <Edit3 className="w-5 h-5 text-white" />
@@ -198,7 +198,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               </div>
               <label 
                 htmlFor="profile-pic-modal-upload"
-                className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-110"
+                className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-white hover:bg-zinc-100 text-black font-bold flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-110"
                 title="Change Photo"
               >
                 <Camera className="w-3 h-3" />
@@ -216,7 +216,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                 <span className="text-xs font-black text-white truncate">
                   ID: {currentUser?.idNo || 'R240493'}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold border border-blue-200">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] font-bold border border-blue-200">
                   {currentUser?.role || currentRole || 'Student'}
                 </span>
               </div>
@@ -225,7 +225,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               </p>
               <label 
                 htmlFor="profile-pic-modal-upload"
-                className="inline-block mt-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
+                className="inline-block mt-1 text-[11px] font-bold text-emerald-400 hover:text-blue-800 cursor-pointer"
               >
                 Change Profile Photo
               </label>
@@ -235,7 +235,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-blue-500" />
+              <User className="w-3.5 h-3.5 text-emerald-400" />
               <span>Full Name <span className="text-rose-500">*</span></span>
             </label>
             <input
@@ -246,8 +246,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                 setValidationError('');
               }}
               placeholder="e.g. M.Chaithanya Yadav"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-              style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white placeholder-slate-400 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+              style={{ backgroundColor: '#14161C', color: '#ffffff' }}
               required
             />
           </div>
@@ -258,34 +258,34 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                    <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Branch / Dept <span className="text-rose-500">*</span></span>
                   </label>
                   <select
                     value={formData.branch}
                     onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                   >
                     {BRANCH_OPTIONS.map(b => (
-                      <option key={b} value={b} className="bg-slate-900 text-white" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>{b}</option>
+                      <option key={b} value={b} className="bg-[#14161C] text-white" style={{ backgroundColor: '#14161C', color: '#ffffff' }}>{b}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-blue-500" />
+                    <Clock className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Studying Year / Class <span className="text-rose-500">*</span></span>
                   </label>
                   <select
                     value={formData.studyingYear}
                     onChange={(e) => setFormData({ ...formData, studyingYear: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                   >
                     {STUDYING_YEAR_OPTIONS.map(y => (
-                      <option key={y} value={y} className="bg-slate-900 text-white" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>{y}</option>
+                      <option key={y} value={y} className="bg-[#14161C] text-white" style={{ backgroundColor: '#14161C', color: '#ffffff' }}>{y}</option>
                     ))}
                   </select>
                 </div>
@@ -295,24 +295,24 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-blue-500" />
+                    <Building2 className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Hostel Block</span>
                   </label>
                   <select
                     value={formData.hostelBlock}
                     onChange={(e) => setFormData({ ...formData, hostelBlock: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                   >
                     {HOSTEL_BLOCK_OPTIONS.map(h => (
-                      <option key={h} value={h} className="bg-slate-900 text-white" style={{ backgroundColor: '#0f172a', color: '#ffffff' }}>{h}</option>
+                      <option key={h} value={h} className="bg-[#14161C] text-white" style={{ backgroundColor: '#14161C', color: '#ffffff' }}>{h}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                    <MapPin className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Room Number</span>
                   </label>
                   <input
@@ -320,8 +320,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                     value={formData.roomNumber}
                     onChange={(e) => setFormData({ ...formData, roomNumber: e.target.value })}
                     placeholder="e.g. 108"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                    style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white placeholder-slate-400 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                    style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                   />
                 </div>
               </div>
@@ -336,8 +336,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   placeholder="e.g. Electrical / Estate Office"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white placeholder-slate-400 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                  style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                 />
               </div>
               <div>
@@ -347,8 +347,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                   value={formData.zone}
                   onChange={(e) => setFormData({ ...formData, zone: e.target.value })}
                   placeholder="e.g. Academics & Hostels"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                  style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-[#14161C] text-white placeholder-slate-400 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                  style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                 />
               </div>
             </div>
@@ -358,13 +358,13 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           <div>
             <label className="block text-xs font-bold text-slate-200 mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <PhoneCall className="w-3.5 h-3.5 text-blue-500" />
+                <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Mobile Number <span className="text-rose-500">*</span></span>
               </span>
               <span className="text-[10px] text-slate-400 font-semibold">10 Digits</span>
             </label>
             <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-700 bg-slate-800 text-xs font-bold text-slate-300">
+              <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-700 bg-[#1A1D26] text-xs font-bold text-slate-300">
                 +91
               </span>
               <input
@@ -376,8 +376,8 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                   setValidationError('');
                 }}
                 placeholder="8247532907"
-                className="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-700 bg-slate-900 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40 text-xs font-bold transition-all outline-none"
-                style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
+                className="w-full px-3.5 py-2.5 rounded-r-xl border border-slate-700 bg-[#14161C] text-white placeholder-slate-400 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 text-xs font-bold transition-all outline-none"
+                style={{ backgroundColor: '#14161C', color: '#ffffff' }}
                 required
               />
             </div>
@@ -388,13 +388,13 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+              className="flex-1 py-2.5 px-4 rounded-xl border border-slate-700 hover:bg-[#1A1D26] text-slate-300 font-bold text-xs transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Save Profile Changes</span>
@@ -454,7 +454,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
                     className="w-full h-full object-cover rounded-2xl"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-black text-3xl shadow-inner">
+                  <div className="w-full h-full rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-900 text-white flex items-center justify-center font-black text-3xl shadow-inner">
                     {(currentUser?.name || 'M').charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -464,7 +464,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
                   <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight truncate">
                     {currentUser?.name || 'M.Chaithanya'}
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold border border-blue-200 shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-[11px] font-bold border border-blue-200 shrink-0">
                     ID: {currentUser?.idNo || 'R240493'}
                   </span>
                 </div>
@@ -479,7 +479,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
               <button
                 type="button"
                 onClick={onOpenEditModal}
-                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
@@ -490,7 +490,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
           {/* Quick Stats Badges */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100 text-center">
             <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100">
-              <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider block">Total Filed</span>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Total Filed</span>
               <span className="text-lg font-black text-blue-900">{userTickets.length} Complaints</span>
             </div>
             <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-100">
@@ -515,13 +515,13 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
         <div className="cyber-card rounded-3xl p-6 border border-slate-700/60 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-600" />
+              <Building2 className="w-4 h-4 text-emerald-400" />
               <span>Campus & Academic Details</span>
             </h3>
             <button
               type="button"
               onClick={onOpenEditModal}
-              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-emerald-400 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
             >
               <Edit3 className="w-3 h-3" />
               <span>Change</span>
@@ -531,7 +531,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <User className="w-4 h-4 text-blue-600" />
+                <User className="w-4 h-4 text-emerald-400" />
                 <span>Student Name</span>
               </div>
               <span className="text-xs font-bold text-white">
@@ -541,7 +541,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
 
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <GraduationCap className="w-4 h-4 text-blue-600" />
+                <GraduationCap className="w-4 h-4 text-emerald-400" />
                 <span>Department / Branch</span>
               </div>
               <span className="text-xs font-bold text-white">
@@ -551,7 +551,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
 
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Clock className="w-4 h-4 text-emerald-400" />
                 <span>Studying Year / Class</span>
               </div>
               <span className="text-xs font-bold text-white">
@@ -561,7 +561,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
 
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <Building2 className="w-4 h-4 text-blue-600" />
+                <Building2 className="w-4 h-4 text-emerald-400" />
                 <span>Hostel Room</span>
               </div>
               <span className="text-xs font-bold text-white">
@@ -571,7 +571,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
 
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <MapPin className="w-4 h-4 text-blue-600" />
+                <MapPin className="w-4 h-4 text-emerald-400" />
                 <span>Campus Location</span>
               </div>
               <span className="text-xs font-bold text-white">
@@ -585,13 +585,13 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
         <div className="cyber-card rounded-3xl p-6 border border-slate-700/60 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <PhoneCall className="w-4 h-4 text-blue-600" />
+              <PhoneCall className="w-4 h-4 text-emerald-400" />
               <span>Contact & Communication</span>
             </h3>
             <button
               type="button"
               onClick={onOpenEditModal}
-              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+              className="text-xs font-bold text-emerald-400 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
             >
               <Edit3 className="w-3 h-3" />
               <span>Edit</span>
@@ -601,7 +601,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <Mail className="w-4 h-4 text-blue-600" />
+                <Mail className="w-4 h-4 text-emerald-400" />
                 <span>Official Webmail</span>
               </div>
               <span className="text-xs font-bold text-white truncate max-w-[200px]" title={currentUser?.email || 'r240493@rguktrkv.ac.in'}>
@@ -611,7 +611,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
 
             <div className="flex items-center justify-between p-3 rounded-2xl cyber-card-subtle border border-slate-100">
               <div className="flex items-center gap-2.5 text-slate-500 text-xs font-semibold">
-                <PhoneCall className="w-4 h-4 text-blue-600" />
+                <PhoneCall className="w-4 h-4 text-emerald-400" />
                 <span>Primary Mobile</span>
               </div>
               <span className="text-xs font-bold text-white">
@@ -626,8 +626,8 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
       <div className="cyber-card rounded-3xl p-6 border border-slate-700/60 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold">
-              <ShieldCheck className="w-5 h-5 text-blue-600" />
+            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 text-emerald-400 flex items-center justify-center font-bold">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <h3 className="text-sm font-black text-white uppercase tracking-wider">
@@ -642,7 +642,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
             <button
               type="button"
               onClick={onNavigateToTracker}
-              className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-2 bg-blue-50 hover:bg-[#0D2821] text-emerald-400 border border-[#0F382E] font-bold text-xs rounded-xl border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <span>Open Detailed Tracker</span>
               <Edit3 className="w-3.5 h-3.5" />
@@ -670,7 +670,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
               >
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-mono font-bold text-white group-hover:text-blue-600 transition-colors">
+                    <span className="text-xs font-mono font-bold text-white group-hover:text-emerald-400 transition-colors">
                       {ticket.ticketNumber}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-200 text-slate-900">
@@ -698,7 +698,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-bold text-blue-600 group-hover:text-blue-700 group-hover:underline">
+                  <span className="text-xs font-bold text-emerald-400 group-hover:text-blue-700 group-hover:underline">
                     Track Complaint Status →
                   </span>
                 </div>

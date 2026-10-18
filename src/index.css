@@ -283,209 +283,121 @@ textarea {
    staggered card entrance animations, and ambient floating orbs.
    ========================================================================= */
 
-/* Deep Cyber Navy Mesh Canvas */
+/* =========================================================================
+   INSTITUTIONAL OBSIDIAN SLATE & EMERALD DESIGN SYSTEM TOKENS
+   - Root Canvas: Deep Obsidian Slate (#0A0C10)
+   - Accent & Hero Panels: Deep Institutional Forest-Green/Emerald (#0D2821 / #0F382E)
+   - Cards & Containers: Matte Charcoal (#111319) with 1px hairline borders (rgba(255, 255, 255, 0.08))
+   - Action Buttons: High-Contrast Solid White (#FFFFFF text-black) & Dark Pills (#1A1D26 text-white)
+   ========================================================================= */
+
+/* Root Obsidian Slate Canvas */
 .cyber-canvas-bg {
-  background: 
-    radial-gradient(circle at 12% 15%, rgba(56, 189, 248, 0.18) 0%, transparent 45%),
-    radial-gradient(circle at 85% 18%, rgba(168, 85, 247, 0.22) 0%, transparent 48%),
-    radial-gradient(circle at 50% 80%, rgba(99, 102, 241, 0.16) 0%, transparent 52%),
-    radial-gradient(circle at 80% 88%, rgba(6, 182, 212, 0.15) 0%, transparent 45%),
-    linear-gradient(145deg, #040816 0%, #080e22 45%, #050a1a 100%) !important;
+  background: #0A0C10 !important;
+  color: #f4f4f5 !important;
   background-attachment: fixed !important;
-  color: #f1f5f9 !important;
 }
 
-/* Floating Neon Ambient Accents with breathing animation */
-@keyframes neonBreathA {
-  0%, 100% {
-    transform: translate(0px, 0px) scale(1);
-    opacity: 0.65;
-  }
-  50% {
-    transform: translate(25px, -35px) scale(1.12);
-    opacity: 0.9;
-  }
-}
-
-@keyframes neonBreathB {
-  0%, 100% {
-    transform: translate(0px, 0px) scale(1);
-    opacity: 0.55;
-  }
-  50% {
-    transform: translate(-30px, 30px) scale(1.18);
-    opacity: 0.85;
-  }
-}
-
-.ambient-neon-cyan {
-  position: absolute;
-  filter: blur(80px);
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(14, 165, 233, 0.25) 50%, transparent 75%);
-  border-radius: 9999px;
-  animation: neonBreathA 12s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
+/* Zero-Gravity Diffused Ambient Accents */
+.ambient-neon-cyan,
 .ambient-neon-purple {
-  position: absolute;
-  filter: blur(85px);
-  pointer-events: none;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(139, 92, 246, 0.22) 50%, transparent 75%);
-  border-radius: 9999px;
-  animation: neonBreathB 14s ease-in-out infinite 2s;
-  will-change: transform, opacity;
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-/* Cyber Glass Card (Deep Navy Glass with Specular Edge Glow) */
+/* Institutional Cards & Containers: Matte Charcoal (#111319) with 1px Hairline Borders */
 .glass-panel,
 .cyber-card {
-  background: rgba(13, 22, 44, 0.68) !important;
-  backdrop-filter: blur(28px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
-  border: 1px solid rgba(148, 163, 184, 0.16) !important;
-  box-shadow: 
-    0 16px 40px -8px rgba(0, 0, 0, 0.65),
-    0 4px 16px -2px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22),
-    inset 0 0 20px 0 rgba(56, 189, 248, 0.03) !important;
-  color: #f1f5f9 !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: #111319 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.8) !important;
+  color: #f4f4f5 !important;
+  border-radius: 1rem !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* Cyber Card with Glowing Border on Hover */
+/* Interactive Card with Subtle Emerald Elevation on Hover */
 .cyber-card-interactive,
 .glass-panel-interactive {
-  background: rgba(13, 22, 44, 0.68) !important;
-  backdrop-filter: blur(28px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(210%) !important;
-  border: 1px solid rgba(148, 163, 184, 0.16) !important;
-  box-shadow: 
-    0 16px 40px -8px rgba(0, 0, 0, 0.65),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.22) !important;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: #111319 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.75) !important;
+  border-radius: 1rem !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .cyber-card-interactive:hover,
 .glass-panel-interactive:hover {
-  background: rgba(17, 30, 60, 0.82) !important;
-  transform: translateY(-4px) scale(1.006) !important;
-  border-color: rgba(56, 189, 248, 0.55) !important;
+  background: #151821 !important;
+  transform: translateY(-2px) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
   box-shadow: 
-    0 24px 50px -10px rgba(0, 0, 0, 0.85),
-    0 0 28px -2px rgba(56, 189, 248, 0.35),
-    0 0 45px -4px rgba(168, 85, 247, 0.22),
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.45) !important;
+    0 16px 40px -10px rgba(0, 0, 0, 0.9),
+    0 0 20px -4px rgba(16, 185, 129, 0.12) !important;
 }
 
-/* Cyber Glass Subtle (Internal nested container) */
+/* Matte Charcoal Subtle Internal Containers (#14161C) */
 .glass-panel-subtle,
 .cyber-card-subtle {
-  background: rgba(10, 18, 38, 0.55) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(148, 163, 184, 0.12) !important;
-  box-shadow: 
-    0 6px 20px -2px rgba(0, 0, 0, 0.45),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.14) !important;
-  color: #f1f5f9 !important;
+  background: #14161C !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  color: #f4f4f5 !important;
+  border-radius: 0.75rem !important;
 }
 
-/* Cyber Frosted Acrylic Sidebar */
+/* Institutional Matte Obsidian Sidebar */
 .glass-sidebar,
 .cyber-sidebar {
-  background: rgba(7, 13, 29, 0.82) !important;
-  backdrop-filter: blur(32px) saturate(220%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(220%) !important;
-  border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
-  box-shadow: 
-    8px 0 35px -5px rgba(0, 0, 0, 0.75),
-    inset -1px 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  background: #111319 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 10px 0 30px -5px rgba(0, 0, 0, 0.85) !important;
 }
 
-/* Cyber Frosted Acrylic Topbar / Header */
+/* Institutional Matte Obsidian Topbar / Header */
 .glass-header,
 .cyber-header {
-  background: rgba(7, 13, 29, 0.82) !important;
-  backdrop-filter: blur(32px) saturate(220%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(220%) !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
-  box-shadow: 
-    0 8px 30px -4px rgba(0, 0, 0, 0.65),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.12) !important;
+  background: #111319 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7) !important;
 }
 
-/* Animated Neon Gradient Action Button */
+/* High-Contrast Solid White Primary Button (#FFFFFF text-black) */
 .cyber-btn-gradient {
-  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%) !important;
-  background-size: 200% 200% !important;
-  animation: cyberGradientFlow 6s ease infinite !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  color: #ffffff !important;
-  box-shadow: 
-    0 10px 25px -4px rgba(99, 102, 241, 0.5),
-    0 0 20px rgba(56, 189, 248, 0.35),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-@keyframes cyberGradientFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  background: #ffffff !important;
+  color: #0a0c10 !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .cyber-btn-gradient:hover {
-  transform: translateY(-2px) scale(1.02) !important;
-  box-shadow: 
-    0 14px 34px -4px rgba(99, 102, 241, 0.7),
-    0 0 32px rgba(168, 85, 247, 0.6),
-    inset 0 1px 2px rgba(255, 255, 255, 0.9) !important;
+  background: #f4f4f5 !important;
+  color: #000000 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Glowing Neon Pills / Badges */
-.cyber-pill-cyan {
-  background: rgba(14, 165, 233, 0.15) !important;
-  border: 1px solid rgba(56, 189, 248, 0.45) !important;
-  color: #38bdf8 !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25) !important;
-}
-
-.cyber-pill-purple {
-  background: rgba(168, 85, 247, 0.15) !important;
-  border: 1px solid rgba(192, 132, 252, 0.45) !important;
-  color: #c084fc !important;
-  box-shadow: 0 0 14px rgba(168, 85, 247, 0.25) !important;
-}
-
-.cyber-pill-emerald {
-  background: rgba(16, 185, 129, 0.15) !important;
-  border: 1px solid rgba(52, 211, 153, 0.45) !important;
-  color: #34d399 !important;
-  box-shadow: 0 0 14px rgba(52, 211, 153, 0.25) !important;
-}
-
-/* Cyber Form Inputs (Deep Navy Frosted Glass with Cyan focus aura) */
+/* Recessed Dark Input Fields (#14161C) with Clean Hairline Borders */
 .cyber-input {
-  background: rgba(9, 16, 35, 0.75) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  border: 1px solid rgba(148, 163, 184, 0.22) !important;
-  color: #f8fafc !important;
-  box-shadow: 
-    inset 0 2px 4px rgba(0, 0, 0, 0.5),
-    0 1px 1px rgba(255, 255, 255, 0.08) !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: #14161C !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-radius: 0.75rem !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.2s ease !important;
 }
 
 .cyber-input:focus {
-  background: rgba(12, 22, 48, 0.92) !important;
-  border-color: #38bdf8 !important;
+  background: #161922 !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
   box-shadow: 
-    0 0 0 3px rgba(56, 189, 248, 0.3),
-    0 0 24px rgba(56, 189, 248, 0.35),
-    inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+    0 0 0 2px rgba(16, 185, 129, 0.2),
+    inset 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  outline: none !important;
 }
 
 /* Smooth Staggered Entrances */
