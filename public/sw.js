@@ -1,5 +1,5 @@
 // Internal Complaint System - High Reliability Offline Standby Service Worker
-const CACHE_NAME = 'ics-pwa-cache-v1';
+const CACHE_NAME = 'ics-pwa-cache-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -47,31 +47,37 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  const url = new URL(request.url);
-
-  // Bypass third-party, APIs, email delivery, and authentication endpoints completely
-  if (
-    url.hostname.includes('googleapis.com') ||
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('accounts.google.com') ||
-    url.hostname.includes('emailjs.com') ||
-    url.pathname.startsWith('/__/auth') ||
-    url.pathname.startsWith('/api')
-  ) {
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch {
     return;
   }
 
-  // Version checking endpoint: Always fetch fresh from network to detect GitHub deployments
+  // 1. Only handle same-origin requests!
+  // Cross-origin assets and services (Google Fonts, gstatic, Firebase, EmailJS, OpenStreetMap, Google APIs)
+  // must be fetched natively by the browser to avoid CSP connect-src violations, CORS issues, and SW crashes.
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // 2. Bypass authentication and API endpoints
+  if (url.pathname.startsWith('/__/auth') || url.pathname.startsWith('/api')) {
+    return;
+  }
+
+  // 3. Version checking endpoint: Always fetch fresh from network to detect GitHub deployments
   if (url.pathname === '/version.json') {
     event.respondWith(
-      fetch(request, { cache: 'no-store' }).catch(() => {
-        return caches.match(request);
+      fetch(request, { cache: 'no-store' }).catch(async () => {
+        const cached = await caches.match(request);
+        return cached || new Response('{"offline":true}', { headers: { 'Content-Type': 'application/json' } });
       })
     );
     return;
   }
 
-  // HTML Navigation Requests (PWA cold starts): Network-first with instant Cache Fallback
+  // 4. HTML Navigation Requests (PWA cold starts): Network-first with instant Cache Fallback
   // Prevents "net::ERR_CONNECTION_ABORTED" or "Webpage not available" when opening downloaded PWA!
   if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(
@@ -96,10 +102,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static Assets (scripts, styles, images, fonts): Cache-First with Stale-While-Revalidate
+  // 5. Static Assets (scripts, styles, images): Cache-First with Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
+      if (cachedResponse) {
+        // Return cached version immediately for super fast loading
+        fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const copy = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+          })
+          .catch(() => {});
+        return cachedResponse;
+      }
+
+      // Not cached yet: fetch from network
+      return fetch(request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
@@ -107,9 +127,11 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
+        .catch(() => {
+          // Never return undefined to event.respondWith(), which causes:
+          // "TypeError: Failed to convert value to 'Response'"
+          return new Response('', { status: 408, statusText: 'Request Offline' });
+        });
     })
   );
 });
