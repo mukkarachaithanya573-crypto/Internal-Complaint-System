@@ -81,6 +81,7 @@ import {
 } from './emailService';
 import AppFeedbackModal from './AppFeedbackModal';
 import LogoutAccountChoiceModal from './LogoutAccountChoiceModal';
+import AuroraBackground from './AuroraBackground';
 
 
 // RGUKT AP IIIT Location Structure
@@ -2898,6 +2899,7 @@ export default function CampusMaintenanceApp() {
   if (!isOnline && !dismissOfflinePage) {
     return (
       <>
+        <AuroraBackground />
         {updateAvailable && isAppEnvironment() && (
           <AppUpdateModal
             appVersion={appVersion}
@@ -2931,6 +2933,7 @@ export default function CampusMaintenanceApp() {
   if (showIntro) {
     return (
       <>
+        <AuroraBackground />
         {updateAvailable && isAppEnvironment() && (
           <AppUpdateModal
             appVersion={appVersion}
@@ -2947,6 +2950,7 @@ export default function CampusMaintenanceApp() {
   if (!isAuthenticated) {
     return (
       <>
+        <AuroraBackground />
         {updateAvailable && isAppEnvironment() && (
           <AppUpdateModal
             appVersion={appVersion}
@@ -2960,11 +2964,9 @@ export default function CampusMaintenanceApp() {
   }
 
   return (
-    <div className="h-screen bg-[#0A0C10] text-zinc-100 flex flex-col font-sans overflow-hidden relative">
-      {/* Zero-Gravity Ambient Back-Glow (Deep institutional emerald & slate atmospheric orbs) */}
-      <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-[#0D2821]/25 via-slate-900/15 to-transparent blur-[140px] pointer-events-none z-0" />
-      <div className="absolute top-1/3 -right-32 w-[600px] h-[600px] rounded-full bg-gradient-to-tl from-[#0D2821]/20 via-[#0A0C10] to-transparent blur-[150px] pointer-events-none z-0" />
-      <div className="absolute -bottom-32 left-1/3 w-[500px] h-[500px] rounded-full bg-white/[0.015] blur-[120px] pointer-events-none z-0" />
+    <div className="h-screen bg-[#070A0F] text-zinc-100 flex flex-col font-sans overflow-hidden relative">
+      {/* Global Aurora Ambient Mesh Glow with Frosted Glassmorphism Canvas */}
+      <AuroraBackground />
       
       {/* LIVE DEPLOYMENT UPDATE NOTIFICATION POPUP & MODAL (App-Only) */}
       {updateAvailable && isAppEnvironment() && (
@@ -8144,6 +8146,68 @@ function AuthScreen({ onLoginSuccess }) {
   // Policy & Guidelines Modal State ('terms' | 'privacy' | null)
   const [policyModalType, setPolicyModalType] = useState(null);
   const [showAuthDemoModal, setShowAuthDemoModal] = useState(false);
+
+  // Mobile View Variable Bindings (Prevents ReferenceErrors in renderMobileAppView on logout / Android APK)
+  const accountLockout = false;
+  const lockoutTimeLeft = 0;
+  const loginId = userTab === 'student' ? idNo : (idNo || collegeEmail);
+  const setLoginId = (val) => {
+    setIdNo(val);
+    if (userTab !== 'student') setCollegeEmail(val);
+  };
+  const loginPassword = password;
+  const setLoginPassword = setPassword;
+  const handleLogin = (e) => handleSubmit(e);
+  const handleGoogleSignIn = handleGoogleLogin;
+
+  const [regId, setRegId] = useState('');
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regHostelBlock, setRegHostelBlock] = useState('BH-1');
+  const [regRoomNumber, setRegRoomNumber] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+
+  const [forgotEmail, setForgotEmail] = useState('');
+  const otpCode = enteredOtp;
+  const setOtpCode = setEnteredOtp;
+
+  const handleForgotSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (forgotEmail) {
+      setCollegeEmail(forgotEmail);
+    }
+    await handleSendForgotOtp();
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (regPassword !== regConfirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+    setIdNo(regId);
+    setFullName(regName);
+    setCollegeEmail(regEmail);
+    setPassword(regPassword);
+    setAuthMode('signup');
+    setSignupStep('otp');
+
+    const code = generateCryptographicOtp(6);
+    setGeneratedOtp(code);
+    setOtpTargetEmail(regEmail);
+    setIsSendingOtp(true);
+    try {
+      await sendOtpEmail(regEmail, code, regName);
+      setOtpSent(true);
+      setSuccessMsg(`✅ Verification code sent to ${regEmail}. Please enter OTP.`);
+    } catch (err) {
+      setOtpSent(true);
+      setSuccessMsg(`Verification code: ${code}. Please enter OTP.`);
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
 
   // PixelFlow V3 OTP: Auto-focus first box when entering OTP verification step
   useEffect(() => {
