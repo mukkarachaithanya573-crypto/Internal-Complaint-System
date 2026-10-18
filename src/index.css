@@ -1021,6 +1021,21 @@ select optgroup {
   flex-shrink: 0;
 }
 
+/* Zero-Gravity Obsidian Aesthetic Floating Animation */
+@keyframes zeroGravityFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.zero-gravity-modal {
+  animation: zeroGravityFloat 6s ease-in-out infinite;
+}
+
+
 
 
 
