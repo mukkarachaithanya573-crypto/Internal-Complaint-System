@@ -534,10 +534,55 @@ function CampusQrMapHub({ onOpenModal, onSelectRoomForComplaint, currentRole }) 
 }
 
 // ============================================================================
-// DEPARTMENT WORKDAY DAILY SESSION STORAGE (Login 1x Per Day for Department)
-// Students: Pure ephemeral entry / ask login every time they enter the app
-// Department Staff & Authorities: Log in once per day; session stays valid throughout workday
+// PLATFORM & ENVIRONMENT DETECTION HELPER
+// Identifies Mobile App (Capacitor / Android native APK / standalone PWA) vs Website (Browser Tab)
 // ============================================================================
+export function isAppEnvironment() {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Capacitor native app runtime check
+  if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function') {
+    if (window.Capacitor.isNativePlatform()) return true;
+  }
+  if (window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() !== 'web') {
+    return true;
+  }
+
+  // 2. Capacitor native origin check (Capacitor serves assets locally on localhost / capacitor: scheme)
+  if (
+    window.location.protocol === 'capacitor:' ||
+    window.location.protocol === 'ionic:' ||
+    (window.location.hostname === 'localhost' && window.location.port === '') ||
+    window.location.origin === 'https://localhost' ||
+    window.location.origin === 'http://localhost'
+  ) {
+    return true;
+  }
+
+  // 3. Android WebView detection
+  const ua = (navigator.userAgent || '').toLowerCase();
+  if (ua.includes('wv') || ua.includes('capacitor') || (ua.includes('android') && ua.includes('version/'))) {
+    return true;
+  }
+
+  // 4. Standalone Installed PWA / Home Screen App mode
+  if (
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) ||
+    window.navigator.standalone === true
+  ) {
+    return true;
+  }
+
+  // 5. Android app referrer check
+  if (document.referrer && document.referrer.startsWith('android-app://')) {
+    return true;
+  }
+
+  // Default: regular web browser tab (website)
+  return false;
+}
+
 export const DEPT_DAILY_SESSION_KEY = 'rgukt_dept_daily_session';
 
 export function isDepartmentRoleOrUser(user) {
@@ -754,21 +799,57 @@ export default function CampusMaintenanceApp() {
   // Check if student user has an active session from this device
   const initialStudentSession = (() => {
     try {
-      const raw = localStorage.getItem('rgukt_active_session_user');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && (parsed.idNo || parsed.email)) {
-          // 🛡️ ENFORCE ROLE INTEGRITY: Prevent client-side role tampering via DevTools
-          const cleanUser = sanitizeUserRolePrivileges(parsed);
-          const userKey = (cleanUser.idNo || cleanUser.email).toUpperCase();
-          const customRaw = localStorage.getItem(`rgukt_saved_profile_${userKey}`);
-          if (customRaw) {
-            return sanitizeUserRolePrivileges({ ...cleanUser, ...JSON.parse(customRaw) });
-          }
-          return cleanUser;
+      const isApp = isAppEnvironment();
+
+      if (isApp) {
+        // 📱 IN MOBILE APP:
+        // Once student is registered or logged in, do NOT ask for logins every time!
+        // Automatically hydrate and restore their session permanently on this mobile device.
+        let raw = localStorage.getItem('rgukt_active_session_user');
+        if (!raw) {
+          raw = localStorage.getItem('rgukt_app_registered_student');
         }
+        if (!raw) {
+          // If a student account exists in registered accounts, automatically restore it
+          const regAccounts = getRegisteredAccounts();
+          const studentAcc = regAccounts.find(u => u.role === 'REPORTER' || u.userTab === 'student');
+          if (studentAcc) {
+            raw = JSON.stringify(studentAcc);
+            localStorage.setItem('rgukt_app_registered_student', raw);
+            localStorage.setItem('rgukt_active_session_user', raw);
+          }
+        }
+
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && (parsed.idNo || parsed.email)) {
+            // 🛡️ ENFORCE ROLE INTEGRITY: Prevent client-side role tampering via DevTools
+            const cleanUser = sanitizeUserRolePrivileges(parsed);
+            const userKey = (cleanUser.idNo || cleanUser.email).toUpperCase();
+            const customRaw = localStorage.getItem(`rgukt_saved_profile_${userKey}`);
+            if (customRaw) {
+              return sanitizeUserRolePrivileges({ ...cleanUser, ...JSON.parse(customRaw) });
+            }
+            return cleanUser;
+          }
+        }
+      } else {
+        // 🌐 IN WEBSITE:
+        // Ask login for student every time!
+        // Only restore in-flight session within the active browser tab via sessionStorage
+        const raw = sessionStorage.getItem('rgukt_web_active_student_session');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && (parsed.idNo || parsed.email)) {
+            return sanitizeUserRolePrivileges(parsed);
+          }
+        }
+        // Opening website in a new tab or window asks student to login every time!
+        return null;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Student session initialization notice:', e);
+    }
     return null;
   })();
 
@@ -1296,13 +1377,22 @@ export default function CampusMaintenanceApp() {
         }
 
         if (verData && verData.version) {
+          const isApp = isAppEnvironment();
           const savedVer = localStorage.getItem('rkv_app_deployed_version');
           const skippedVer = sessionStorage.getItem('rkv_skip_version');
           
           if (savedVer && String(savedVer) !== String(verData.version)) {
-            // Prompt user with update modal if they haven't skipped this specific version
-            if (String(skippedVer) !== String(verData.version)) {
-              setUpdateAvailable(true);
+            if (isApp) {
+              // 📱 IN MOBILE APP:
+              // Prompt user with update modal if they haven't skipped this specific version
+              if (String(skippedVer) !== String(verData.version)) {
+                setUpdateAvailable(true);
+              }
+            } else {
+              // 🌐 IN WEBSITE:
+              // Do NOT show update popup! Show website normally with changes.
+              setUpdateAvailable(false);
+              localStorage.setItem('rkv_app_deployed_version', verData.version);
             }
           } else if (!savedVer) {
             localStorage.setItem('rkv_app_deployed_version', verData.version);
@@ -1661,7 +1751,16 @@ export default function CampusMaintenanceApp() {
         setReporterEmail(resolvedStudent.email);
       }
       try {
-        localStorage.setItem('rgukt_active_session_user', JSON.stringify(resolvedStudent));
+        if (isAppEnvironment()) {
+          // 📱 IN MOBILE APP: Persist permanently so student is not asked to login every time
+          localStorage.setItem('rgukt_active_session_user', JSON.stringify(resolvedStudent));
+          localStorage.setItem('rgukt_app_registered_student', JSON.stringify(resolvedStudent));
+        } else {
+          // 🌐 IN WEBSITE: Keep session only for current browser tab via sessionStorage
+          // When opening website in a new tab/session, student will be asked to login every time
+          sessionStorage.setItem('rgukt_web_active_student_session', JSON.stringify(resolvedStudent));
+          localStorage.removeItem('rgukt_active_session_user');
+        }
       } catch (e) {}
     }
   };
@@ -1706,7 +1805,12 @@ export default function CampusMaintenanceApp() {
     if (userKey) {
       try {
         localStorage.setItem(`rgukt_saved_profile_${userKey}`, JSON.stringify(mergedUser));
-        localStorage.setItem('rgukt_active_session_user', JSON.stringify(mergedUser));
+        if (isAppEnvironment()) {
+          localStorage.setItem('rgukt_active_session_user', JSON.stringify(mergedUser));
+          localStorage.setItem('rgukt_app_registered_student', JSON.stringify(mergedUser));
+        } else {
+          sessionStorage.setItem('rgukt_web_active_student_session', JSON.stringify(mergedUser));
+        }
       } catch (err) {
         console.warn('LocalStorage user profile save error:', err);
       }
@@ -1810,6 +1914,8 @@ export default function CampusMaintenanceApp() {
     clearDepartmentDailySession();
     try {
       localStorage.removeItem('rgukt_active_session_user');
+      localStorage.removeItem('rgukt_app_registered_student');
+      sessionStorage.removeItem('rgukt_web_active_student_session');
     } catch (e) {}
     setIsAuthenticated(false);
     setCurrentUser(null);
@@ -2490,7 +2596,7 @@ export default function CampusMaintenanceApp() {
   if (!isOnline && !dismissOfflinePage) {
     return (
       <>
-        {updateAvailable && (
+        {updateAvailable && isAppEnvironment() && (
           <AppUpdateModal
             appVersion={appVersion}
             onUpdate={handleApplyUpdate}
@@ -2523,7 +2629,7 @@ export default function CampusMaintenanceApp() {
   if (showIntro) {
     return (
       <>
-        {updateAvailable && (
+        {updateAvailable && isAppEnvironment() && (
           <AppUpdateModal
             appVersion={appVersion}
             onUpdate={handleApplyUpdate}
@@ -2539,7 +2645,7 @@ export default function CampusMaintenanceApp() {
   if (!isAuthenticated) {
     return (
       <>
-        {updateAvailable && (
+        {updateAvailable && isAppEnvironment() && (
           <AppUpdateModal
             appVersion={appVersion}
             onUpdate={handleApplyUpdate}
@@ -2558,8 +2664,8 @@ export default function CampusMaintenanceApp() {
       <div className="ambient-neon-purple w-[36rem] h-[36rem] top-1/4 -right-40 opacity-70 z-0"></div>
       <div className="ambient-neon-cyan w-96 h-96 -bottom-24 left-1/3 opacity-40 z-0"></div>
       
-      {/* LIVE DEPLOYMENT UPDATE NOTIFICATION POPUP & MODAL */}
-      {updateAvailable && (
+      {/* LIVE DEPLOYMENT UPDATE NOTIFICATION POPUP & MODAL (App-Only) */}
+      {updateAvailable && isAppEnvironment() && (
         <AppUpdateModal
           appVersion={appVersion}
           onUpdate={handleApplyUpdate}
@@ -8207,6 +8313,12 @@ function AuthScreen({ onLoginSuccess }) {
         };
         saveRegisteredAccounts([newUser, ...otherUsers]);
         saveUserToFirestore(newUser).catch(e => console.warn('Firebase user save notice:', e));
+        if (isAppEnvironment()) {
+          try {
+            localStorage.setItem('rgukt_app_registered_student', JSON.stringify(newUser));
+            localStorage.setItem('rgukt_active_session_user', JSON.stringify(newUser));
+          } catch (e) {}
+        }
 
         setTimeout(() => {
           setIsSubmitting(false);
