@@ -1,6 +1,98 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================================================================
+   ENTERPRISE TYPOGRAPHY STANDARDIZATION (10/10 Polish)
+   Clean modern sans-serif stack, strict tracking, and zero decorative fonts
+   ========================================================================= */
+:root, html, body, #root {
+  font-family: 'Inter', 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: Crisp negative letter-spacing (-0.015em) */
+h1, h2, h3, h4, h5, h6, .heading-tight {
+  letter-spacing: -0.015em !important;
+}
+
+/* Body text & labels: Standard tracking (0em) */
+p, span, div, label, li, a {
+  letter-spacing: 0em;
+}
+
+/* Small uppercase category tags, badges, and segmented toggles: Uppercase tracking (0.05em) */
+.uppercase, [class*="uppercase"], .tag-caps, .category-badge {
+  letter-spacing: 0.05em !important;
+}
+
+/* =========================================================================
+   TOUCH TARGET & INPUT OPTIMIZATION (Mobile Touch Target >= 48px)
+   ========================================================================= */
+@media (max-width: 767px) {
+  /* Interactive inputs and controls minimum touch height */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  .touch-target,
+  button.touch-target,
+  .role-toggle-btn {
+    min-height: 48px !important;
+  }
+}
+
+/* Crisp 1px border transitions: resting rgba(255, 255, 255, 0.08) transitioning smoothly to accent focus */
+input, select, textarea {
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+
+/* =========================================================================
+   MOBILE RESPONSIVE MODAL BOTTOM SHEET DRAWER (< 768px Viewport)
+   ========================================================================= */
+@media (max-width: 767px) {
+  .portal-modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .portal-modal-drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-top-left-radius: 1.5rem !important; /* rounded-t-3xl */
+    border-top-right-radius: 1.5rem !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    background-color: #111319 !important;
+    max-height: 92vh !important;
+    margin: 0 !important;
+  }
+}
+
+/* Top swipe-indicator pill for mobile bottom sheets */
+.modal-swipe-pill {
+  width: 2.5rem;
+  height: 0.375rem;
+  background-color: #404040;
+  border-radius: 9999px;
+  margin: 0.625rem auto;
+  flex-shrink: 0;
+}
+
 /* =========================================================================
    NATIVE MOBILE APP & PWA STYLING (Capacitor / Android / iOS / Standalone)
    ========================================================================= */

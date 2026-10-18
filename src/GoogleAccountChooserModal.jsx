@@ -106,13 +106,16 @@ export default function GoogleAccountChooserModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in select-none">
+    <div className="portal-modal-overlay fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
       <div 
-        className="relative w-full max-w-sm sm:max-w-md rounded-3xl bg-[#0f172a] border border-slate-700/80 shadow-2xl shadow-cyan-950/50 overflow-hidden my-auto text-slate-100"
+        className="portal-modal-drawer relative w-full max-w-sm sm:max-w-md rounded-3xl bg-[#111319] border border-white/[0.08] shadow-2xl overflow-hidden my-auto text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
+
         {/* Google Header Accent */}
-        <div className="p-5 sm:p-6 pb-3 text-center relative border-b border-slate-800">
+        <div className="p-5 sm:p-6 pb-3 text-center relative border-b border-white/[0.08]">
           <button
             type="button"
             onClick={onClose}

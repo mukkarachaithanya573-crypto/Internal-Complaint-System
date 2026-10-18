@@ -155,23 +155,26 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
   const isStudent = currentRole === 'REPORTER' || (!currentRole && currentUser?.role !== 'STAFF' && currentUser?.role !== 'ADMIN');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl cyber-card rounded-3xl shadow-2xl border border-slate-700/60 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="portal-modal-drawer relative w-full max-w-xl bg-[#111319] rounded-3xl shadow-2xl border border-white/[0.08] overflow-hidden flex flex-col max-h-[92vh] md:max-h-[90vh]">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
+
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#0D2821] via-[#0B1E19] to-[#081512] border-b border-[#0F382E] text-white flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#0D2821] border-b border-[#0F382E] text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl cyber-card/10 backdrop-blur-xs flex items-center justify-center border border-white/20">
-              <Edit3 className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.1] backdrop-blur-xs flex items-center justify-center">
+              <Edit3 className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h2 className="text-lg font-black tracking-tight leading-tight">Edit Your Profile</h2>
-              <p className="text-xs text-blue-100 font-medium">Updates reflect dynamically across the campus dashboard</p>
+              <h2 className="text-base sm:text-lg font-black tracking-tight leading-tight">Edit Your Profile</h2>
+              <p className="text-xs text-zinc-300 font-medium">Updates reflect dynamically across the campus dashboard</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full cyber-card/10 hover:cyber-card/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white transition-colors cursor-pointer border border-white/[0.08]"
           >
             <X className="w-4 h-4" />
           </button>
@@ -384,17 +387,17 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           </div>
 
           {/* Footer buttons */}
-          <div className="flex items-center gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center gap-3 pt-3 border-t border-white/[0.08]">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 rounded-xl border border-slate-700 hover:bg-[#1A1D26] text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+              className="flex-1 min-h-[48px] py-3 px-4 rounded-xl border border-white/[0.08] hover:bg-[#1A1D26] text-zinc-300 hover:text-white font-semibold text-xs transition-all cursor-pointer active:scale-[0.98]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 min-h-[48px] py-3 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               <Save className="w-4 h-4" />
               <span>Save Profile Changes</span>

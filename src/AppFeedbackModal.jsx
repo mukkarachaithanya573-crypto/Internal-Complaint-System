@@ -105,26 +105,26 @@ export default function AppFeedbackModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in">
       <div 
-        className="relative w-full max-w-lg rounded-3xl bg-slate-900 border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 overflow-hidden my-auto"
+        className="portal-modal-drawer relative w-full max-w-lg rounded-3xl bg-[#111319] border border-white/[0.08] shadow-2xl overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glow Effects */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-gradient-to-b from-cyan-500/20 via-amber-500/10 to-transparent blur-2xl pointer-events-none" />
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
 
         {/* TOP BAR / CLOSE BUTTON */}
-        <div className="relative z-10 flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-900/60">
+        <div className="relative z-10 flex items-center justify-between p-4 sm:p-5 border-b border-white/[0.08] bg-[#0D2821]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400/20 to-cyan-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-lg shadow-amber-500/10">
-              <Lightbulb className="w-5 h-5 animate-pulse" />
+            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-amber-400 shadow-inner">
+              <Lightbulb className="w-5 h-5 text-amber-400" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black tracking-wider text-amber-400 uppercase">
+                <span className="text-[10px] font-bold tracking-wider text-amber-400 uppercase">
                   Continuous Improvement
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.06] text-emerald-300 border border-emerald-500/30">
                   Direct to Developer
                 </span>
               </div>
@@ -136,7 +136,7 @@ export default function AppFeedbackModal({
           <button
             type="button"
             onClick={handleFinish}
-            className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/[0.08]"
             title="Close"
           >
             <X className="w-4 h-4" />

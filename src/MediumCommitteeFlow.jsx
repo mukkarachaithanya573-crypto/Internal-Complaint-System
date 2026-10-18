@@ -1593,11 +1593,13 @@ export function MediumCommitteeFlowModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-3 sm:p-5 overflow-y-auto">
-      <div className="bg-slate-900 text-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col border-2 border-purple-500/60 shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-5 overflow-y-auto">
+      <div className="portal-modal-drawer bg-[#111319] text-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col border border-white/[0.08] shadow-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
         
         {/* Official Header with RGUKT RK Valley Seal */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border-b border-purple-800/80 flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-5 bg-[#0D2821] border-b border-[#0F382E] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-inner">
               <Scale className="w-6 h-6" />

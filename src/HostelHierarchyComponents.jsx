@@ -965,8 +965,10 @@ export function HostelEscalationQuestionnaireModal({ isOpen, onClose, ticket, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="cyber-card rounded-3xl shadow-2xl max-w-lg w-full p-6 relative border border-teal-200 flex flex-col max-h-[90vh] overflow-y-auto">
+    <div className="portal-modal-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="portal-modal-drawer bg-[#111319] rounded-3xl shadow-2xl max-w-lg w-full p-5 sm:p-6 relative border border-white/[0.08] flex flex-col max-h-[92vh] md:max-h-[90vh] overflow-y-auto">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-2 md:hidden shrink-0 cursor-grab" />
         
         {/* Close Button */}
         <button

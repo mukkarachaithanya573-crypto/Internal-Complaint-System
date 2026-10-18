@@ -136,7 +136,7 @@ export default function CinematicIntro({ onEnter }) {
         background: '#000',
         color: '#d5dbe5',
         overflow: 'hidden',
-        fontFamily: "'Orbitron', 'Segoe UI', Arial, sans-serif"
+        fontFamily: "'Inter', 'Geist', system-ui, -apple-system, sans-serif"
       }}
     >
       <style>{`

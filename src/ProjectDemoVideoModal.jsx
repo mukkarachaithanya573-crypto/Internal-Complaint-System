@@ -519,13 +519,15 @@ export default function ProjectDemoVideoModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-2 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-300">
+    <div className="portal-modal-overlay fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-300">
       
       {/* ------------------------------------------------------------- */}
       {/* 1. INITIAL PROMPT MODAL: "Would you like to watch a demo tour?" */}
       {/* ------------------------------------------------------------- */}
       {phase === 'prompt_initial' && (
-        <div className="w-full max-w-lg bg-slate-900/95 border-2 border-cyan-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-cyan-950/80 text-white text-center relative overflow-hidden backdrop-blur-2xl">
+        <div className="portal-modal-drawer w-full max-w-lg bg-[#111319] border border-white/[0.08] rounded-3xl p-6 sm:p-8 shadow-2xl text-white text-center relative overflow-hidden backdrop-blur-2xl">
+          {/* Mobile Swipe Indicator Pill */}
+          <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-3 md:hidden shrink-0 cursor-grab" />
           {/* Ambient glow */}
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />

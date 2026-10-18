@@ -727,8 +727,10 @@ export function isIccComplaint(c) {
 // MODAL: High-visibility GitHub Deployment Update Notification Modal
 export function AppUpdateModal({ appVersion, onUpdate, onSkip }) {
   return (
-    <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md bg-gradient-to-b from-[#111c38] to-[#090f20] border border-cyan-500/40 rounded-2xl p-6 shadow-2xl shadow-cyan-950/70 text-slate-100 flex flex-col gap-4">
+    <div className="portal-modal-overlay fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-300">
+      <div className="portal-modal-drawer relative w-full max-w-md bg-[#111319] border border-white/[0.08] rounded-3xl p-6 shadow-2xl text-slate-100 flex flex-col gap-4">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-1 md:hidden shrink-0 cursor-grab" />
         {/* Subtle glowing accents */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -10290,11 +10292,13 @@ function AuthScreen({ onLoginSuccess }) {
 
       {/* MODAL: INSTITUTIONAL GUIDELINES, TERMS OF SERVICE & PRIVACY POLICY */}
       {policyModalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 via-[#0b1329] to-[#070b16] rounded-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-slate-100 overflow-hidden flex flex-col max-h-[88vh]">
+        <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="portal-modal-drawer relative w-full max-w-2xl bg-[#111319] rounded-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-slate-100 overflow-hidden flex flex-col max-h-[92vh] md:max-h-[88vh]">
+            {/* Mobile Swipe Indicator Pill */}
+            <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
             
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-white/10 bg-slate-900/90 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-white/10 bg-[#0D2821] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
                   {policyModalType === 'terms' ? <Scale className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5 text-emerald-400" />}
@@ -11318,14 +11322,16 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 border border-slate-700/60 shadow-2xl">
-        <div className="flex justify-between items-center pb-3 border-b border-slate-800/60 mb-4">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4">
+      <div className="portal-modal-drawer bg-[#111319] rounded-3xl max-w-md w-full p-5 sm:p-6 border border-white/[0.08] shadow-2xl">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-2 md:hidden shrink-0 cursor-grab" />
+        <div className="flex justify-between items-center pb-3 border-b border-white/[0.08] mb-4">
           <div>
-            <span className="text-xs font-mono font-bold text-slate-100">{ticket.ticketNumber}</span>
+            <span className="text-xs font-mono font-bold text-emerald-400">{ticket.ticketNumber}</span>
             <h3 className="font-bold text-base text-white tracking-tight">Service Verification</h3>
           </div>
-          <button onClick={onClose}><X className="w-4 h-4 text-slate-400" /></button>
+          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
 
         {step === 'DECISION' && (
@@ -11930,21 +11936,23 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col border border-slate-700/60 shadow-2xl overflow-hidden">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4">
+      <div className="portal-modal-drawer bg-[#111319] rounded-3xl max-w-3xl w-full max-h-[92vh] md:max-h-[85vh] flex flex-col border border-white/[0.08] shadow-2xl overflow-hidden">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
         
         {/* Header */}
-        <div className="p-5 border-b border-slate-700/60 flex items-center justify-between cyber-card-subtle/70">
+        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#0D2821] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
-              <Mail className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-emerald-400 shrink-0">
+              <Mail className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base text-white tracking-tight leading-tight">Campus Dispatch & Email Center</h3>
-                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">Audit Log</span>
+                <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">Audit Log</span>
               </div>
-              <p className="text-xs text-slate-400">Live archive of automated department dispatches, notifications, and grievance mailings</p>
+              <p className="text-xs text-zinc-300">Live archive of automated department dispatches, notifications, and grievance mailings</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -12215,21 +12223,23 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-700/60 shadow-2xl overflow-hidden my-6">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 overflow-y-auto">
+      <div className="portal-modal-drawer bg-[#111319] rounded-3xl max-w-xl w-full border border-white/[0.08] shadow-2xl overflow-hidden my-auto">
+        {/* Mobile Swipe Indicator Pill */}
+        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
         
         {/* Header */}
-        <div className="p-5 border-b border-slate-700/60 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50/60">
+        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#0D2821] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-600/20">
-              <Settings className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-emerald-400 flex items-center justify-center font-bold shadow-inner">
+              <Settings className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <h3 className="font-bold text-base text-white tracking-tight leading-tight">Live Email & SMTP Configuration</h3>
-              <p className="text-xs text-slate-400">Configure real Gmail or institutional mail server for student alerts</p>
+              <p className="text-xs text-zinc-300">Configure real Gmail or institutional mail server for student alerts</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-300 hover:bg-slate-200/60 transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
