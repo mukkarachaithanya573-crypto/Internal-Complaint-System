@@ -9,8 +9,9 @@ import {
   Ban, Inbox, Send, AlertCircle, IdCard, ExternalLink, Settings, Building, Building2,
   Search, Printer, Link2, GraduationCap, CheckCheck, MessageSquare, Play,
   Compass, Navigation, Map as MapIcon, Phone, KeyRound, Smartphone, Trash2,
-  Scale, Gavel, Plus, Edit3, Save, UserCheck, Menu
+  Scale, Gavel, Plus, Edit3, Save, UserCheck, Menu, Lightbulb
 } from 'lucide-react';
+
 import { 
   HOSTEL_HIERARCHY_LEVELS, 
   HOSTEL_CONCERNED_DEPARTMENTS,
