@@ -615,3 +615,75 @@ Submitted from RGUKT RK Valley Internal Complaint System
   return { success: devRes?.success ?? true, res: devRes };
 }
 
+/**
+ * 6. ACTION: Registration Gratitude & Welcome Email
+ * Expresses heartfelt gratitude and sends the "We Are Here For You" reassurance note to newly registered users
+ */
+export async function sendWelcomeGratitudeEmail(user) {
+  if (!user) return { success: false, error: 'No user provided' };
+
+  const userName = user.fullName || user.name || (user.idNo ? `Resident (${user.idNo})` : 'Student Resident');
+  const userEmail = (user.collegeEmail || user.email || '').trim().toLowerCase();
+  const userId = user.idNo || user.staffId || 'CAMPUS-ID';
+  const isDept = user.userTab === 'department' || user.role === 'ADMIN' || user.role === 'STAFF';
+
+  if (!userEmail) {
+    console.warn('⚠️ No email address available to send welcome & gratitude message.');
+    return { success: false, error: 'No recipient email' };
+  }
+
+  const gratitudeMessage = `Dear ${userName},
+
+Thank you for registering with the RGUKT RK Valley Internal Complaint System (ICS).
+
+On behalf of our entire team, the Student Welfare Cell, and campus administration, we express our heartfelt gratitude to you for joining the platform.
+
+Please remember: WE ARE HERE FOR YOU!
+You are never alone on campus. Whether facing issues with hostel amenities, electricity, water supply, cleanliness, safety, or institutional grievances, our dedicated team is always standing by to listen, support, and resolve your concerns with complete transparency, accountability, and speed.
+
+Your comfort, safety, and academic peace of mind are our foremost priority. Whenever you need assistance, simply lodge a complaint or share your feedback—we are always with you at every step.
+
+Warm regards & gratitude,
+Internal Complaint System (ICS) Team & Student Welfare Cell
+RGUKT RK Valley`;
+
+  const templateParams = {
+    to_name: userName,
+    user_name: userName,
+    name: userName,
+    to_email: userEmail,
+    recipient_email: userEmail,
+    email: userEmail,
+    user_email: userEmail,
+    ticket_number: userId,
+    otp: 'WELCOME',
+    passcode: 'WELCOME',
+    code: 'WELCOME',
+    verification_code: 'WELCOME',
+    title: 'Welcome to RGUKT RK Valley ICS — We Are Here For You!',
+    subject: `Welcome to RGUKT RK Valley ICS, ${userName} — We Are Here For You!`,
+    category: isDept ? 'Faculty Registration & Welcome' : 'Student Welfare & Welcome',
+    location: 'RGUKT RK Valley Campus',
+    priority: 'ASSURED SUPPORT',
+    action_type: 'Welcome & Team Gratitude',
+    current_authority: 'ICS Redressal & Student Welfare Cell',
+    authority_designation: 'Campus Administration & Redressal Desk',
+    system_type: 'RGUKT RK Valley Internal Complaint System (ICS)',
+    status: 'ACTIVE & PROTECTED',
+    message: gratitudeMessage,
+    body: `Welcome to RGUKT RK Valley Internal Complaint System. We express our heartfelt gratitude to you. Remember: We Are Here For You at every step!`,
+    notes: 'Registration complete. Whenever you face any issue or need assistance, our team is always here for you.',
+    next_step: 'Access your portal dashboard to lodge requests, track resolution timelines, and reach out to authorities.',
+    date_time: new Date().toLocaleString()
+  };
+
+  console.log(`📨 [Welcome & Gratitude Email] Dispatching to ${userEmail}...`);
+  try {
+    const res = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, templateParams);
+    return res;
+  } catch (err) {
+    console.warn('Welcome gratitude email dispatch warning:', err);
+    return { success: false, error: err?.message || err };
+  }
+}
+

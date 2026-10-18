@@ -76,9 +76,11 @@ import {
   sendEmailOnAuthorityResponse,
   sendEmailOnProblemSolved,
   sendOtpEmail,
-  sendEmailOnAppFeedback
+  sendEmailOnAppFeedback,
+  sendWelcomeGratitudeEmail
 } from './emailService';
 import AppFeedbackModal from './AppFeedbackModal';
+import LogoutAccountChoiceModal from './LogoutAccountChoiceModal';
 
 
 // RGUKT AP IIIT Location Structure
@@ -1053,6 +1055,7 @@ export default function CampusMaintenanceApp() {
   // App Improvement Feedback & Feature Ideas Modal State (Direct to Developer)
   const [isAppFeedbackOpen, setIsAppFeedbackOpen] = useState(false);
   const [postSubmitFeedbackTicket, setPostSubmitFeedbackTicket] = useState(null);
+  const [showLogoutChoiceModal, setShowLogoutChoiceModal] = useState(false);
   const [selectedStaffId, setSelectedStaffId] = useState('staff-1');
 
 
@@ -1790,6 +1793,9 @@ export default function CampusMaintenanceApp() {
 
   // Handle Login Event from Auth Screen
   const handleLoginSuccess = (user) => {
+    try {
+      sessionStorage.removeItem('rgukt_auth_prefill_account');
+    } catch (e) {}
     setCurrentUser(user);
     setIsAuthenticated(true);
     setSelectedTicket(null);
@@ -2086,11 +2092,31 @@ export default function CampusMaintenanceApp() {
 
   // 🌐 WEBSITE ONLY: Standard Logout
   const handleLogout = () => {
-    // Both department workday and student sessions are cleanly terminated upon logout
+    setShowLogoutChoiceModal(true);
+  };
+
+  // 📱 MOBILE APP ONLY: Log out of current account to sign in with another account
+  const handleAppAccountLogout = () => {
+    setShowLogoutChoiceModal(true);
+  };
+
+  // User chose: Log in with Same Account
+  const handleLogoutSameAccount = () => {
+    setShowLogoutChoiceModal(false);
+    if (currentUser) {
+      try {
+        sessionStorage.setItem('rgukt_auth_prefill_account', JSON.stringify({
+          idNo: currentUser.idNo || '',
+          collegeEmail: currentUser.collegeEmail || currentUser.email || '',
+          userTab: (currentUser.userTab || (currentUser.role === 'REPORTER' ? 'student' : 'department')),
+          name: currentUser.name || currentUser.fullName || '',
+          role: currentUser.role || 'REPORTER'
+        }));
+      } catch (e) {}
+    }
     clearDepartmentDailySession();
     try {
       localStorage.removeItem('rgukt_active_session_user');
-      localStorage.removeItem('rgukt_app_registered_student');
       sessionStorage.removeItem('rgukt_web_active_student_session');
     } catch (e) {}
     setIsAuthenticated(false);
@@ -2100,19 +2126,17 @@ export default function CampusMaintenanceApp() {
     setShowIntro(false);
   };
 
-  // 📱 MOBILE APP ONLY: Log out of current account to sign in with another account
-  const handleAppAccountLogout = () => {
-    const userIdentifier = currentUser?.idNo || currentUser?.staffId || currentUser?.email || 'this account';
-    if (!window.confirm(`Log out of account (${userIdentifier}) to sign in with another account?`)) {
-      return;
-    }
-    // Set explicit logout flag so App auto-login does NOT immediately re-hydrate this account
+  // User chose: Log in with Another Account
+  const handleLogoutAnotherAccount = () => {
+    setShowLogoutChoiceModal(false);
+    clearDepartmentDailySession();
     try {
       localStorage.setItem('rgukt_app_explicit_logged_out', 'true');
       sessionStorage.setItem('rgukt_app_manual_account_switch', 'true');
+      sessionStorage.removeItem('rgukt_auth_prefill_account');
       localStorage.removeItem('rgukt_active_session_user');
       localStorage.removeItem('rgukt_app_registered_student');
-      clearDepartmentDailySession();
+      sessionStorage.removeItem('rgukt_web_active_student_session');
     } catch (e) {}
     setIsAuthenticated(false);
     setCurrentUser(null);
@@ -2525,37 +2549,74 @@ export default function CampusMaintenanceApp() {
 
   // Hostel Facilities Hierarchy: Record Authority Response
   const handleAddHostelAuthorityResponse = async (complaintId, response, authorityStage) => {
+    let updatedComplaint = null;
+
     try {
       const res = await fetch(`/api/complaints/${complaintId}/hierarchy-response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ response, authorityStage })
       });
-      const data = await res.json();
-      if (data.success) {
-        fetchData();
-        if (selectedTicket?.id === complaintId) {
-          setSelectedTicket(data.complaint);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.complaint) {
+          updatedComplaint = data.complaint;
         }
-        // Sync response to Firebase Cloud Firestore
-        updateComplaintInFirestore(complaintId, data.complaint).catch(e => console.warn('Firebase response update notice:', e));
-
-        // Dispatch EmailJS Notification to student with official response
-        sendEmailOnAuthorityResponse(data.complaint, response, authorityStage).catch(err => {
-          console.warn('EmailJS authority response notice:', err);
-        });
-
-        // Push In-App / System Notification
-        pushSystemNotification(
-          `📝 Response from ${authorityStage}: #${data.complaint?.ticketNumber}`,
-          `Official response recorded: "${response}"`,
-          'AUTHORITY UPDATE'
-        );
-      } else {
-        console.error('Response error:', data.message);
       }
     } catch (err) {
-      console.error('Error saving authority response:', err);
+      console.warn('Backend authority response network notice (using client/cloud update):', err);
+    }
+
+    // Client/Cloud Fallback (Guarantees execution in Capacitor Android APK & static deployments)
+    if (!updatedComplaint) {
+      const target = complaints.find(c => c.id === complaintId) || selectedTicket;
+      if (target) {
+        const responseLogEntry = {
+          id: `resp-${Date.now()}`,
+          stage: authorityStage,
+          response: response,
+          timestamp: new Date().toISOString()
+        };
+        updatedComplaint = {
+          ...target,
+          lastAuthorityResponse: response,
+          lastAuthorityStage: authorityStage,
+          authorityResponseLogs: [...(target.authorityResponseLogs || []), responseLogEntry],
+          triPartyThread: [
+            ...(target.triPartyThread || []),
+            {
+              id: `msg-${Date.now()}`,
+              senderRole: 'AUTHORITY',
+              senderName: `${authorityStage} In-Charge`,
+              message: `Official update recorded: "${response}"`,
+              time: 'Just now',
+              timestamp: new Date().toISOString()
+            }
+          ]
+        };
+      }
+    }
+
+    if (updatedComplaint) {
+      fetchData();
+      setComplaints(prev => prev.map(c => c.id === complaintId ? updatedComplaint : c));
+      if (selectedTicket?.id === complaintId) {
+        setSelectedTicket(updatedComplaint);
+      }
+      // Sync response to Firebase Cloud Firestore
+      updateComplaintInFirestore(complaintId, updatedComplaint).catch(e => console.warn('Firebase response update notice:', e));
+
+      // Dispatch EmailJS Notification to student with official response
+      sendEmailOnAuthorityResponse(updatedComplaint, response, authorityStage).catch(err => {
+        console.warn('EmailJS authority response notice:', err);
+      });
+
+      // Push In-App / System Notification
+      pushSystemNotification(
+        `📝 Response from ${authorityStage}: #${updatedComplaint?.ticketNumber}`,
+        `Official response recorded: "${response}"`,
+        'AUTHORITY UPDATE'
+      );
     }
   };
 
@@ -2563,6 +2624,8 @@ export default function CampusMaintenanceApp() {
   const handleConfirmHostelEscalation = async ({
     ticketId, fromStage, toStage, toStageKey, targetDepartment, reason, customOtherReason, taggedPriorResponse, studentRemarks
   }) => {
+    let resolvedComplaint = null;
+
     try {
       const res = await fetch(`/api/complaints/${ticketId}/hierarchy-escalate`, {
         method: 'POST',
@@ -2571,41 +2634,83 @@ export default function CampusMaintenanceApp() {
           fromStage, toStage, toStageKey, targetDepartment, reason, customOtherReason, taggedPriorResponse, studentRemarks
         })
       });
-      const data = await res.json();
-      if (data.success) {
-        // Smoothly update UI without blocking "localhost says" alert
-        fetchData();
-        if (selectedTicket?.id === ticketId) {
-          setSelectedTicket(data.complaint);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.complaint) {
+          resolvedComplaint = data.complaint;
         }
-        // Sync escalation to Firebase Cloud Firestore
-        updateComplaintInFirestore(ticketId, data.complaint).catch(e => console.warn('Firebase escalation update notice:', e));
-
-        // Dispatch EmailJS notifications to User and incoming Respected Officer
-        sendEmailOnHierarchyEscalation(data.complaint, {
-          fromStage,
-          toStage,
-          toStageKey,
-          targetDepartment,
-          reason,
-          customOtherReason,
-          taggedPriorResponse,
-          studentRemarks
-        }).catch(err => {
-          console.warn('EmailJS escalation notice:', err);
-        });
-
-        // Push In-App / Web Notification
-        pushSystemNotification(
-          `🚀 Complaint Escalated: #${data.complaint?.ticketNumber} ➔ ${toStage}`,
-          `Tagged from ${fromStage} with previous response. Respective Officer (${toStage}) has been notified.`,
-          'HIERARCHY ESCALATION'
-        );
-      } else {
-        console.error('Escalation error:', data.message);
       }
     } catch (err) {
-      console.error(err);
+      console.warn('Backend escalation fetch notice (using client/cloud escalation):', err);
+    }
+
+    // Client/Cloud Fallback (Essential for Android APK & Static Web deployments)
+    if (!resolvedComplaint) {
+      const targetTicket = complaints.find(c => c.id === ticketId) || selectedTicket;
+      if (targetTicket) {
+        const logEntry = {
+          id: `esc-${Date.now()}`,
+          fromStage: fromStage || 'Warden',
+          toStage: toStage || 'DSW & Dept',
+          toStageKey: toStageKey || 'DSW_DEPT',
+          reason: reason || 'Not resolved in previous stage',
+          customOtherReason: customOtherReason || null,
+          taggedPriorResponse: taggedPriorResponse || targetTicket.lastAuthorityResponse || 'Awaiting effective on-site completion',
+          studentRemarks: studentRemarks || null,
+          timestamp: new Date().toISOString()
+        };
+        resolvedComplaint = {
+          ...targetTicket,
+          currentHierarchyStage: toStageKey || 'DSW_DEPT',
+          currentHierarchyAuthority: toStage || (targetDepartment ? `DSW & ${targetDepartment}` : 'DSW & Respective Departments'),
+          assignedStaffName: targetDepartment ? `Dean Student Welfare & ${targetDepartment}` : `Office of ${toStage}`,
+          concernedDept: targetDepartment || targetTicket.concernedDept,
+          hierarchyLogs: [...(targetTicket.hierarchyLogs || []), logEntry],
+          timeline: [
+            ...(targetTicket.timeline || []),
+            {
+              status: 'ASSIGNED',
+              title: `Tagged to ${toStage} with ${fromStage}'s Response`,
+              actor: targetTicket.reporterName || 'Student Resident',
+              time: 'Just now',
+              done: true
+            }
+          ]
+        };
+      }
+    }
+
+    if (resolvedComplaint) {
+      fetchData();
+      setComplaints(prev => prev.map(c => c.id === ticketId ? resolvedComplaint : c));
+      if (selectedTicket?.id === ticketId) {
+        setSelectedTicket(resolvedComplaint);
+      }
+      // Sync escalation to Firebase Cloud Firestore
+      updateComplaintInFirestore(ticketId, resolvedComplaint).catch(e => console.warn('Firebase escalation update notice:', e));
+
+      // Dispatch EmailJS notifications to User and incoming Respected Officer
+      sendEmailOnHierarchyEscalation(resolvedComplaint, {
+        fromStage,
+        toStage,
+        toStageKey,
+        targetDepartment,
+        reason,
+        customOtherReason,
+        taggedPriorResponse,
+        studentRemarks
+      }).then(res => {
+        console.log(`✅ Email dispatched for hierarchy level escalation [${fromStage} ➔ ${toStage}]:`, res);
+      }).catch(err => {
+        console.warn('EmailJS escalation notice:', err);
+      });
+
+      // Push In-App / Web Notification
+      pushSystemNotification(
+        `🚀 Complaint Escalated: #${resolvedComplaint.ticketNumber} ➔ ${toStage}`,
+        `Tagged from ${fromStage} with previous response. Respective Officer (${toStage}) has been notified.`,
+        'HIERARCHY ESCALATION'
+      );
     }
   };
 
@@ -7375,6 +7480,15 @@ export default function CampusMaintenanceApp() {
         }}
       />
 
+      {/* MODAL: ACCOUNT LOGOUT CHOICE (SAME VS ANOTHER ACCOUNT) */}
+      <LogoutAccountChoiceModal
+        isOpen={showLogoutChoiceModal}
+        currentUser={currentUser}
+        onSelectSameAccount={handleLogoutSameAccount}
+        onSelectAnotherAccount={handleLogoutAnotherAccount}
+        onCancel={() => setShowLogoutChoiceModal(false)}
+      />
+
     </div>
   );
 }
@@ -7967,11 +8081,26 @@ export function syncCloudUsersWithLocal(remoteUsers, currentUser = null, setCurr
 
 function AuthScreen({ onLoginSuccess }) {
   const [authMode, setAuthMode] = useState('signin'); // 'signin' (every time login) | 'signup' (first time register)
-  const [userTab, setUserTab] = useState('student'); // 'student' | 'department'
+  
+  // Check if user chose "Log in with Same Account" upon logging out
+  const [prefillAccount] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem('rgukt_auth_prefill_account');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  });
 
-  // Input states - initially empty so user is required to enter them
-  const [idNo, setIdNo] = useState('');
-  const [collegeEmail, setCollegeEmail] = useState('');
+  const [userTab, setUserTab] = useState(() => {
+    if (prefillAccount?.userTab) return prefillAccount.userTab;
+    if (prefillAccount?.role && prefillAccount.role !== 'REPORTER') return 'department';
+    return 'student';
+  });
+
+  // Input states - initialized with same account credentials if requested, else blank
+  const [idNo, setIdNo] = useState(() => prefillAccount?.idNo || '');
+  const [collegeEmail, setCollegeEmail] = useState(() => prefillAccount?.collegeEmail || prefillAccount?.email || '');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [profilePic, setProfilePic] = useState(null);
@@ -7982,7 +8111,12 @@ function AuthScreen({ onLoginSuccess }) {
 
   // User feedback alerts
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState(() => {
+    if (prefillAccount?.idNo || prefillAccount?.collegeEmail) {
+      return `ℹ️ Re-authenticating with same account (${prefillAccount.idNo || prefillAccount.collegeEmail}). Enter password to sign in.`;
+    }
+    return '';
+  });
 
   // Email OTP Verification States
   const [loginMethod, setLoginMethod] = useState('password'); // 'password' | 'otp'
@@ -8581,6 +8715,7 @@ function AuthScreen({ onLoginSuccess }) {
         };
         saveRegisteredAccounts([newUser, ...otherUsers]);
         saveUserToFirestore(newUser).catch(e => console.warn('Firebase user save notice:', e));
+        sendWelcomeGratitudeEmail(newUser).catch(e => console.warn('Welcome gratitude email notice:', e));
         
         setTimeout(() => {
           setIsSubmitting(false);
@@ -8617,6 +8752,7 @@ function AuthScreen({ onLoginSuccess }) {
         };
         saveRegisteredAccounts([newUser, ...otherUsers]);
         saveUserToFirestore(newUser).catch(e => console.warn('Firebase user save notice:', e));
+        sendWelcomeGratitudeEmail(newUser).catch(e => console.warn('Welcome gratitude email notice:', e));
         if (isAppEnvironment()) {
           try {
             localStorage.setItem('rgukt_app_registered_student', JSON.stringify(newUser));
