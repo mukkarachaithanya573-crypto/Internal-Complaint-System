@@ -857,11 +857,11 @@ function SlaHierarchyStepper({ ticket }) {
   const hoursDisplay = Math.floor(remainingHoursInTier);
 
   return (
-    <div className="bg-[#111319] border border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-xl mb-5 space-y-4 font-sans">
+    <div className="glass-panel border border-white/[0.1] rounded-2xl p-4 sm:p-5 shadow-2xl mb-5 space-y-4 font-sans backdrop-blur-2xl">
       {/* Stepper Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#0D2821] border border-[#0F382E] text-emerald-400 flex items-center justify-center font-bold shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0 shadow-inner">
             <ShieldCheck className="w-4 h-4" />
           </div>
           <div>
@@ -869,21 +869,21 @@ function SlaHierarchyStepper({ ticket }) {
               <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight">
                 4-Tier Redressal SLA Hierarchy
               </h4>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#0D2821] text-emerald-400 border border-[#0F382E]">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/40 text-emerald-400 border border-emerald-500/30">
                 Live SLA Clock
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-zinc-300">
               Sequential Escalation: Warden → DSW → Administrative Officer → Campus Director
             </p>
           </div>
         </div>
 
         {/* Active SLA Countdown Clock */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#14161C] border border-white/[0.08]">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121824]/70 border border-white/[0.1]">
           <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
           <div className="text-left">
-            <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block leading-none">
+            <span className="text-[9px] uppercase tracking-wider text-zinc-400 font-bold block leading-none">
               Tier {activeTier.level} ({activeTier.title}) SLA Clock
             </span>
             <span className="text-xs font-mono font-bold text-emerald-300">
@@ -907,16 +907,16 @@ function SlaHierarchyStepper({ ticket }) {
               key={tier.level}
               className={`p-3 rounded-xl border transition-all flex flex-col justify-between ${
                 isCurrent
-                  ? 'bg-[#0D2821] border-[#0F382E] ring-1 ring-emerald-500/50 shadow-lg'
+                  ? 'bg-emerald-950/40 border-emerald-500/40 ring-1 ring-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.25)]'
                   : isCompleted
-                  ? 'bg-[#14161C] border-white/[0.08] opacity-90'
-                  : 'bg-[#14161C]/50 border-white/[0.04] opacity-50'
+                  ? 'bg-[#121824]/60 border-white/[0.08] opacity-90'
+                  : 'bg-[#121824]/30 border-white/[0.04] opacity-50'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className={`text-[9px] font-mono font-bold uppercase tracking-wider ${
-                    isCurrent ? 'text-emerald-300' : isCompleted ? 'text-zinc-400' : 'text-zinc-600'
+                    isCurrent ? 'text-emerald-300' : isCompleted ? 'text-zinc-300' : 'text-zinc-500'
                   }`}>
                     Tier {tier.level} • {tier.slaTarget}
                   </span>
@@ -1039,7 +1039,7 @@ export default function CampusMaintenanceApp() {
     initialDeptSession?.profileKey || 'REPORTER'
   );
   const [activeTab, setActiveTab] = useState(
-    initialDeptSession ? (initialDeptSession.user?.role === 'ADMIN' ? 'dashboard' : 'tracker') : 'my-complaints'
+    initialDeptSession ? (initialDeptSession.user?.role === 'ADMIN' ? 'dashboard' : 'tracker') : 'submit'
   );
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [dismissOfflinePage, setDismissOfflinePage] = useState(false);
@@ -1896,7 +1896,7 @@ export default function CampusMaintenanceApp() {
       clearDepartmentDailySession();
       setCurrentRole('REPORTER');
       setActiveProfileKey('REPORTER');
-      setActiveTab('tracker');
+      setActiveTab('submit');
 
       const userKey = (user.idNo || user.email || '').trim().toUpperCase();
       let customSaved = null;
@@ -2975,7 +2975,7 @@ export default function CampusMaintenanceApp() {
   }
 
   return (
-    <div className="h-screen bg-[#070A0F] text-zinc-100 flex flex-col font-sans overflow-hidden relative">
+    <div className="h-screen bg-transparent text-zinc-100 flex flex-col font-sans overflow-hidden relative">
       {/* Global Aurora Ambient Mesh Glow with Frosted Glassmorphism Canvas */}
       <AuroraBackground />
       
@@ -3539,41 +3539,28 @@ export default function CampusMaintenanceApp() {
           {/* MAIN DYNAMIC CONTENT WORKSPACE (Independently Scrollable from Top to Bottom) */}
           <div className="flex-1 min-w-0 w-full h-full flex flex-col overflow-hidden bg-transparent">
 
-            {/* TOP HEADER BAR: 3-LINE BAR AT TOP-LEFT CORNER */}
-            <header className="shrink-0 z-30 px-3 sm:px-6 py-2.5 bg-[#111319] border-b border-white/[0.08] shadow-md flex items-center justify-between gap-3 flex-wrap relative font-sans">
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON AT TOP-LEFT CORNER */}
-                <button
-                  type="button"
-                  onClick={() => setIsDashboardOpen(prev => !prev)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 border shadow-sm cursor-pointer active:scale-95 ${
-                    isDashboardOpen
-                      ? 'bg-white text-black border-white shadow-md'
-                      : 'bg-[#1A1D26] hover:bg-[#222736] text-zinc-200 border-white/[0.08]'
-                  }`}
-                  title={isDashboardOpen ? "Click to Close Dashboard & Go Back" : "Click 3-Line Bar to Display Dashboard"}
-                  aria-label="Toggle Dashboard Menu"
-                >
-                  <Menu className="w-4 h-4 text-current shrink-0 stroke-[2.5]" />
-                  <span className="font-bold uppercase tracking-wider text-[11px] hidden xs:inline">
-                    {isDashboardOpen ? 'Go Back' : 'Dashboard'}
-                  </span>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isDashboardOpen ? 'bg-black animate-ping' : 'bg-emerald-400 animate-pulse'}`} />
-                </button>
+            {/* TOP TITLE LINE MATCHING REFERENCE IMAGE */}
+            <div className="shrink-0 px-4 sm:px-6 pt-2 pb-0.5 text-xs font-extrabold tracking-wider text-zinc-300 uppercase select-none flex items-center justify-between font-sans">
+              <span>INTERNAL COMPLAINT SYSTEM (ICS)</span>
+            </div>
 
+            {/* TOP HEADER BAR: MATCHING REFERENCE IMAGE */}
+            <header className="shrink-0 z-30 px-3 sm:px-6 py-2 bg-[#0C1117]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-md flex items-center justify-between gap-2.5 flex-wrap relative font-sans">
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                {/* STEP BACK BUTTON - PROMINENT AS IN REFERENCE IMAGE */}
                 <button
                   type="button"
                   onClick={handleStepBack}
-                  className="px-2.5 py-1.5 bg-[#1A1D26] hover:bg-[#222736] text-zinc-300 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-white/[0.08] shadow-xs cursor-pointer active:scale-95"
+                  className="px-3 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-200 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-white/[0.1] shadow-xs cursor-pointer active:scale-95"
                   title="Step Back one screen"
                 >
                   <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
-                  <span className="hidden sm:inline">Back</span>
+                  <span>Back</span>
                 </button>
 
                 {/* RGUKT RK Valley Crest Emblem & Central Governance Badge */}
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1 flex items-center justify-center shrink-0 shadow-inner">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-white/[0.04] border border-white/[0.08] p-0.5 flex items-center justify-center shrink-0 shadow-inner">
                     <img 
                       src="/logo.png?v=original" 
                       alt="RGUKT Crest" 
@@ -3584,36 +3571,50 @@ export default function CampusMaintenanceApp() {
                     <span className="text-xs font-bold text-white tracking-tight leading-tight">RGUKT RK VALLEY</span>
                     <span className="text-[10px] text-zinc-400 font-medium leading-tight">Internal Complaint System</span>
                   </div>
-                  <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-[11px] font-semibold tracking-wide">
+                  <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/50 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold tracking-wide">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Central Redressal Governance
                   </span>
                 </div>
 
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-[#1A1D26] text-zinc-200 border border-white/[0.08]">
+                {/* ACTIVE TAB PILL */}
+                <span className="text-[11px] px-3 py-0.5 rounded-full font-bold bg-white/10 text-white border border-white/20 shadow-xs uppercase tracking-wide">
                   {activeTab.toUpperCase()}
                 </span>
 
                 {/* Real-time SLA Status Pill */}
-                <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0D2821]/80 text-emerald-300 border border-[#0F382E] text-[11px] font-medium">
+                <div className="hidden lg:flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-[11px] font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                  <span>SLA Active • 4-Tier Matrix</span>
+                  <span>SLA Active 4-Tier Matrix</span>
                 </div>
+
+                {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON */}
+                <button
+                  type="button"
+                  onClick={() => setIsDashboardOpen(prev => !prev)}
+                  className={`p-1.5 rounded-xl text-xs font-semibold transition-all flex items-center border shadow-xs cursor-pointer active:scale-95 ${
+                    isDashboardOpen
+                      ? 'bg-white text-black border-white shadow-md'
+                      : 'bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-300 border-white/[0.08]'
+                  }`}
+                  title={isDashboardOpen ? "Close Menu" : "Menu"}
+                  aria-label="Toggle Dashboard Menu"
+                >
+                  <Menu className="w-3.5 h-3.5 text-current shrink-0 stroke-[2.5]" />
+                </button>
               </div>
 
-              {/* TOP RIGHT CORNER: NOTIFICATIONS + REAL-TIME REFRESH + IDENTITY + LOGOUT BUTTON */}
-              <div className="flex items-center gap-2 sm:gap-3 ml-auto">
-                {/* Student Pill (Roll ID: R200101, Hostel/Block info) */}
+              {/* TOP RIGHT CORNER: STUDENT ID PILL + APP IDEAS + DEMO TOUR */}
+              <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
+                {/* Student Pill (Roll ID: R240493 - Penna BH-1...) */}
                 {currentUser && (
-                  <div className="hidden xl:flex items-center gap-2 px-3 py-1 bg-[#1A1D26] rounded-full border border-white/[0.08] text-xs">
-                    <div className="w-5 h-5 rounded-full bg-[#0D2821] text-emerald-400 font-bold text-[10px] flex items-center justify-center shrink-0 border border-[#0F382E]">
-                      {(currentUser.name || currentUser.fullName || 'S').charAt(0).toUpperCase()}
-                    </div>
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#141822]/80 rounded-full border border-white/[0.1] text-xs shadow-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                     <span className="font-semibold text-zinc-200">
-                      Roll ID: {currentUser.idNo || currentUser.staffId || 'R200101'}
+                      Roll ID: {currentUser.idNo || currentUser.staffId || 'R240493'}
                     </span>
-                    <span className="text-zinc-600">•</span>
-                    <span className="text-zinc-400 truncate max-w-[140px]">
+                    <span className="text-zinc-600">-</span>
+                    <span className="text-zinc-400 truncate max-w-[150px]">
                       {currentUser.hostelBlock ? `${currentUser.hostelBlock} • ${currentUser.roomNumber || ''}` : (currentUser.department || 'Resident')}
                     </span>
                   </div>
@@ -3626,7 +3627,7 @@ export default function CampusMaintenanceApp() {
                     setPostSubmitFeedbackTicket(null);
                     setIsAppFeedbackOpen(true);
                   }}
-                  className="px-2.5 py-1.5 bg-[#1A1D26] hover:bg-[#222736] text-amber-300 border border-white/[0.08] rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-amber-300 border border-white/[0.1] rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Submit Ideas, Suggestions & Changes Needed in this App"
                 >
                   <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
@@ -3640,7 +3641,7 @@ export default function CampusMaintenanceApp() {
                     setDemoInitialPrompt(false);
                     setShowDemoModal(true);
                   }}
-                  className="px-2.5 py-1.5 bg-[#1A1D26] hover:bg-[#222736] text-zinc-200 hover:text-white border border-white/[0.08] rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-200 hover:text-white border border-white/[0.1] rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Watch Project Demo Video & Feature Walkthrough"
                 >
                   <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
@@ -3748,28 +3749,8 @@ export default function CampusMaintenanceApp() {
 
             {activeTab === 'submit' ? (
               /* SUBMIT COMPLAINT FORM */
-              <div className="max-w-4xl mx-auto w-full font-sans space-y-5">
-                {/* Institutional Accent & Hero Panel Matching Login Branding */}
-                <div className="bg-[#0D2821] border border-[#0F382E] p-5 sm:p-6 rounded-2xl shadow-xl flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-emerald-400 shrink-0">
-                      <Plus className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                        New Redressal Grievance / Maintenance Complaint
-                      </h2>
-                      <p className="text-xs text-zinc-300">
-                        Official 4-Tier Redressal Hierarchy • Automated Warden, DSW & Committee Dispatch
-                      </p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-[#111319] border border-white/[0.08] text-emerald-400 text-xs font-semibold">
-                    ⚡ 4-Tier SLA Enforced
-                  </span>
-                </div>
-
-                <div className="bg-[#111319] border border-white/[0.08] p-5 sm:p-8 rounded-2xl shadow-xl">
+              <div className="max-w-4xl mx-auto w-full font-sans space-y-5 animate-in fade-in duration-200">
+                <div className="glass-panel p-5 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-2xl border border-white/[0.1]">
                   <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/[0.08]">
                     <div>
                       <h3 className="text-base font-bold text-white tracking-tight">Lodgement Details</h3>
@@ -3819,7 +3800,7 @@ export default function CampusMaintenanceApp() {
                           type="button"
                           onClick={() => setLocationType('ACADEMICS')}
                           className={`flex-1 py-2 rounded-lg transition-all text-center ${
-                            locationType === 'ACADEMICS' ? 'bg-white text-black font-bold shadow-sm' : 'text-zinc-400 hover:text-white'
+                            locationType === 'ACADEMICS' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
                           }`}
                         >
                           Academics
@@ -3828,7 +3809,7 @@ export default function CampusMaintenanceApp() {
                           type="button"
                           onClick={() => setLocationType('HOSTEL_DORM')}
                           className={`flex-1 py-2 rounded-lg transition-all text-center ${
-                            locationType === 'HOSTEL_DORM' ? 'bg-white text-black font-bold shadow-sm' : 'text-zinc-400 hover:text-white'
+                            locationType === 'HOSTEL_DORM' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
                           }`}
                         >
                           HOSTEL / DORM
@@ -3837,7 +3818,7 @@ export default function CampusMaintenanceApp() {
                           type="button"
                           onClick={() => setLocationType('FACILITY')}
                           className={`flex-1 py-2 rounded-lg transition-all text-center ${
-                            locationType === 'FACILITY' ? 'bg-white text-black font-bold shadow-sm' : 'text-zinc-400 hover:text-white'
+                            locationType === 'FACILITY' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
                           }`}
                         >
                           SAC / HOSPITAL
@@ -3846,7 +3827,7 @@ export default function CampusMaintenanceApp() {
 
                       {/* Dynamic Dropdowns - Nested vertically */}
                       {locationType === 'ACADEMICS' && (
-                        <div className="space-y-3.5 p-4 bg-[#14161C] rounded-2xl border border-white/[0.08]">
+                        <div className="space-y-3.5 p-4 bg-[#121824]/60 backdrop-blur-md rounded-2xl border border-white/[0.08]">
                           <div>
                             <label className="text-xs font-bold text-white block mb-1.5 flex items-center justify-between">
                               <span className="flex items-center gap-1.5">
@@ -3858,7 +3839,7 @@ export default function CampusMaintenanceApp() {
                             <select
                               value={academicLocation}
                               onChange={(e) => setAcademicLocation(e.target.value)}
-                              className="w-full p-3 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white shadow-xs transition-all outline-none"
+                              className="w-full p-3 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white shadow-inner transition-all outline-none"
                             >
                               <option value="AB-1">AB-1</option>
                               <option value="AB-2">AB-2</option>
@@ -3906,7 +3887,7 @@ export default function CampusMaintenanceApp() {
                                 value={room}
                                 onChange={(e) => setRoom(e.target.value)}
                                 placeholder="e.g. Lab 104, Classroom 201"
-                                className="w-full p-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                                className="w-full p-2.5 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 shadow-inner transition-all outline-none"
                                 required
                               />
                             </div>
@@ -3915,7 +3896,7 @@ export default function CampusMaintenanceApp() {
                       )}
 
                       {locationType === 'HOSTEL_DORM' && (
-                        <div className="space-y-3.5 p-4 bg-[#14161C] rounded-2xl border border-white/[0.08]">
+                        <div className="space-y-3.5 p-4 bg-[#121824]/60 backdrop-blur-md rounded-2xl border border-white/[0.08]">
                           <div>
                             <label className="text-xs font-bold text-white block mb-1.5 flex items-center justify-between">
                               <span className="flex items-center gap-1.5">
@@ -3927,7 +3908,7 @@ export default function CampusMaintenanceApp() {
                             <select
                               value={hostelLocation}
                               onChange={(e) => setHostelLocation(e.target.value)}
-                              className="w-full p-3 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white shadow-xs transition-all outline-none"
+                              className="w-full p-3 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white shadow-inner transition-all outline-none"
                             >
                               <optgroup label="OLD CAMPUS">
                                 <option value="OLD CAMPUS > RHO">RHO</option>
@@ -3960,7 +3941,7 @@ export default function CampusMaintenanceApp() {
                               <select
                                 value={floor}
                                 onChange={(e) => setFloor(e.target.value)}
-                                className="w-full p-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white shadow-xs transition-all outline-none"
+                                className="w-full p-2.5 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white shadow-inner transition-all outline-none"
                               >
                                 {currentFloorOptions.map(f => (
                                   <option key={f} value={f}>{f}</option>
@@ -3978,7 +3959,7 @@ export default function CampusMaintenanceApp() {
                                 value={room}
                                 onChange={(e) => setRoom(e.target.value)}
                                 placeholder="e.g. Room 108, Washroom"
-                                className="w-full p-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                                className="w-full p-2.5 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 shadow-inner transition-all outline-none"
                                 required
                               />
                             </div>
@@ -3987,7 +3968,7 @@ export default function CampusMaintenanceApp() {
                       )}
 
                       {locationType === 'FACILITY' && (
-                        <div className="space-y-3.5 p-4 bg-[#14161C] rounded-2xl border border-white/[0.08]">
+                        <div className="space-y-3.5 p-4 bg-[#121824]/60 backdrop-blur-md rounded-2xl border border-white/[0.08]">
                           <div>
                             <label className="text-xs font-bold text-white block mb-1.5 flex items-center justify-between">
                               <span className="flex items-center gap-1.5">
@@ -3999,7 +3980,7 @@ export default function CampusMaintenanceApp() {
                             <select
                               value={separateFacility}
                               onChange={(e) => setSeparateFacility(e.target.value)}
-                              className="w-full p-3 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white shadow-xs transition-all outline-none"
+                              className="w-full p-3 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white shadow-inner transition-all outline-none"
                             >
                               <option value="SAC">SAC</option>
                               <option value="HOSPITAL">HOSPITAL</option>
@@ -4016,7 +3997,7 @@ export default function CampusMaintenanceApp() {
                               <select
                                 value={floor}
                                 onChange={(e) => setFloor(e.target.value)}
-                                className="w-full p-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white shadow-xs transition-all outline-none"
+                                className="w-full p-2.5 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white shadow-inner transition-all outline-none"
                               >
                                 {currentFloorOptions.map(f => (
                                   <option key={f} value={f}>{f}</option>
@@ -4034,7 +4015,7 @@ export default function CampusMaintenanceApp() {
                                 value={room}
                                 onChange={(e) => setRoom(e.target.value)}
                                 placeholder={separateFacility === 'HOSPITAL' ? 'e.g. Dr. Cabin 2, Bed 04' : 'e.g. Indoor Badminton Court, Main Hall'}
-                                className="w-full p-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/50 rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                                className="w-full p-2.5 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 shadow-inner transition-all outline-none"
                                 required
                               />
                             </div>
@@ -4050,13 +4031,13 @@ export default function CampusMaintenanceApp() {
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                           <span>2. Select Category & Redressal Mechanism <span className="text-rose-500">*</span></span>
                         </label>
-                        <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-[#14161C] text-zinc-300 border border-white/[0.08]">
+                        <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-[#121824]/70 text-zinc-300 border border-white/[0.08]">
                           {categoryType === 'MAINTENANCE' ? '🏢 Hostel Maintenance & Campus Facilities Track (Warden ➔ DSW ➔ AO ➔ Director)' : '⚖️ Official Committee Track'}
                         </span>
                       </div>
 
                       {/* Primary Category Track Switcher: Unified 2-Track System */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-1.5 bg-[#14161C] rounded-2xl border border-white/[0.08]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-1.5 bg-[#0F141E]/80 rounded-2xl border border-white/[0.1]">
                         {/* Unified Track A: Hostel Maintenance & Facilities (with 4-Tier Hierarchy) */}
                         <button
                           type="button"
@@ -4068,11 +4049,11 @@ export default function CampusMaintenanceApp() {
                           }}
                           className={`p-3 rounded-xl text-left transition-all cursor-pointer flex items-center gap-3 relative overflow-hidden ${
                             categoryType === 'MAINTENANCE'
-                              ? 'bg-[#0D2821] text-emerald-400 border border-[#0F382E] shadow-sm'
-                              : 'bg-[#0D1117] hover:bg-[#1A1D26] text-zinc-300 border border-white/[0.08]'
+                              ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/40 ring-1 ring-emerald-400/40 shadow-md'
+                              : 'bg-[#121824]/60 hover:bg-[#182030] text-zinc-300 border border-white/[0.08]'
                           }`}
                         >
-                          <div className={`p-2 rounded-lg shrink-0 ${categoryType === 'MAINTENANCE' ? 'bg-[#12362C] text-emerald-300' : 'bg-white/[0.06] text-zinc-400'}`}>
+                          <div className={`p-2 rounded-lg shrink-0 ${categoryType === 'MAINTENANCE' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.06] text-zinc-400'}`}>
                             <Building className="w-5 h-5" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -4099,11 +4080,11 @@ export default function CampusMaintenanceApp() {
                           }}
                           className={`p-3 rounded-xl text-left transition-all cursor-pointer flex items-center gap-3 relative overflow-hidden ${
                             categoryType === 'ICC'
-                              ? 'bg-[#0D2821] text-emerald-400 border border-[#0F382E] shadow-sm'
-                              : 'bg-[#0D1117] hover:bg-[#1A1D26] text-zinc-300 border border-white/[0.08]'
+                              ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/40 ring-1 ring-emerald-400/40 shadow-md'
+                              : 'bg-[#121824]/60 hover:bg-[#182030] text-zinc-300 border border-white/[0.08]'
                           }`}
                         >
-                          <div className={`p-2 rounded-lg shrink-0 ${categoryType === 'ICC' ? 'bg-[#12362C] text-emerald-300' : 'bg-white/[0.06] text-zinc-400'}`}>
+                          <div className={`p-2 rounded-lg shrink-0 ${categoryType === 'ICC' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.06] text-zinc-400'}`}>
                             <ShieldCheck className="w-5 h-5" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -4126,8 +4107,8 @@ export default function CampusMaintenanceApp() {
                       {categoryType === 'MAINTENANCE' ? (
                         <div className="space-y-4 animate-in fade-in duration-150">
                           {/* 4-Tier Hierarchy Flow Guide */}
-                          <div className="p-4 sm:p-5 rounded-2xl bg-[#0D2821] border border-[#0F382E] shadow-sm space-y-3.5">
-                            <div className="flex items-center gap-2.5 pb-2.5 border-b border-[#0F382E]">
+                          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 shadow-md space-y-3.5 backdrop-blur-md">
+                            <div className="flex items-center gap-2.5 pb-2.5 border-b border-emerald-500/20">
                               <div className="w-9 h-9 rounded-xl bg-white/[0.06] text-emerald-400 border border-white/10 flex items-center justify-center font-bold shadow-xs">
                                 <Building className="w-5 h-5" />
                               </div>
@@ -4143,29 +4124,29 @@ export default function CampusMaintenanceApp() {
 
                             {/* 4-tier overview banner */}
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                              <div className="p-2.5 rounded-xl bg-[#111319] border border-white/[0.08] shadow-xs">
+                              <div className="p-2.5 rounded-xl bg-[#121824]/70 border border-white/[0.1] shadow-xs">
                                 <span className="text-[10px] font-bold text-emerald-400 uppercase block">Stage 1 (Primary)</span>
                                 <strong className="text-white font-bold block mt-0.5">Hostel Warden</strong>
                                 <span className="text-[10px] text-zinc-400">Local hostel intake & resolution</span>
                               </div>
-                              <div className="p-2.5 rounded-xl bg-[#111319] border border-white/[0.08] shadow-xs">
+                              <div className="p-2.5 rounded-xl bg-[#121824]/70 border border-white/[0.1] shadow-xs">
                                 <span className="text-[10px] font-bold text-emerald-400 uppercase block">Stage 2</span>
                                 <strong className="text-white font-bold block mt-0.5">DSW & Respective Depts</strong>
                                 <span className="text-[10px] text-zinc-400">Student Welfare & technical repairs</span>
                               </div>
-                              <div className="p-2.5 rounded-xl bg-[#111319] border border-white/[0.08] shadow-xs">
+                              <div className="p-2.5 rounded-xl bg-[#121824]/70 border border-white/[0.1] shadow-xs">
                                 <span className="text-[10px] font-bold text-emerald-400 uppercase block">Stage 3</span>
                                 <strong className="text-white font-bold block mt-0.5">Administrative Officer (AO)</strong>
                                 <span className="text-[10px] text-zinc-400">Administrative sanctions & contractors</span>
                               </div>
-                              <div className="p-2.5 rounded-xl bg-[#111319] border border-white/[0.08] shadow-xs">
+                              <div className="p-2.5 rounded-xl bg-[#121824]/70 border border-white/[0.1] shadow-xs">
                                 <span className="text-[10px] font-bold text-emerald-400 uppercase block">Stage 4 (Apex)</span>
                                 <strong className="text-white font-bold block mt-0.5">The Director</strong>
                                 <span className="text-[10px] text-zinc-400">Executive Orders & Campus Authority</span>
                               </div>
                             </div>
 
-                            <div className="p-2.5 bg-[#111319] rounded-xl text-[11px] text-zinc-300 flex items-start gap-2 border border-white/[0.08]">
+                            <div className="p-2.5 bg-[#121824]/70 rounded-xl text-[11px] text-zinc-300 flex items-start gap-2 border border-white/[0.1]">
                               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                               <span>
                                 <strong className="font-bold text-white">Automated Hierarchy Routing:</strong> This complaint will be routed first to the <strong className="font-bold text-emerald-400">Hostel Resident Warden</strong> to solve/stop the problem according to severity. If unresolved, you can tag the complaint with the Warden's response to DSW & Department, then to AO, and finally to the Director.
@@ -4187,11 +4168,11 @@ export default function CampusMaintenanceApp() {
                                     onClick={() => setCategory(cat.id)}
                                     className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all cursor-pointer ${
                                       isSel 
-                                        ? 'border-emerald-500/60 ring-1 ring-emerald-500/40 bg-[#0D2821] text-white' 
-                                        : 'border-white/[0.08] bg-[#14161C] hover:bg-[#1A1D26] text-zinc-300'
+                                        ? 'border-emerald-400 bg-emerald-950/40 text-white shadow-[0_0_15px_rgba(52,211,153,0.3)] ring-1 ring-emerald-400' 
+                                        : 'border-white/[0.08] bg-[#121824]/70 hover:bg-[#182030] text-zinc-300'
                                     }`}
                                   >
-                                    <div className={`p-1.5 rounded-lg ${isSel ? 'bg-[#12362C] text-emerald-300' : 'bg-white/[0.06] text-zinc-400'}`}>
+                                    <div className={`p-1.5 rounded-lg ${isSel ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.06] text-zinc-400'}`}>
                                       <Icon className="w-4 h-4" />
                                     </div>
                                     <span className={`text-xs font-bold ${isSel ? 'text-white' : 'text-zinc-200'}`}>
@@ -4205,9 +4186,9 @@ export default function CampusMaintenanceApp() {
                         </div>
                       ) : (
                         /* The SEPARATE WAY: Special ICC Official Committee Sub-panel */
-                        <div className="p-4 sm:p-5 rounded-2xl bg-[#0D2821] border border-[#0F382E] shadow-sm space-y-4 animate-in fade-in duration-200">
+                        <div className="p-4 sm:p-5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 shadow-md space-y-4 animate-in fade-in duration-200 backdrop-blur-md">
                           {/* Official Order Letterhead Citation */}
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-[#0F382E] gap-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-emerald-500/20 gap-2">
                             <div className="flex items-center gap-2.5">
                               <div className="w-9 h-9 rounded-xl bg-white/[0.06] text-emerald-400 border border-white/10 flex items-center justify-center font-bold shadow-xs">
                                 <ShieldCheck className="w-5 h-5" />
@@ -4220,17 +4201,17 @@ export default function CampusMaintenanceApp() {
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 self-start sm:self-auto">
-                              <span className="px-2 py-0.5 rounded-full bg-[#111319] text-zinc-300 border border-white/[0.08] text-[10px] font-semibold">
+                              <span className="px-2 py-0.5 rounded-full bg-[#121824]/70 text-zinc-300 border border-white/[0.08] text-[10px] font-semibold">
                                 Dated: 11.08.2026
                               </span>
-                              <span className="px-2 py-0.5 rounded-full bg-[#111319] text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-950/50 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
                                 Director as Chairperson
                               </span>
                             </div>
                           </div>
 
                           {/* Order Mandate Explanatory Box */}
-                          <div className="bg-[#111319] p-3 rounded-xl border border-white/[0.08] text-xs text-zinc-300 flex items-start gap-2">
+                          <div className="bg-[#121824]/70 p-3 rounded-xl border border-white/[0.1] text-xs text-zinc-300 flex items-start gap-2">
                             <AlertCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                             <p className="text-[11px] leading-relaxed">
                               <em>"In order to facilitate timely disposal of complaints and ensure that appropriate action is taken based on the nature, seriousness and complexity of each complaint, a three-level committee mechanism is hereby proposed. The Director shall be the Chairperson for all three levels of committees."</em>
@@ -4258,8 +4239,8 @@ export default function CampusMaintenanceApp() {
                                     onClick={() => setIccGrievanceNature(item.id)}
                                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                                       isSel
-                                        ? 'bg-[#12362C] text-white border-emerald-500/60 ring-1 ring-emerald-500/40 shadow-xs'
-                                        : 'bg-[#14161C] hover:bg-[#1A1D26] text-zinc-300 border-white/[0.08]'
+                                        ? 'bg-emerald-950/40 text-white border-emerald-400 ring-1 ring-emerald-400/50 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
+                                        : 'bg-[#121824]/70 hover:bg-[#182030] text-zinc-300 border-white/[0.08]'
                                     }`}
                                   >
                                     <div className="font-bold text-xs">{item.label}</div>
@@ -4282,7 +4263,7 @@ export default function CampusMaintenanceApp() {
                             </div>
 
                             {/* Prominent Statutory Dispatch Banner */}
-                            <div className="p-3 bg-[#111319] border border-white/[0.08] rounded-xl text-zinc-300 space-y-1 shadow-xs">
+                            <div className="p-3 bg-[#121824]/70 border border-white/[0.1] rounded-xl text-zinc-300 space-y-1 shadow-xs">
                               <div className="flex items-center gap-2 font-bold text-xs text-emerald-400">
                                 <Scale className="w-4 h-4 text-emerald-400 shrink-0" />
                                 <span>AUTOMATIC SIMULTANEOUS DISPATCH TO ALL THREE COMMITTEES:</span>
@@ -4328,8 +4309,8 @@ export default function CampusMaintenanceApp() {
                                     onClick={() => setIccCommitteeLevel(tier.level)}
                                     className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                                       isSel
-                                        ? 'bg-[#12362C] text-white border-emerald-500/60 ring-1 ring-emerald-500/40 shadow-xs'
-                                        : 'bg-[#14161C] hover:bg-[#1A1D26] text-zinc-300 border-white/[0.08]'
+                                        ? 'bg-emerald-950/40 text-white border-emerald-400 ring-1 ring-emerald-400/50 shadow-[0_0_12px_rgba(52,211,153,0.3)]'
+                                        : 'bg-[#121824]/70 hover:bg-[#182030] text-zinc-300 border-white/[0.08]'
                                     }`}
                                   >
                                     <div>
@@ -4406,7 +4387,7 @@ export default function CampusMaintenanceApp() {
                           )}
 
                           {/* 3. Confidentiality and Identity Protection */}
-                          <div className="bg-[#111319] border border-white/[0.08] p-3.5 rounded-xl space-y-2.5">
+                          <div className="bg-[#121824]/70 border border-white/[0.1] p-3.5 rounded-xl space-y-2.5 shadow-xs">
                             <span className="text-xs font-bold text-zinc-300 block">C. Confidentiality & Whistleblower Protections:</span>
                             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                               <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-zinc-300">
@@ -4414,7 +4395,7 @@ export default function CampusMaintenanceApp() {
                                   type="checkbox"
                                   checked={iccIsConfidential}
                                   onChange={(e) => setIccIsConfidential(e.target.checked)}
-                                  className="w-4 h-4 rounded bg-[#14161C] border-white/[0.1] text-emerald-500 focus:ring-emerald-500/30"
+                                  className="w-4 h-4 rounded bg-[#0A0E17] border-white/[0.2] text-emerald-500 focus:ring-emerald-500/30"
                                 />
                                 <span>🔒 Strictly Confidential Dossier (Sealed to Director & Committee)</span>
                               </label>
@@ -4423,7 +4404,7 @@ export default function CampusMaintenanceApp() {
                                   type="checkbox"
                                   checked={iccMaskIdentity}
                                   onChange={(e) => setIccMaskIdentity(e.target.checked)}
-                                  className="w-4 h-4 rounded bg-[#14161C] border-white/[0.1] text-emerald-500 focus:ring-emerald-500/30"
+                                  className="w-4 h-4 rounded bg-[#0A0E17] border-white/[0.2] text-emerald-500 focus:ring-emerald-500/30"
                                 />
                                 <span>🛡️ Mask Student Identity from Respondents during inquiry</span>
                               </label>
@@ -4448,8 +4429,8 @@ export default function CampusMaintenanceApp() {
                               onClick={() => setUrgency(urg.id)}
                               className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
                                 isSel 
-                                  ? 'border-emerald-500 bg-[#0F2922] text-white shadow-sm ring-1 ring-emerald-500/30' 
-                                  : 'border-white/[0.08] bg-[#14161C] text-zinc-400 hover:border-white/[0.16] hover:bg-[#1A1D26] hover:text-zinc-200'
+                                  ? 'border-emerald-400 bg-emerald-950/40 text-white shadow-[0_0_20px_rgba(52,211,153,0.35)] ring-1 ring-emerald-400' 
+                                  : 'border-white/[0.08] bg-[#141822]/70 text-zinc-400 hover:border-white/[0.2] hover:bg-[#1A2230]/80 hover:text-zinc-200'
                               }`}
                             >
                               <div className="text-xs font-bold">{urg.label}</div>
@@ -4477,7 +4458,7 @@ export default function CampusMaintenanceApp() {
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
                           placeholder={categoryType === 'ICC' ? 'Formal Grievance regarding Hostel Mess Quality / Harassment / Examination Evaluation' : 'e.g. Water valve leaking beneath washroom sink'}
-                          className="w-full p-3 bg-[#14161C] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                          className="w-full p-3 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-semibold text-white placeholder:text-zinc-500 shadow-inner transition-all outline-none"
                           required
                         />
                       </div>
@@ -4495,7 +4476,7 @@ export default function CampusMaintenanceApp() {
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
                           placeholder="Additional details: error codes, when it began, exact location in room..."
-                          className="w-full p-3 bg-[#14161C] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                          className="w-full p-3 bg-[#0A0E17]/80 border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-semibold text-white placeholder:text-zinc-500 shadow-inner transition-all outline-none"
                         />
                       </div>
                     </div>
@@ -4507,8 +4488,8 @@ export default function CampusMaintenanceApp() {
                       </label>
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Option 1: Upload Image from device */}
-                        <label className="cursor-pointer px-4 py-2.5 border border-dashed border-white/[0.15] hover:border-emerald-500/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-2xs">
-                          <Upload className="w-4 h-4 text-zinc-400" />
+                        <label className="cursor-pointer px-4 py-2.5 border border-dashed border-white/[0.18] hover:border-emerald-400/60 bg-[#121824]/70 hover:bg-[#182030]/80 rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-md">
+                          <Upload className="w-4 h-4 text-emerald-400" />
                           <span>Upload Image</span>
                           <input
                             type="file"
@@ -4520,9 +4501,8 @@ export default function CampusMaintenanceApp() {
                         </label>
 
                         {/* Option 2: Camera Capture */}
-                        <label className="cursor-pointer px-4 py-2.5 border border-white/[0.08] hover:border-white/[0.2] bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-2xs">
+                        <label className="cursor-pointer px-3.5 py-2.5 border border-white/[0.1] hover:border-emerald-400/50 bg-[#121824]/70 hover:bg-[#182030]/80 rounded-xl flex items-center justify-center text-zinc-200 transition-all shadow-md" title="Camera Capture">
                           <Camera className="w-4 h-4 text-zinc-400" />
-                          <span>Camera Capture</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -4547,61 +4527,55 @@ export default function CampusMaintenanceApp() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[11px] text-zinc-500 mt-2">
-                        Click <strong>Upload Image</strong> to select photos from your device, or <strong>Camera Capture</strong> to take a photo.
+                      <p className="text-[11px] text-zinc-400 mt-2">
+                        Click Upload image to select photos from your device, or Camera Capture to take a photo.
                       </p>
                     </div>
 
                     {/* 6. Email for Department Notifications & Progress Updates */}
-                    <div className="p-4 bg-[#111319] rounded-2xl border border-white/[0.08] shadow-2xs">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs"></span>
-                          <span>6. Notification Email for Status & Fix Updates <span className="text-rose-500">*</span></span>
+                    <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-slate-900/40 rounded-2xl border border-emerald-500/30 shadow-lg backdrop-blur-md">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-xs font-bold text-zinc-200 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                          <span>Official Delivery Channel <span className="text-rose-400">*</span></span>
                         </label>
-                        <span className="text-[10px] font-bold text-emerald-400 bg-[#0D2821] border border-[#0F382E] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <Mail className="w-3 h-3 text-emerald-400" />
                           Official Delivery Channel
                         </span>
                       </div>
                       <div className="relative">
-                        <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5 pointer-events-none" />
+                        <Mail className="w-4 h-4 text-emerald-400 absolute left-3 top-3.5 pointer-events-none" />
                         <input
                           type="email"
                           value={reporterEmail}
                           onChange={(e) => setReporterEmail(e.target.value)}
-                          placeholder="e.g. student@rgukt.ac.in or personal email"
-                          className="w-full pl-9 pr-3 py-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                          placeholder="e.g. r240493@rguktrkv.ac.in"
+                          className="w-full pl-9 pr-3 py-2.5 bg-[#081014]/80 border border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-semibold text-emerald-200 placeholder:text-zinc-600 shadow-inner transition-all outline-none"
                           required
                         />
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-1 mt-2 text-[11px] text-zinc-400 font-medium">
-                        <span>Official complaint receipt, technician dispatches, and after-repair verification photos will be emailed here.</span>
-                        {smtpConfig?.activeTransporter === 'REAL_SMTP' ? (
-                          <span className="text-emerald-400 font-medium flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Live SMTP Active ({smtpConfig.service})
-                          </span>
-                        ) : (
-                          <span className="text-zinc-400 font-medium">
-                            Delivered via Ethereal / In-App Mailbox
-                          </span>
-                        )}
+                        <span>Official complaint receipt, technician dispatches, and after verification photos will be emailed here.</span>
+                        <span className="text-zinc-400 font-medium">
+                          Delivered by Browser / In App Mailbox
+                        </span>
                       </div>
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit Button matching reference image */}
                     <button
                       type="submit"
-                      className="w-full py-3.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl shadow-md text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
+                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-sm tracking-wide shadow-[0_4px_25px_rgba(16,185,129,0.4)] hover:shadow-[0_4px_35px_rgba(20,184,166,0.55)] border border-emerald-300/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
                     >
                       {categoryType === 'ICC' ? (
                         <>
-                          <ShieldCheck className="w-4 h-4 text-purple-700" />
+                          <ShieldCheck className="w-4 h-4 text-white" />
                           <span>Submit Formal Grievance to ICC (Director Chaired)</span>
                         </>
                       ) : (
                         <>
-                          <Building className="w-4 h-4 text-emerald-800" />
+                          <Building className="w-4 h-4 text-white" />
                           <span>Submit to Hostel Warden (Hierarchy Stage 1)</span>
                         </>
                       )}
@@ -4631,9 +4605,9 @@ export default function CampusMaintenanceApp() {
                       <button
                         type="button"
                         onClick={() => navigateToTab('submit')}
-                        className="px-3 py-1.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs transition-all shadow-sm cursor-pointer flex items-center gap-1.5 font-sans"
+                        className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5 font-sans active:scale-95"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3.5 h-3.5 text-white" />
                         <span>New Complaint</span>
                       </button>
                     </div>
@@ -4646,19 +4620,19 @@ export default function CampusMaintenanceApp() {
                     const rejectedCount = visibleComplaints.filter(c => c.status === 'REJECTED').length;
 
                     return (
-                      <div className="grid grid-cols-4 gap-2.5 p-2 bg-slate-900/95 rounded-2xl border border-slate-800 shadow-lg">
+                      <div className="grid grid-cols-4 gap-2.5 p-2 bg-[#0F141E]/80 rounded-2xl border border-white/[0.1] shadow-lg">
                         {/* 1. ALL */}
                         <button
                           type="button"
                           onClick={() => setStudentStatusFilter('ALL')}
                           className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                             studentStatusFilter === 'ALL'
-                              ? 'bg-white text-black font-bold shadow-md'
-                              : 'bg-[#14161C] border border-white/[0.08] text-zinc-300 hover:text-white hover:bg-[#1A1D26]'
+                              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md'
+                              : 'bg-[#121824]/70 border border-white/[0.08] text-zinc-300 hover:text-white hover:bg-[#182030]'
                           }`}
                         >
-                          <span className={`text-[11px] uppercase tracking-wider font-extrabold ${studentStatusFilter === 'ALL' ? 'text-black' : 'text-zinc-200'}`}>ALL</span>
-                          <span className={`text-sm font-black ${studentStatusFilter === 'ALL' ? 'text-black' : 'text-white'}`}>{visibleComplaints.length}</span>
+                          <span className={`text-[11px] uppercase tracking-wider font-extrabold ${studentStatusFilter === 'ALL' ? 'text-white' : 'text-zinc-200'}`}>ALL</span>
+                          <span className="text-sm font-black text-white">{visibleComplaints.length}</span>
                         </button>
 
                         {/* 2. PENDING */}
@@ -4769,9 +4743,9 @@ export default function CampusMaintenanceApp() {
 
                     if (filteredStudentComplaints.length === 0) {
                       return (
-                        <div className="p-8 sm:p-10 text-center bg-[#111319] border border-white/[0.08] rounded-2xl shadow-xl font-sans">
+                        <div className="p-8 sm:p-10 text-center glass-panel border border-white/[0.1] rounded-3xl shadow-2xl font-sans backdrop-blur-2xl">
                           {/* Institutional Emerald Badge */}
-                          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-xs font-semibold mb-3">
+                          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-xs font-semibold mb-3 shadow-inner">
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
                             <span>Central Redressal Governance • 4-Tier SLA Active</span>
                           </div>
@@ -4782,7 +4756,7 @@ export default function CampusMaintenanceApp() {
                              studentStatusFilter === 'REJECTED' ? 'No Rejected Complaints' :
                              'No Active Complaints Lodged'}
                           </h4>
-                          <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto leading-relaxed">
+                          <p className="text-xs text-zinc-300 mt-1 max-w-md mx-auto leading-relaxed">
                             {studentStatusFilter === 'PENDING' ? 'All your campus maintenance requests have been resolved by the designated warden or department authority.' :
                              studentStatusFilter === 'SOLVED' ? 'Fixed issues with technician verification photo proof will appear here once resolved.' :
                              studentStatusFilter === 'REJECTED' ? 'No complaints have been rejected by campus authorities.' :
@@ -4794,7 +4768,7 @@ export default function CampusMaintenanceApp() {
                             <button
                               type="button"
                               onClick={() => { setLocationType('HOSTEL_DORM'); setActiveTab('submit'); }}
-                              className="p-3 bg-[#14161C] hover:bg-[#1A1D26] border border-white/[0.08] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
+                              className="p-3 bg-[#121824]/70 hover:bg-[#182030] border border-white/[0.1] hover:border-emerald-400/50 rounded-xl transition-all cursor-pointer group"
                             >
                               <Bed className="w-4 h-4 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform" />
                               <span className="text-xs font-bold text-white block">Hostel</span>
@@ -4803,7 +4777,7 @@ export default function CampusMaintenanceApp() {
                             <button
                               type="button"
                               onClick={() => { setLocationType('ACADEMICS'); setActiveTab('submit'); }}
-                              className="p-3 bg-[#14161C] hover:bg-[#1A1D26] border border-white/[0.08] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
+                              className="p-3 bg-[#121824]/70 hover:bg-[#182030] border border-white/[0.1] hover:border-emerald-400/50 rounded-xl transition-all cursor-pointer group"
                             >
                               <GraduationCap className="w-4 h-4 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform" />
                               <span className="text-xs font-bold text-white block">Academics</span>
@@ -4812,7 +4786,7 @@ export default function CampusMaintenanceApp() {
                             <button
                               type="button"
                               onClick={() => { setLocationType('FACILITY'); setActiveTab('submit'); }}
-                              className="p-3 bg-[#14161C] hover:bg-[#1A1D26] border border-white/[0.08] hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer group"
+                              className="p-3 bg-[#121824]/70 hover:bg-[#182030] border border-white/[0.1] hover:border-emerald-400/50 rounded-xl transition-all cursor-pointer group"
                             >
                               <Wrench className="w-4 h-4 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform" />
                               <span className="text-xs font-bold text-white block">Civil / Electrical</span>
@@ -4821,22 +4795,22 @@ export default function CampusMaintenanceApp() {
                             <button
                               type="button"
                               onClick={() => { setCategory('Internal Complaints Committee (ICC)'); setActiveTab('submit'); }}
-                              className="p-3 bg-[#0D2821]/60 hover:bg-[#0D2821] border border-[#0F382E] hover:border-emerald-500/50 rounded-xl transition-all cursor-pointer group"
+                              className="p-3 bg-purple-950/40 hover:bg-purple-950/60 border border-purple-500/40 hover:border-purple-400/60 rounded-xl transition-all cursor-pointer group shadow-inner"
                             >
                               <Scale className="w-4 h-4 text-purple-400 mb-1.5 group-hover:scale-110 transition-transform" />
                               <span className="text-xs font-bold text-purple-200 block">Ragging / ICC</span>
-                              <span className="text-[10px] text-emerald-400 font-semibold">Confidential</span>
+                              <span className="text-[10px] text-purple-300 font-semibold">Confidential</span>
                             </button>
                           </div>
 
-                          {/* Executive Solid White Primary Button */}
+                          {/* Gradient Lodge a Complaint Button */}
                           <button
                             type="button"
                             onClick={() => setActiveTab('submit')}
-                            className="px-6 py-3 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer inline-flex items-center gap-2 font-sans"
+                            className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/30 active:scale-95 cursor-pointer inline-flex items-center gap-2 font-sans"
                           >
-                            <Plus className="w-4 h-4 text-black" />
-                            <span>+ Lodge a Complaint</span>
+                            <Plus className="w-4 h-4 text-white" />
+                            <span>Lodge a Complaint</span>
                           </button>
                         </div>
                       );
@@ -5002,29 +4976,29 @@ export default function CampusMaintenanceApp() {
               /* DEDICATED SEPARATE TAB: MY COMPLAINT STATUS */
               <div className="max-w-4xl mx-auto space-y-4 animate-in fade-in duration-200">
                 {/* Header Banner */}
-                <div className="glass-panel p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="glass-panel p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-white/[0.1]">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-bold shrink-0">
-                      <Navigation className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center font-bold shrink-0 shadow-inner">
+                      <Navigation className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
                       <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">My Complaint Status</h2>
-                      <p className="text-xs text-slate-200 font-medium">Real-time redressal hierarchy tracking, stage transitions, and SLA resolution timeline</p>
+                      <p className="text-xs text-zinc-300 font-medium">Real-time redressal hierarchy tracking, stage transitions, and SLA resolution timeline</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => navigateToTab('my-complaints')}
-                    className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                    className="px-3.5 py-2 bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.12] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shadow-sm"
                   >
-                    <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                    <Layers className="w-3.5 h-3.5 text-emerald-400" />
                     <span>View My Complaints</span>
                   </button>
                 </div>
 
                 {/* Complaint Switcher Bar if complaints exist */}
                 {visibleComplaints.length > 0 && (
-                  <div className="glass-panel p-3.5 rounded-2xl">
+                  <div className="glass-panel p-3.5 rounded-2xl border border-white/[0.1]">
                     <div className="text-[11px] font-black text-slate-200 uppercase tracking-wider mb-2 px-1">
                       Select Complaint to Track:
                     </div>
@@ -5038,8 +5012,8 @@ export default function CampusMaintenanceApp() {
                             onClick={() => setSelectedTicket(item)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                               isSelected
-                                ? 'bg-blue-600 text-white shadow-xs font-black'
-                                : 'bg-slate-800 text-slate-100 hover:bg-slate-700 hover:text-white font-bold'
+                                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs font-black'
+                                : 'bg-white/[0.08] text-slate-100 hover:bg-white/[0.15] hover:text-white font-bold border border-white/[0.08]'
                             }`}
                           >
                             <span>{item.ticketNumber}</span>
@@ -5052,28 +5026,28 @@ export default function CampusMaintenanceApp() {
                 )}
 
                 {/* Detail & Lifecycle Timeline Column */}
-                <div id="ticket-detail-view" className="bg-[#111319] border border-white/[0.08] rounded-2xl p-5 md:p-7 shadow-xl font-sans">
+                <div id="ticket-detail-view" className="glass-panel p-5 md:p-7 shadow-2xl font-sans rounded-3xl border border-white/[0.1] backdrop-blur-2xl">
                   {(() => {
                     const activeTrackedTicket = selectedTicket || visibleComplaints[0];
                     if (!activeTrackedTicket) {
                       return (
                         <div className="p-8 sm:p-10 text-center font-sans">
                           {/* Institutional Emerald Badge */}
-                          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-xs font-semibold mb-3">
+                          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-xs font-semibold mb-3 shadow-inner">
                             <ShieldCheck className="w-4 h-4 text-emerald-400" />
                             <span>Central Redressal Governance • 4-Tier Tracking Active</span>
                           </div>
                           <h4 className="text-base sm:text-lg font-bold text-white tracking-tight">No Active Complaints to Track</h4>
-                          <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                          <p className="text-xs text-zinc-300 mt-1 max-w-sm mx-auto leading-relaxed">
                             Submit a campus grievance or maintenance request to inspect live 4-tier authority escalation and SLA countdown clocks.
                           </p>
                           <button
                             type="button"
                             onClick={() => navigateToTab('submit')}
-                            className="mt-4 px-6 py-2.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer inline-flex items-center gap-2 active:scale-95 font-sans"
+                            className="mt-4 px-6 py-2.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/30 cursor-pointer inline-flex items-center gap-2 active:scale-95 font-sans"
                           >
-                            <Plus className="w-4 h-4 text-black" />
-                            <span>+ Lodge a Complaint</span>
+                            <Plus className="w-4 h-4 text-white" />
+                            <span>Lodge a Complaint</span>
                           </button>
                         </div>
                       );

@@ -501,12 +501,18 @@ textarea {
   pointer-events: none !important;
 }
 
-/* Institutional Cards & Containers: Matte Charcoal (#111319) with 1px Hairline Borders */
+/* Frosted Glass Institutional Cards & Containers */
 .glass-panel,
-.cyber-card {
-  background: #111319 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.8) !important;
+.cyber-card,
+.frosted-glass-card,
+.portal-card,
+.portal-modal-drawer,
+.frosted-panel {
+  background: rgba(18, 24, 34, 0.72) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 40px -10px rgba(0, 0, 0, 0.7) !important;
   color: #f4f4f5 !important;
   border-radius: 1rem !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -515,71 +521,79 @@ textarea {
 /* Interactive Card with Subtle Emerald Elevation on Hover */
 .cyber-card-interactive,
 .glass-panel-interactive {
-  background: #111319 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.75) !important;
+  background: rgba(18, 24, 34, 0.75) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 30px -8px rgba(0, 0, 0, 0.75) !important;
   border-radius: 1rem !important;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .cyber-card-interactive:hover,
 .glass-panel-interactive:hover {
-  background: #151821 !important;
+  background: rgba(22, 30, 42, 0.85) !important;
   transform: translateY(-2px) !important;
-  border-color: rgba(16, 185, 129, 0.35) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
   box-shadow: 
     0 16px 40px -10px rgba(0, 0, 0, 0.9),
-    0 0 20px -4px rgba(16, 185, 129, 0.12) !important;
+    0 0 24px -4px rgba(16, 185, 129, 0.25) !important;
 }
 
-/* Matte Charcoal Subtle Internal Containers (#14161C) */
+/* Subtle Internal Glass Containers */
 .glass-panel-subtle,
 .cyber-card-subtle {
-  background: #14161C !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  background: rgba(20, 26, 36, 0.55) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
   color: #f4f4f5 !important;
   border-radius: 0.75rem !important;
 }
 
-/* Institutional Matte Obsidian Sidebar */
+/* Institutional Frosted Glass Sidebar */
 .glass-sidebar,
 .cyber-sidebar {
-  background: #111319 !important;
+  background: rgba(18, 24, 34, 0.85) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 10px 0 30px -5px rgba(0, 0, 0, 0.85) !important;
 }
 
-/* Institutional Matte Obsidian Topbar / Header */
+/* Institutional Frosted Glass Topbar / Header */
 .glass-header,
 .cyber-header {
-  background: #111319 !important;
+  background: rgba(12, 17, 23, 0.85) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7) !important;
 }
 
-/* High-Contrast Solid White Primary Button (#FFFFFF text-black) */
+/* Vibrant Emerald-Cyan Gradient Primary Button matching reference image */
 .cyber-btn-gradient {
-  background: #ffffff !important;
-  color: #0a0c10 !important;
+  background: linear-gradient(135deg, #10B981 0%, #14B8A6 50%, #06B6D4 100%) !important;
+  color: #ffffff !important;
   font-weight: 700 !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4) !important;
   border-radius: 0.75rem !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .cyber-btn-gradient:hover {
-  background: #f4f4f5 !important;
-  color: #000000 !important;
+  background: linear-gradient(135deg, #34D399 0%, #2DD4BF 50%, #22D3EE 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 28px rgba(16, 185, 129, 0.55) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Recessed Dark Input Fields (#14161C) with Clean Hairline Borders */
+/* Recessed Translucent Dark Input Fields with Clean Hairline Borders */
 .cyber-input {
-  background: #14161C !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(10, 14, 23, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
   border-radius: 0.75rem !important;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
