@@ -456,3 +456,86 @@ export function createSecurityAuditLog(action, actorId, details = {}) {
     details: sanitizeObject(details)
   };
 }
+
+// ============================================================================
+// 7. DEVICE EMAIL BINDING & VERIFICATION FOR OTP AUTOFILL
+// Restricts OTP autofill solely to the mobile device on which the email is stored.
+// If someone attempts login on another phone, autofill is omitted.
+// ============================================================================
+
+/**
+ * Checks if a given email is bound to / present on this specific mobile device.
+ */
+export function isEmailOnThisDevice(email) {
+  if (!email || typeof window === 'undefined') return false;
+  try {
+    const clean = String(email).trim().toLowerCase();
+    if (!clean) return false;
+
+    // 1. Registered Student Account on this device
+    const regStudentRaw = localStorage.getItem('rgukt_app_registered_student');
+    if (regStudentRaw) {
+      const reg = JSON.parse(regStudentRaw);
+      if (
+        (reg?.collegeEmail && String(reg.collegeEmail).trim().toLowerCase() === clean) ||
+        (reg?.email && String(reg.email).trim().toLowerCase() === clean)
+      ) {
+        return true;
+      }
+    }
+
+    // 2. Currently or previously active session user on this device
+    const activeUserRaw = localStorage.getItem('rgukt_active_session_user');
+    if (activeUserRaw) {
+      const active = JSON.parse(activeUserRaw);
+      if (
+        (active?.collegeEmail && String(active.collegeEmail).trim().toLowerCase() === clean) ||
+        (active?.email && String(active.email).trim().toLowerCase() === clean)
+      ) {
+        return true;
+      }
+    }
+
+    // 3. Google Authenticated user on this device
+    const googleUserRaw = localStorage.getItem('rgukt_google_auth_user');
+    if (googleUserRaw) {
+      const gUser = JSON.parse(googleUserRaw);
+      if (gUser?.email && String(gUser.email).trim().toLowerCase() === clean) {
+        return true;
+      }
+    }
+
+    // 4. Device local verified email whitelist
+    const deviceEmailsRaw = localStorage.getItem('rgukt_device_local_emails');
+    if (deviceEmailsRaw) {
+      const list = JSON.parse(deviceEmailsRaw);
+      if (Array.isArray(list) && list.some(item => String(item).trim().toLowerCase() === clean)) {
+        return true;
+      }
+    }
+  } catch (e) {
+    return false;
+  }
+  return false;
+}
+
+/**
+ * Binds an email address to this specific device after authentication or registration
+ */
+export function registerEmailOnThisDevice(email) {
+  if (!email || typeof window === 'undefined') return;
+  try {
+    const clean = String(email).trim().toLowerCase();
+    if (!clean) return;
+    const deviceEmailsRaw = localStorage.getItem('rgukt_device_local_emails');
+    let list = [];
+    if (deviceEmailsRaw) {
+      list = JSON.parse(deviceEmailsRaw);
+      if (!Array.isArray(list)) list = [];
+    }
+    if (!list.includes(clean)) {
+      list.push(clean);
+      localStorage.setItem('rgukt_device_local_emails', JSON.stringify(list));
+    }
+  } catch (e) {}
+}

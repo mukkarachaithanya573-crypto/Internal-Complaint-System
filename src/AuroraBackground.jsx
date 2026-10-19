@@ -54,6 +54,21 @@ export default function AuroraBackground() {
           backgroundSize: '32px 32px, 64px 64px, 64px 64px'
         }}
       />
+
+      {/* Subtle Ambient Sparkle Stars matching reference image */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Bottom Right 4-Point Star Sparkle */}
+        <div className="absolute bottom-16 right-12 text-emerald-300/40 opacity-70 animate-pulse pointer-events-none text-2xl select-none">
+          ✦
+        </div>
+        <div className="absolute bottom-8 right-24 text-teal-200/30 opacity-50 pointer-events-none text-base select-none">
+          ✧
+        </div>
+        {/* Top Left Faint Sparkle */}
+        <div className="absolute top-16 left-14 text-cyan-300/30 opacity-40 pointer-events-none text-sm select-none">
+          ✦
+        </div>
+      </div>
     </div>
   );
 }

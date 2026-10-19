@@ -56,7 +56,9 @@ import {
   createSessionSignature,
   verifySessionIntegrity,
   sanitizeUserRolePrivileges,
-  createAnonymousIdentity
+  createAnonymousIdentity,
+  isEmailOnThisDevice,
+  registerEmailOnThisDevice
 } from './securityEngine';
 import { 
   saveComplaintToFirestore, 
@@ -1796,6 +1798,10 @@ export default function CampusMaintenanceApp() {
   const handleLoginSuccess = (user) => {
     try {
       sessionStorage.removeItem('rgukt_auth_prefill_account');
+      localStorage.removeItem('rgukt_auth_prefill_account');
+      if (user?.collegeEmail || user?.email) {
+        registerEmailOnThisDevice(user.collegeEmail || user.email);
+      }
     } catch (e) {}
     setCurrentUser(user);
     setIsAuthenticated(true);
@@ -2106,17 +2112,21 @@ export default function CampusMaintenanceApp() {
     setShowLogoutChoiceModal(false);
     if (currentUser) {
       try {
-        sessionStorage.setItem('rgukt_auth_prefill_account', JSON.stringify({
+        const payload = JSON.stringify({
           idNo: currentUser.idNo || '',
           collegeEmail: currentUser.collegeEmail || currentUser.email || '',
           userTab: (currentUser.userTab || (currentUser.role === 'REPORTER' ? 'student' : 'department')),
           name: currentUser.name || currentUser.fullName || '',
           role: currentUser.role || 'REPORTER'
-        }));
+        });
+        sessionStorage.setItem('rgukt_auth_prefill_account', payload);
+        localStorage.setItem('rgukt_auth_prefill_account', payload);
       } catch (e) {}
     }
     clearDepartmentDailySession();
     try {
+      localStorage.setItem('rgukt_app_explicit_logged_out', 'true');
+      sessionStorage.setItem('rgukt_app_manual_account_switch', 'true');
       localStorage.removeItem('rgukt_active_session_user');
       sessionStorage.removeItem('rgukt_web_active_student_session');
     } catch (e) {}
@@ -2135,6 +2145,7 @@ export default function CampusMaintenanceApp() {
       localStorage.setItem('rgukt_app_explicit_logged_out', 'true');
       sessionStorage.setItem('rgukt_app_manual_account_switch', 'true');
       sessionStorage.removeItem('rgukt_auth_prefill_account');
+      localStorage.removeItem('rgukt_auth_prefill_account');
       localStorage.removeItem('rgukt_active_session_user');
       localStorage.removeItem('rgukt_app_registered_student');
       sessionStorage.removeItem('rgukt_web_active_student_session');
@@ -4424,10 +4435,10 @@ export default function CampusMaintenanceApp() {
 
                     {/* 3. Urgency / Seriousness Selector */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
-                        3. {categoryType === 'ICC' ? 'Seriousness & Inquiry Complexity' : 'Urgency Level'} <span className="text-rose-500">*</span>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2.5">
+                        3. {categoryType === 'ICC' ? 'SERIOUSNESS & INQUIRY COMPLEXITY' : 'URGENCY LEVEL'} <span className="text-rose-500">*</span>
                       </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                         {URGENCIES.map(urg => {
                           const isSel = urgency === urg.id;
                           return (
@@ -4435,12 +4446,14 @@ export default function CampusMaintenanceApp() {
                               key={urg.id}
                               type="button"
                               onClick={() => setUrgency(urg.id)}
-                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                                isSel ? `${urg.color} ring-1 ring-current font-bold` : 'border-white/[0.08] bg-[#14161C] text-zinc-300 hover:bg-[#1A1D26] hover:text-white font-medium'
+                              className={`p-3 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer relative ${
+                                isSel 
+                                  ? 'border-2 border-emerald-400 bg-emerald-950/30 text-white shadow-[0_0_20px_rgba(52,211,153,0.25)] ring-1 ring-emerald-400/40 font-bold' 
+                                  : 'border-white/[0.08] bg-[#14161C]/90 text-zinc-300 hover:border-white/[0.18] hover:bg-[#1A1E29] hover:text-white font-medium'
                               }`}
                             >
-                              <div className="text-xs font-bold">{urg.label}</div>
-                              <div className="text-[10px] opacity-75">{urg.desc}</div>
+                              <div className={`text-xs font-bold ${isSel ? 'text-emerald-300' : 'text-zinc-200'}`}>{urg.label}</div>
+                              <div className={`text-[10px] mt-1 leading-relaxed ${isSel ? 'text-zinc-300 font-medium' : 'text-zinc-400'}`}>{urg.desc}</div>
                             </button>
                           );
                         })}
@@ -4453,27 +4466,32 @@ export default function CampusMaintenanceApp() {
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-xs"></span>
-                            <span>4. {categoryType === 'ICC' ? 'Grievance Summary & Subject' : 'Complaint Summary'} <span className="text-rose-400">*</span></span>
+                            <span>4. {categoryType === 'ICC' ? 'GRIEVANCE SUMMARY & SUBJECT' : 'COMPLAINT SUMMARY'} <span className="text-rose-400">*</span></span>
                           </label>
-                          <span className="text-[10px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-0.5 rounded-full font-bold">
+                          <span className="text-[10px] text-zinc-300 bg-white/[0.06] border border-white/[0.1] px-2.5 py-0.5 rounded-full font-semibold">
                             {categoryType === 'ICC' ? 'ICC Subject' : 'Issue Title'}
                           </span>
                         </div>
-                        <input
-                          type="text"
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          placeholder={categoryType === 'ICC' ? 'e.g. Formal Grievance regarding Hostel Mess Quality / Harassment / Examination Evaluation' : 'e.g. Water valve leaking beneath washroom sink'}
-                          className="w-full p-3 bg-[#14161C] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-sm font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
-                          required
-                        />
+                        <div className="relative">
+                          <div className="absolute left-3.5 top-3.5 text-zinc-500 pointer-events-none">
+                            <span className="text-sm font-mono text-zinc-500">≡</span>
+                          </div>
+                          <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder={categoryType === 'ICC' ? 'Formal Grievance regarding Hostel Mess Quality / Harassment / Examination Evaluation' : 'e.g. Water valve leaking beneath washroom sink'}
+                            className="w-full pl-9 pr-4 py-3 bg-[#0B0E14] border border-white/[0.08] focus:border-emerald-400/80 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-sm font-medium text-white placeholder:text-zinc-600 shadow-inner transition-all outline-none"
+                            required
+                          />
+                        </div>
                       </div>
 
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs"></span>
-                            <span>Detailed Description / Remarks</span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                            <span>DETAILED DESCRIPTION / REMARKS</span>
                           </label>
                           <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-bold">Room Coordinates & Details</span>
                         </div>
@@ -4481,21 +4499,21 @@ export default function CampusMaintenanceApp() {
                           rows={3}
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Additional details: error codes, when it began, exact location in room..."
-                          className="w-full p-3 bg-[#14161C] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                          placeholder="Additional details, error codes, when it began, exact location in room."
+                          className="w-full p-3.5 bg-[#0B0E14] border border-white/[0.08] focus:border-emerald-400/80 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-medium text-white placeholder:text-zinc-600 shadow-inner transition-all outline-none"
                         />
                       </div>
                     </div>
 
                     {/* 5. Real Photo Upload */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
-                        5. Attach Photo Evidence (Optional)
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2">
+                        5. ATTACH PHOTO EVIDENCE (OPTIONAL)
                       </label>
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Option 1: Upload Image from device */}
-                        <label className="cursor-pointer px-4 py-2.5 border border-dashed border-white/[0.15] hover:border-emerald-500/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-2xs">
-                          <Upload className="w-4 h-4 text-zinc-400" />
+                        <label className="cursor-pointer px-4 py-2.5 border border-white/[0.08] hover:border-emerald-400/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-200 transition-all shadow-sm">
+                          <Upload className="w-4 h-4 text-emerald-400" />
                           <span>Upload Image</span>
                           <input
                             type="file"
@@ -4507,9 +4525,8 @@ export default function CampusMaintenanceApp() {
                         </label>
 
                         {/* Option 2: Camera Capture */}
-                        <label className="cursor-pointer px-4 py-2.5 border border-white/[0.08] hover:border-white/[0.2] bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-2xs">
+                        <label className="cursor-pointer px-3.5 py-2.5 border border-white/[0.08] hover:border-emerald-400/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center justify-center text-zinc-200 transition-all shadow-sm" title="Camera Capture">
                           <Camera className="w-4 h-4 text-zinc-400" />
-                          <span>Camera Capture</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -4534,61 +4551,55 @@ export default function CampusMaintenanceApp() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[11px] text-zinc-500 mt-2">
-                        Click <strong>Upload Image</strong> to select photos from your device, or <strong>Camera Capture</strong> to take a photo.
+                      <p className="text-[11px] text-zinc-400 mt-2">
+                        Click Upload image to select photos from your device, or Camera Capture to take a photo.
                       </p>
                     </div>
 
                     {/* 6. Email for Department Notifications & Progress Updates */}
-                    <div className="p-4 bg-[#111319] rounded-2xl border border-white/[0.08] shadow-2xs">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs"></span>
-                          <span>6. Notification Email for Status & Fix Updates <span className="text-rose-500">*</span></span>
+                    <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-slate-900/40 rounded-2xl border border-emerald-500/30 shadow-lg backdrop-blur-md">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-xs font-bold text-zinc-200 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                          <span>Official Delivery Channel <span className="text-rose-400">*</span></span>
                         </label>
-                        <span className="text-[10px] font-bold text-emerald-400 bg-[#0D2821] border border-[#0F382E] px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <Mail className="w-3 h-3 text-emerald-400" />
                           Official Delivery Channel
                         </span>
                       </div>
                       <div className="relative">
-                        <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5 pointer-events-none" />
+                        <Mail className="w-4 h-4 text-emerald-400 absolute left-3 top-3.5 pointer-events-none" />
                         <input
                           type="email"
                           value={reporterEmail}
                           onChange={(e) => setReporterEmail(e.target.value)}
-                          placeholder="e.g. student@rgukt.ac.in or personal email"
-                          className="w-full pl-9 pr-3 py-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                          placeholder="e.g. r240493@rguktrkv.ac.in"
+                          className="w-full pl-9 pr-3 py-2.5 bg-[#081014]/80 border border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-semibold text-emerald-200 placeholder:text-zinc-600 shadow-inner transition-all outline-none"
                           required
                         />
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-1 mt-2 text-[11px] text-zinc-400 font-medium">
-                        <span>Official complaint receipt, technician dispatches, and after-repair verification photos will be emailed here.</span>
-                        {smtpConfig?.activeTransporter === 'REAL_SMTP' ? (
-                          <span className="text-emerald-400 font-medium flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Live SMTP Active ({smtpConfig.service})
-                          </span>
-                        ) : (
-                          <span className="text-zinc-400 font-medium">
-                            Delivered via Ethereal / In-App Mailbox
-                          </span>
-                        )}
+                        <span>Official complaint receipt, technician dispatches, and after verification photos will be emailed here.</span>
+                        <span className="text-zinc-400 font-medium">
+                          Delivered by Browser / In App Mailbox
+                        </span>
                       </div>
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit Button matching reference image */}
                     <button
                       type="submit"
-                      className="w-full py-3.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl shadow-md text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
+                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-sm tracking-wide shadow-[0_4px_25px_rgba(16,185,129,0.4)] hover:shadow-[0_4px_35px_rgba(20,184,166,0.55)] border border-emerald-300/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
                     >
                       {categoryType === 'ICC' ? (
                         <>
-                          <ShieldCheck className="w-4 h-4 text-purple-700" />
+                          <ShieldCheck className="w-4 h-4 text-white" />
                           <span>Submit Formal Grievance to ICC (Director Chaired)</span>
                         </>
                       ) : (
                         <>
-                          <Building className="w-4 h-4 text-emerald-800" />
+                          <Building className="w-4 h-4 text-white" />
                           <span>Submit to Hostel Warden (Hierarchy Stage 1)</span>
                         </>
                       )}
@@ -8267,7 +8278,7 @@ function AuthScreen({ onLoginSuccess }) {
   // Check if user chose "Log in with Same Account" upon logging out
   const [prefillAccount] = useState(() => {
     try {
-      const raw = sessionStorage.getItem('rgukt_auth_prefill_account');
+      const raw = sessionStorage.getItem('rgukt_auth_prefill_account') || localStorage.getItem('rgukt_auth_prefill_account');
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
       return null;
@@ -8724,6 +8735,9 @@ function AuthScreen({ onLoginSuccess }) {
       if (updatedUserObj) {
         saveUserToFirestore(updatedUserObj).catch(e => console.warn('Firestore password update notice:', e));
       }
+      if (targetEmail) {
+        registerEmailOnThisDevice(targetEmail);
+      }
 
       setIsSubmitting(false);
       setSuccessMsg('🎉 Password changed successfully! You can now log in with your new password.');
@@ -8997,6 +9011,9 @@ function AuthScreen({ onLoginSuccess }) {
         saveRegisteredAccounts([newUser, ...otherUsers]);
         saveUserToFirestore(newUser).catch(e => console.warn('Firebase user save notice:', e));
         sendWelcomeGratitudeEmail(newUser).catch(e => console.warn('Welcome gratitude email notice:', e));
+        if (newUser?.collegeEmail || newUser?.email) {
+          registerEmailOnThisDevice(newUser.collegeEmail || newUser.email);
+        }
         if (isAppEnvironment()) {
           try {
             localStorage.setItem('rgukt_app_registered_student', JSON.stringify(newUser));
@@ -9404,362 +9421,412 @@ function AuthScreen({ onLoginSuccess }) {
   // 📱 MOBILE APP VIEW: Sleek Dark Obsidian Floating Modal (No Constellation)
   // --------------------------------------------------------------------------
   const renderMobileAppView = () => (
-    <div className="fixed inset-0 min-h-screen bg-[#0A0C10] overflow-hidden flex flex-col justify-end font-sans select-none relative z-10">
-      {/* Zero-Gravity Ambient Back-Glow (Subtle diffused atmospheric orbs) */}
-      <div className="absolute -top-28 -left-28 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-[#0D2821]/30 via-slate-900/20 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/4 -right-28 w-[450px] h-[450px] rounded-full bg-gradient-to-tl from-cyan-950/20 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-xs pointer-events-none z-10" />
+    <div className="fixed inset-0 min-h-screen bg-[#04060c] overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 font-sans select-none relative z-10">
+      {/* Zero-Gravity Ambient Back-Glow (Subtle diffused atmospheric orbs, zero particle canvas) */}
+      <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-indigo-900/20 via-blue-950/10 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-cyan-900/15 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-white/[0.015] blur-[120px] pointer-events-none" />
 
-      {/* Top Ambient Branding Header (Visible in top half on taller screens) */}
-      <div className="absolute top-0 inset-x-0 p-5 sm:p-6 z-20 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1.5 flex items-center justify-center shadow-inner">
-            <img 
-              src="/logo.png?v=original" 
-              alt="RGUKT Crest" 
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <div>
-            <span className="text-xs font-bold text-white tracking-tight block">RGUKT RK VALLEY</span>
-            <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider block">Central Redressal</span>
-          </div>
-        </div>
-
-        {/* Top-Right Demo Video Button */}
+      {/* Top-Right Demo Video Button */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-40 flex items-center gap-2">
         <button
           type="button"
           onClick={() => setShowAuthDemoModal(true)}
           className="px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] text-xs font-medium transition-all backdrop-blur-xl flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
           title="Watch Project Demo Video & Feature Walkthrough"
         >
-          <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+          <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
           <span>Demo Video</span>
         </button>
       </div>
 
-      {/* 📱 EXECUTIVE NATIVE BOTTOM SHEET DRAWER PINNED TO BOTTOM */}
-      <div className="relative z-20 w-full max-w-lg mx-auto bg-[#111319] rounded-t-3xl sm:rounded-t-[32px] border-t border-white/[0.08] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.95)] px-5 pt-3 pb-8 sm:px-7 max-h-[92vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
+      {/* Floating Dark Obsidian Modal Card (Zero-Gravity Ambient Style) */}
+      <div className="relative z-20 w-full max-w-[420px] rounded-3xl bg-[#090d16]/90 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.08] border-t-white/[0.2] shadow-[0_30px_100px_-15px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.05)] p-6 sm:p-8 transition-all zero-gravity-modal my-auto">
         
-        {/* Pinned Top Grab Handle */}
-        <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2 shrink-0 cursor-grab active:cursor-grabbing" />
-
-        {/* Centered RGUKT Emblem & Header */}
-        <div className="flex flex-col items-center text-center mt-2 mb-3">
-          <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] p-2 flex items-center justify-center mx-auto shadow-inner mb-2.5">
+        {/* Brand Insignia & Title */}
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.1] p-2 flex items-center justify-center shadow-inner mb-3">
             <img 
               src="/logo.png?v=original" 
-              alt="RGUKT Crest" 
-              className="w-full h-full object-contain drop-shadow"
+              alt="ICS Logo" 
+              className="w-full h-full object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
             />
           </div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight font-sans">
+          <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
             Internal Complaint System
           </h1>
-          <p className="text-[10px] sm:text-[10.5px] font-semibold tracking-wider text-emerald-400 uppercase mt-0.5 font-sans">
-            RGUKT RK VALLEY • CAMPUS REDRESSAL
+          <p className="text-[11px] font-medium tracking-wide text-zinc-400 uppercase mt-0.5">
+            RGUKT RK Valley • Campus Redressal
           </p>
         </div>
 
-        {/* Global Feedback Notifications */}
-        {accountLockout && (
-          <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in">
-            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
-            <span>Account locked for security. Try again in {lockoutTimeLeft}s.</span>
-          </div>
-        )}
+        {/* Student / Faculty Segmented Control */}
+        <div className="flex p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl mb-5 relative">
+          <button
+            type="button"
+            onClick={() => {
+              setUserTab('student');
+              setErrorMsg('');
+              setSuccessMsg('');
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              userTab === 'student'
+                ? 'bg-white/[0.12] text-white shadow-sm border border-white/[0.1]'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span>Student</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setUserTab('department');
+              setErrorMsg('');
+              setSuccessMsg('');
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              userTab === 'department'
+                ? 'bg-white/[0.12] text-white shadow-sm border border-white/[0.1]'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Faculty</span>
+          </button>
+        </div>
 
+        {/* Alerts: Error / Success */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center gap-2.5 animate-in fade-in">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-            <span className="flex-1">{errorMsg}</span>
+          <div className="mb-4 p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2 backdrop-blur-md animate-in fade-in">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="flex-1 font-normal leading-relaxed">{errorMsg}</div>
           </div>
         )}
-
         {successMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs flex items-center gap-2.5 animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-            <span className="flex-1">{successMsg}</span>
+          <div className="mb-4 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2 backdrop-blur-md animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="flex-1 font-normal leading-relaxed">{successMsg}</div>
           </div>
         )}
 
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW A: SIGN IN MODE */}
-        {/* ------------------------------------------------------------- */}
+        {/* MODE 1: SIGN IN */}
         {authMode === 'signin' && (
-          <div>
-            {/* Dual Pill Segmented Role Selector */}
-            <div className="flex p-1 bg-[#161922] border border-white/[0.06] rounded-2xl mb-4 relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setUserTab('student');
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                }}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer font-sans ${
-                  userTab === 'student'
-                    ? 'bg-[#1F2430] text-white border border-white/[0.1] shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>Student</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setUserTab('department');
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                }}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer font-sans ${
-                  userTab === 'department'
-                    ? 'bg-[#1F2430] text-white border border-white/[0.1] shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Faculty</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              {/* ID Input Field */}
+          <>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-semibold text-zinc-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                  <span>{userTab === 'student' ? 'Student University ID' : 'Department Email / Staff ID'}</span>
-                  <span className="text-[10px] text-zinc-500 font-normal lowercase">required</span>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+                  {userTab === 'student' ? 'Student ID NO' : 'Faculty ID / Email'}
                 </label>
-                <div className="relative flex items-center">
-                  <div className="absolute left-3.5 text-zinc-500 pointer-events-none">
-                    <IdCard className="w-4 h-4" />
-                  </div>
+                <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                  <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                   <input
-                    type={userTab === 'student' ? 'text' : 'text'}
-                    value={loginId}
-                    onChange={(e) => setLoginId(userTab === 'student' ? e.target.value.toUpperCase() : e.target.value)}
-                    placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. electrical@rguktrkv.ac.in'}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#14161C] border border-white/[0.08] text-white placeholder-zinc-500 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-sans"
+                    type="text"
+                    value={userTab === 'student' ? idNo : (idNo || collegeEmail)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (userTab === 'student') {
+                        setIdNo(val);
+                      } else {
+                        setIdNo(val);
+                        setCollegeEmail(val);
+                      }
+                    }}
+                    placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. warden@rgukt.ac.in'}
+                    className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
                     required
-                    disabled={isSubmitting || accountLockout}
+                    autoCapitalize={userTab === 'student' ? 'characters' : 'none'}
                   />
                 </div>
               </div>
 
-              {/* Password Input Field */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[11px] font-semibold text-zinc-300 uppercase tracking-wider">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => {
                       setAuthMode('forgot');
+                      setForgotStep('request');
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}
-                    className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    className="text-[11px] text-zinc-400 hover:text-white transition-colors cursor-pointer"
                   >
                     Forgot?
                   </button>
                 </div>
-                <div className="relative flex items-center">
-                  <div className="absolute left-3.5 text-zinc-500 pointer-events-none">
-                    <Lock className="w-4 h-4" />
-                  </div>
+                <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                  <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#14161C] border border-white/[0.08] text-white placeholder-zinc-500 text-xs sm:text-sm font-medium focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all font-sans"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
                     required
-                    disabled={isSubmitting || accountLockout}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 text-zinc-500 hover:text-zinc-200 transition-colors cursor-pointer"
+                    className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Solid High-Contrast White Sign In Button */}
               <button
                 type="submit"
-                disabled={isSubmitting || accountLockout}
-                className="w-full py-3 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-neutral-200 active:scale-[0.99] transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2 font-sans"
+                disabled={isSubmitting}
+                className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <span>Sign In</span>
                 )}
               </button>
-
-              {/* Divider: OR CONTINUE WITH */}
-              <div className="flex items-center gap-3 my-3.5">
-                <div className="flex-1 h-px bg-white/[0.08]" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                  OR CONTINUE WITH
-                </span>
-                <div className="flex-1 h-px bg-white/[0.08]" />
-              </div>
-
-              {/* Dark Google SSO Button with Google Multi-Color Icon */}
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={isSubmitting || accountLockout}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#1A1D26] hover:bg-[#222736] border border-white/[0.08] text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer font-sans"
-              >
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                </svg>
-                <span>Continue with RGUKT Google SSO</span>
-              </button>
             </form>
 
-            {/* Footer Register Link */}
-            <div className="mt-4 text-center">
-              <p className="text-xs text-zinc-400">
-                First time here?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('register');
-                    setErrorMsg('');
-                    setSuccessMsg('');
-                  }}
-                  className="text-white hover:text-emerald-400 font-semibold cursor-pointer transition-colors underline-offset-2 hover:underline"
-                >
-                  Register Account
-                </button>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW B: REGISTRATION MODE */}
-        {/* ------------------------------------------------------------- */}
-        {authMode === 'register' && (
-          <form onSubmit={handleRegisterSubmit} className="space-y-3">
-            <div className="text-center pb-2 border-b border-white/[0.08]">
-              <h3 className="text-sm font-bold text-white">Create Resident Account</h3>
-              <p className="text-[11px] text-zinc-400">RGUKT RK Valley Campus Network Registration</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Student ID</label>
-                <input
-                  type="text"
-                  value={regId}
-                  onChange={(e) => setRegId(e.target.value.toUpperCase())}
-                  placeholder="e.g. R200101"
-                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  placeholder="Your Full Name"
-                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Institute Email</label>
-              <input
-                type="email"
-                value={regEmail}
-                onChange={(e) => setRegEmail(e.target.value)}
-                placeholder="r200101@rguktrkv.ac.in"
-                className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Hostel Block</label>
-                <select
-                  value={regHostelBlock}
-                  onChange={(e) => setRegHostelBlock(e.target.value)}
-                  className="w-full px-2.5 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                >
-                  <option value="BH-1">BH-1 (Penna)</option>
-                  <option value="BH-2">BH-2 (Papagni)</option>
-                  <option value="GH-1">GH-1 (Chitravati)</option>
-                  <option value="GH-2">GH-2 (Kundu)</option>
-                  <option value="Old Campus">Old Campus</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Room No.</label>
-                <input
-                  type="text"
-                  value={regRoomNumber}
-                  onChange={(e) => setRegRoomNumber(e.target.value)}
-                  placeholder="e.g. 108"
-                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Password</label>
-                <input
-                  type="password"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Confirm</label>
-                <input
-                  type="password"
-                  value={regConfirmPassword}
-                  onChange={(e) => setRegConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                  required
-                />
-              </div>
+            <div className="flex items-center my-4 gap-3">
+              <div className="h-px flex-1 bg-white/[0.08]"></div>
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+                or continue with
+              </span>
+              <div className="h-px flex-1 bg-white/[0.08]"></div>
             </div>
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleGoogleLogin}
               disabled={isSubmitting}
-              className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 active:scale-[0.99] transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-1"
+              className="w-full py-2.5 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/[0.16] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
             >
-              {isSubmitting ? (
-                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <span>Register & Send Verification Code</span>
-              )}
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>Google SSO</span>
             </button>
 
-            <div className="text-center pt-1">
+            <div className="mt-5 text-center text-xs text-zinc-400">
+              <span>First time here? </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signup');
+                  setSignupStep('form');
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                }}
+                className="text-white hover:underline font-semibold cursor-pointer"
+              >
+                Register Account
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* MODE 2: SIGN UP */}
+        {authMode === 'signup' && (
+          <>
+            {signupStep === 'form' ? (
+              <div className="space-y-3.5">
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                    Full Name
+                  </label>
+                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                    <User className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Chaithanya Yadav"
+                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                    {userTab === 'student' ? 'Student ID NO' : 'Faculty / Staff ID'}
+                  </label>
+                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                    <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                    <input
+                      type="text"
+                      value={idNo}
+                      onChange={(e) => setIdNo(e.target.value.toUpperCase())}
+                      placeholder={userTab === 'student' ? 'e.g. R200101' : 'e.g. WARDEN-01'}
+                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                    Official Email (@rgukt.ac.in)
+                  </label>
+                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                    <Mail className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                    <input
+                      type="email"
+                      value={collegeEmail}
+                      onChange={(e) => setCollegeEmail(e.target.value)}
+                      placeholder={userTab === 'student' ? 'r200101@rguktrkv.ac.in' : 'warden@rgukt.ac.in'}
+                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                    Create Password
+                  </label>
+                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                    <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full bg-transparent py-2 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isSendingOtp}
+                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                >
+                  {isSendingOtp ? (
+                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span>Request Verification OTP</span>
+                  )}
+                </button>
+              </div>
+            ) : (
+              /* OTP Verification Step */
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="text-center">
+                  <p className="text-xs text-zinc-300">
+                    Enter the 6-digit verification code sent to
+                  </p>
+                  <p className="text-xs font-mono text-cyan-300 font-semibold mt-0.5">
+                    {otpTargetEmail || collegeEmail}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 my-4">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <input
+                      key={index}
+                      ref={(el) => (otpInputRefs.current[index] = el)}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength="1"
+                      value={(enteredOtp || '')[index] || ''}
+                      onChange={(e) => handleOtpBoxChange(e, index)}
+                      onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
+                      onPaste={handleOtpBoxPaste}
+                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl outline-none transition-all"
+                    />
+                  ))}
+                </div>
+
+                {generatedOtp && isEmailOnThisDevice(otpTargetEmail || collegeEmail) ? (
+                  <div className="text-center my-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEnteredOtp(generatedOtp);
+                        setErrorMsg('');
+                        if (otpInputRefs.current[5]) {
+                          otpInputRefs.current[5].focus();
+                        }
+                      }}
+                      className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
+                    >
+                      Auto-fill OTP ({generatedOtp})
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center my-2 text-[10.5px] text-zinc-400 bg-white/[0.02] border border-white/[0.06] rounded-xl py-1.5 px-3">
+                    <span>Verification code sent to {otpTargetEmail || collegeEmail}. Enter code received on that device.</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+                  <span>
+                    {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Didn't get OTP?"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={!canResendOtp || isSendingOtp}
+                    className="text-white hover:underline font-semibold disabled:opacity-40 cursor-pointer"
+                  >
+                    Resend Code
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || (enteredOtp || '').length < 6}
+                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span>Verify & Enter Portal</span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSignupStep('form')}
+                  className="w-full py-1.5 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  ← Edit Details
+                </button>
+              </form>
+            )}
+
+            <div className="mt-5 text-center text-xs text-zinc-400">
+              <span>Already registered? </span>
               <button
                 type="button"
                 onClick={() => {
@@ -9767,84 +9834,34 @@ function AuthScreen({ onLoginSuccess }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="text-white hover:underline font-semibold cursor-pointer"
               >
-                ← Back to Sign In
+                Sign In
               </button>
             </div>
-          </form>
+          </>
         )}
 
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW C: FORGOT PASSWORD / OTP */}
-        {/* ------------------------------------------------------------- */}
-        {(authMode === 'forgot' || authMode === 'otp') && (
-          <div className="space-y-3.5">
-            <div className="text-center pb-2 border-b border-white/[0.08]">
-              <h3 className="text-sm font-bold text-white">Reset Account Password</h3>
-              <p className="text-[11px] text-zinc-400">Institutional Email OTP Recovery</p>
-            </div>
-
-            {authMode === 'forgot' ? (
-              <form onSubmit={handleForgotSubmit} className="space-y-3">
+        {/* MODE 3: FORGOT PASSWORD */}
+        {authMode === 'forgot' && (
+          <div className="space-y-4">
+            {forgotStep === 'request' ? (
+              <>
                 <div>
-                  <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">
-                    Your Registered College Email
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
+                    Student ID or Registered Email
                   </label>
-                  <input
-                    type="email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    placeholder="e.g. r200101@rguktrkv.ac.in"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                >
-                  {isSubmitting ? 'Sending Code...' : 'Send Recovery OTP'}
-                </button>
-              </form>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">
-                    Enter 6-Digit OTP Code
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="123456"
-                    className="w-full px-3.5 py-2.5 text-center font-mono tracking-widest rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-sm focus:outline-none focus:border-emerald-500/50"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">New Password</label>
+                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                    <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                     <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-zinc-400 uppercase mb-1">Confirm</label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-3 py-2 rounded-xl bg-[#14161C] border border-white/[0.08] text-white text-xs focus:outline-none focus:border-emerald-500/50"
+                      type="text"
+                      value={idNo || collegeEmail}
+                      onChange={(e) => {
+                        setIdNo(e.target.value);
+                        setCollegeEmail(e.target.value);
+                      }}
+                      placeholder="e.g. R200101 or email"
+                      className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
                       required
                     />
                   </div>
@@ -9852,16 +9869,150 @@ function AuthScreen({ onLoginSuccess }) {
 
                 <button
                   type="button"
-                  onClick={handleResetPasswordSubmit}
-                  disabled={isSubmitting}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  onClick={handleSendForgotOtp}
+                  disabled={isSendingOtp}
+                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
-                  {isSubmitting ? 'Saving...' : 'Save New Password & Sign In'}
+                  {isSendingOtp ? (
+                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span>Send Recovery OTP</span>
+                  )}
                 </button>
-              </div>
+              </>
+            ) : forgotStep === 'verify' ? (
+              <>
+                <div className="text-center">
+                  <p className="text-xs text-zinc-300">Enter the 6-digit recovery code sent to</p>
+                  <p className="text-xs font-mono text-cyan-300 font-semibold mt-0.5">{otpTargetEmail}</p>
+                </div>
+                <div className="flex items-center justify-center gap-2 my-3">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <input
+                      key={index}
+                      ref={(el) => (otpInputRefs.current[index] = el)}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength="1"
+                      value={(enteredOtp || '')[index] || ''}
+                      onChange={(e) => handleOtpBoxChange(e, index)}
+                      onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
+                      onPaste={handleOtpBoxPaste}
+                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl outline-none transition-all"
+                    />
+                  ))}
+                </div>
+
+                {generatedOtp && isEmailOnThisDevice(otpTargetEmail || collegeEmail) ? (
+                  <div className="text-center my-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEnteredOtp(generatedOtp);
+                        setErrorMsg('');
+                        if (otpInputRefs.current[5]) {
+                          otpInputRefs.current[5].focus();
+                        }
+                      }}
+                      className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
+                    >
+                      Auto-fill OTP ({generatedOtp})
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center my-2 text-[10.5px] text-zinc-400 bg-white/[0.02] border border-white/[0.06] rounded-xl py-1.5 px-3">
+                    <span>Verification code sent to {otpTargetEmail || collegeEmail}. Enter code received on that device.</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleVerifyForgotOtp}
+                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Verify OTP & Continue</span>
+                </button>
+
+                <div className="text-center mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep('request')}
+                    className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    ← Change ID / Email
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                      New Password
+                    </label>
+                    <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                      <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
+                      Confirm New Password
+                    </label>
+                    <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
+                      <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full bg-transparent py-2.5 px-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none font-mono"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="p-2 mr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleResetPasswordSubmit}
+                    disabled={isSubmitting}
+                    className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <span>Save Password & Sign In</span>
+                    )}
+                  </button>
+                </div>
+              </>
             )}
 
-            <div className="text-center pt-1">
+            <div className="mt-4 text-center">
               <button
                 type="button"
                 onClick={() => {
@@ -10412,7 +10563,7 @@ function AuthScreen({ onLoginSuccess }) {
                         ))}
                       </div>
 
-                      {generatedOtp && (
+                      {generatedOtp && isEmailOnThisDevice(otpTargetEmail || collegeEmail) ? (
                         <div className="text-center my-2">
                           <button
                             type="button"
@@ -10427,6 +10578,10 @@ function AuthScreen({ onLoginSuccess }) {
                           >
                             Auto-fill OTP ({generatedOtp})
                           </button>
+                        </div>
+                      ) : (
+                        <div className="text-center my-2 text-[10.5px] text-zinc-400 bg-white/[0.03] border border-white/[0.06] rounded-xl py-1.5 px-3">
+                          <span>Verification code sent to {otpTargetEmail || collegeEmail}. Enter code received on that device.</span>
                         </div>
                       )}
 
@@ -10545,7 +10700,7 @@ function AuthScreen({ onLoginSuccess }) {
                         ))}
                       </div>
 
-                      {generatedOtp && (
+                      {generatedOtp && isEmailOnThisDevice(otpTargetEmail || collegeEmail) ? (
                         <div className="text-center my-2">
                           <button
                             type="button"
@@ -10560,6 +10715,10 @@ function AuthScreen({ onLoginSuccess }) {
                           >
                             Auto-fill OTP ({generatedOtp})
                           </button>
+                        </div>
+                      ) : (
+                        <div className="text-center my-2 text-[10.5px] text-zinc-400 bg-white/[0.03] border border-white/[0.06] rounded-xl py-1.5 px-3">
+                          <span>Verification code sent to {otpTargetEmail || collegeEmail}. Enter code received on that device.</span>
                         </div>
                       )}
 
@@ -10694,7 +10853,7 @@ function AuthScreen({ onLoginSuccess }) {
 
   return (
     <>
-      {renderDesktopSafariView()}
+      {isApp ? renderMobileAppView() : renderDesktopSafariView()}
 
       {/* MODAL: INSTITUTIONAL GUIDELINES, TERMS OF SERVICE & PRIVACY POLICY */}
       {policyModalType && (
