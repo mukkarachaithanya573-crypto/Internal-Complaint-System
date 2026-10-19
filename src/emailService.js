@@ -99,12 +99,19 @@ async function sendEmailJsMessage(templateId, templateParams) {
       recipient: cleanEmail
     };
 
-    const res = await emailjs.send(
+    // 10-second timeout race to prevent network hangs
+    const sendPromise = emailjs.send(
       EMAILJS_CONFIG.SERVICE_ID,
       templateId,
       cleanParams,
-      EMAILJS_CONFIG.PUBLIC_KEY
+      { publicKey: EMAILJS_CONFIG.PUBLIC_KEY }
     );
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Email dispatch timeout (10s)')), 10000)
+    );
+
+    const res = await Promise.race([sendPromise, timeoutPromise]);
     console.log(`✅ [EmailJS Success] Template ${templateId} sent to ${cleanEmail}:`, res.status, res.text);
     return { success: true, status: res.status, text: res.text };
   } catch (error) {
@@ -162,7 +169,7 @@ export async function sendEmailOnComplaintSubmission(ticket) {
     next_step: isIcc
       ? 'The Committee will review and hold preliminary appraisal under the designated committee quorum.'
       : 'The Warden will review and record an official response. If unresolved, you may tag and escalate to DSW & Department.',
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   // 2. Email to the Respective Authority / Officer (Template: template_rq4dnge)
@@ -187,13 +194,19 @@ export async function sendEmailOnComplaintSubmission(ticket) {
     hierarchy_level: isIcc ? 'Level 1: ICC Committee' : 'Stage 1: Hostel Resident Warden',
     status: ticket.status || 'ASSIGNED',
     message: `A new ticket #${ticket.ticketNumber} requires your official attention. Please inspect the location and record an official response.`,
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
-  let studentRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, studentParams);
-  let authorityRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION, authorityParams);
+  // Dispatch both student confirmation & authority alert instantly in parallel
+  const [studentRes, authorityRes] = await Promise.allSettled([
+    sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, studentParams),
+    sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.AUTHORITY_NOTIFICATION, authorityParams)
+  ]);
 
-  return { studentRes, authorityRes };
+  return {
+    studentRes: studentRes.status === 'fulfilled' ? studentRes.value : { success: false },
+    authorityRes: authorityRes.status === 'fulfilled' ? authorityRes.value : { success: false }
+  };
 }
 
 /**
@@ -261,7 +274,7 @@ export async function sendEmailOnHierarchyEscalation(ticket, escalationData) {
     body: `Your complaint #${ticket.ticketNumber} has been escalated to ${targetOfficer.name}. Reason: ${reason}`,
     notes: `Escalated to ${targetOfficer.name} (${toStage})`,
     next_step: `${targetOfficer.name} will review the attached history and initiate departmental intervention.`,
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   // 2. Email to the Incoming Respected Officer (Template: template_rq4dnge)
@@ -290,7 +303,7 @@ export async function sendEmailOnHierarchyEscalation(ticket, escalationData) {
     hierarchy_level: targetOfficer.levelTitle || toStage,
     status: 'ESCALATED_PENDING_ACTION',
     message: `Ticket #${ticket.ticketNumber} has been escalated to your office because the previous level (${fromStage}) did not resolve the problem.\n\nEscalation Reason: ${reason}\nAttached Previous Response: "${taggedPriorResponse}"\n\nPlease review the docket and initiate on-site redressal.`,
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   await Promise.allSettled([
@@ -337,7 +350,7 @@ export async function sendEmailOnAuthorityResponse(ticket, responseText, authori
     body: `Inspection update on ticket #${ticket.ticketNumber} recorded by ${authorityStage}: "${responseText}"`,
     notes: `Official Response: ${responseText}`,
     next_step: `Review the progress. If satisfactory, await completion. If unresolved, you may tag and escalate to the next authority.`,
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, studentParams);
@@ -387,7 +400,7 @@ export async function sendEmailOnProblemSolved(ticket, resolutionNotes = '') {
     body: `Problem solved for ticket #${ticket.ticketNumber} at ${ticket.location}. Notes: ${resolutionNotes || 'Completed'}`,
     notes: resolutionNotes || 'Works successfully completed.',
     next_step: 'Please inspect the physical location and confirm resolution on the portal. You can rate the technician or reopen if the defect persists.',
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   // 2. Email to the Supervisor / Department Head for Quality Assurance (Template: template_rq4dnge)
@@ -413,7 +426,7 @@ export async function sendEmailOnProblemSolved(ticket, resolutionNotes = '') {
     status: 'RESOLVED',
     resolution_notes: resolutionNotes || ticket.resolutionNotes || 'Fix completed on site.',
     message: `Ticket #${ticket.ticketNumber} has been marked as RESOLVED by the attending staff (${ticket.assignedStaffName || 'Assigned Technician'}). Verification prompt dispatched to student.`,
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   await Promise.allSettled([
@@ -480,34 +493,35 @@ export async function sendOtpEmail(recipientEmail, otpCode, recipientName = 'Stu
     Company_Name: 'INTERNAL COMPLAINT SYSTEM',
     company: 'INTERNAL COMPLAINT SYSTEM',
     app_name: 'INTERNAL COMPLAINT SYSTEM',
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })
   };
 
   console.log(`📨 [Dispatching OTP] Sending OTP code [${formattedOtp}] to ${cleanEmail} using template ${EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION}...`);
 
-  // 1. Send via EmailJS using dedicated OTP template: template_cjeu2jp
+  // 1. Send via EmailJS using dedicated OTP template
   let emailJsRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION, otpParams);
 
-  // If primary OTP template returns an error, fallback to USER_NOTIFICATION
-  if (!emailJsRes?.success && EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION) {
+  // If primary OTP template returns an error and secondary is a different template, fallback
+  if (!emailJsRes?.success && EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION && EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION !== EMAILJS_CONFIG.TEMPLATES.OTP_VERIFICATION) {
     console.log(`🔄 [EmailJS Retrying] Fallback to secondary template ${EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION}...`);
     emailJsRes = await sendEmailJsMessage(EMAILJS_CONFIG.TEMPLATES.USER_NOTIFICATION, otpParams);
   }
 
-  // 2. Also notify backend email dispatcher
+  // 2. Also notify backend email dispatcher if available
   try {
-    fetch('/api/send-otp-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        recipientEmail: cleanEmail,
-        recipientName,
-        otp: formattedOtp
-      })
-    }).catch(e => console.warn('Backend OTP sync notice:', e));
-  } catch (err) {
-    console.warn('Backend OTP call error:', err);
-  }
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      fetch('/api/send-otp-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: cleanEmail,
+          recipientName,
+          otp: formattedOtp
+        })
+      }).catch(() => {});
+    }
+  } catch (err) {}
 
   return { ...(emailJsRes || {}), otp: formattedOtp, email: cleanEmail };
 }
@@ -584,7 +598,7 @@ Submitted from RGUKT RK Valley Internal Complaint System
     otp: studentId,
     code: studentId,
     passcode: studentId,
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   console.log(`💡 [App Feedback] Dispatching student suggestion to developer ${DEVELOPER_INFO.email}...`);
@@ -674,7 +688,7 @@ RGUKT RK Valley`;
     body: `Welcome to RGUKT RK Valley Internal Complaint System. We express our heartfelt gratitude to you. Remember: We Are Here For You at every step!`,
     notes: 'Registration complete. Whenever you face any issue or need assistance, our team is always here for you.',
     next_step: 'Access your portal dashboard to lodge requests, track resolution timelines, and reach out to authorities.',
-    date_time: new Date().toLocaleString()
+    date_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
   };
 
   console.log(`📨 [Welcome & Gratitude Email] Dispatching to ${userEmail}...`);

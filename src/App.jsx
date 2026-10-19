@@ -4435,8 +4435,8 @@ export default function CampusMaintenanceApp() {
 
                     {/* 3. Urgency / Seriousness Selector */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2.5">
-                        3. {categoryType === 'ICC' ? 'SERIOUSNESS & INQUIRY COMPLEXITY' : 'URGENCY LEVEL'} <span className="text-rose-500">*</span>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                        3. {categoryType === 'ICC' ? 'Seriousness & Inquiry Complexity' : 'Urgency Level'} <span className="text-rose-500">*</span>
                       </label>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                         {URGENCIES.map(urg => {
@@ -4446,14 +4446,14 @@ export default function CampusMaintenanceApp() {
                               key={urg.id}
                               type="button"
                               onClick={() => setUrgency(urg.id)}
-                              className={`p-3 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer relative ${
+                              className={`p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
                                 isSel 
-                                  ? 'border-2 border-emerald-400 bg-emerald-950/30 text-white shadow-[0_0_20px_rgba(52,211,153,0.25)] ring-1 ring-emerald-400/40 font-bold' 
-                                  : 'border-white/[0.08] bg-[#14161C]/90 text-zinc-300 hover:border-white/[0.18] hover:bg-[#1A1E29] hover:text-white font-medium'
+                                  ? 'border-emerald-500 bg-[#0F2922] text-white shadow-sm ring-1 ring-emerald-500/30' 
+                                  : 'border-white/[0.08] bg-[#14161C] text-zinc-400 hover:border-white/[0.16] hover:bg-[#1A1D26] hover:text-zinc-200'
                               }`}
                             >
-                              <div className={`text-xs font-bold ${isSel ? 'text-emerald-300' : 'text-zinc-200'}`}>{urg.label}</div>
-                              <div className={`text-[10px] mt-1 leading-relaxed ${isSel ? 'text-zinc-300 font-medium' : 'text-zinc-400'}`}>{urg.desc}</div>
+                              <div className="text-xs font-bold">{urg.label}</div>
+                              <div className="text-[10px] mt-0.5 leading-tight opacity-75">{urg.desc}</div>
                             </button>
                           );
                         })}
@@ -4466,32 +4466,27 @@ export default function CampusMaintenanceApp() {
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-xs"></span>
-                            <span>4. {categoryType === 'ICC' ? 'GRIEVANCE SUMMARY & SUBJECT' : 'COMPLAINT SUMMARY'} <span className="text-rose-400">*</span></span>
+                            <span>4. {categoryType === 'ICC' ? 'Grievance Summary & Subject' : 'Complaint Summary'} <span className="text-rose-500">*</span></span>
                           </label>
-                          <span className="text-[10px] text-zinc-300 bg-white/[0.06] border border-white/[0.1] px-2.5 py-0.5 rounded-full font-semibold">
+                          <span className="text-[10px] text-zinc-400 font-mono">
                             {categoryType === 'ICC' ? 'ICC Subject' : 'Issue Title'}
                           </span>
                         </div>
-                        <div className="relative">
-                          <div className="absolute left-3.5 top-3.5 text-zinc-500 pointer-events-none">
-                            <span className="text-sm font-mono text-zinc-500">≡</span>
-                          </div>
-                          <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder={categoryType === 'ICC' ? 'Formal Grievance regarding Hostel Mess Quality / Harassment / Examination Evaluation' : 'e.g. Water valve leaking beneath washroom sink'}
-                            className="w-full pl-9 pr-4 py-3 bg-[#0B0E14] border border-white/[0.08] focus:border-emerald-400/80 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-sm font-medium text-white placeholder:text-zinc-600 shadow-inner transition-all outline-none"
-                            required
-                          />
-                        </div>
+                        <input
+                          type="text"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder={categoryType === 'ICC' ? 'Formal Grievance regarding Hostel Mess Quality / Harassment / Examination Evaluation' : 'e.g. Water valve leaking beneath washroom sink'}
+                          className="w-full p-3 bg-[#14161C] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
+                          required
+                        />
                       </div>
 
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
-                            <span>DETAILED DESCRIPTION / REMARKS</span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs"></span>
+                            <span>Detailed Description / Remarks</span>
                           </label>
                           <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-bold">Room Coordinates & Details</span>
                         </div>
@@ -4499,21 +4494,21 @@ export default function CampusMaintenanceApp() {
                           rows={3}
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Additional details, error codes, when it began, exact location in room."
-                          className="w-full p-3.5 bg-[#0B0E14] border border-white/[0.08] focus:border-emerald-400/80 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-medium text-white placeholder:text-zinc-600 shadow-inner transition-all outline-none"
+                          placeholder="Additional details: error codes, when it began, exact location in room..."
+                          className="w-full p-3 bg-[#14161C] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
                         />
                       </div>
                     </div>
 
                     {/* 5. Real Photo Upload */}
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2">
-                        5. ATTACH PHOTO EVIDENCE (OPTIONAL)
+                      <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">
+                        5. Attach Photo Evidence (Optional)
                       </label>
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Option 1: Upload Image from device */}
-                        <label className="cursor-pointer px-4 py-2.5 border border-white/[0.08] hover:border-emerald-400/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-200 transition-all shadow-sm">
-                          <Upload className="w-4 h-4 text-emerald-400" />
+                        <label className="cursor-pointer px-4 py-2.5 border border-dashed border-white/[0.15] hover:border-emerald-500/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-2xs">
+                          <Upload className="w-4 h-4 text-zinc-400" />
                           <span>Upload Image</span>
                           <input
                             type="file"
@@ -4525,8 +4520,9 @@ export default function CampusMaintenanceApp() {
                         </label>
 
                         {/* Option 2: Camera Capture */}
-                        <label className="cursor-pointer px-3.5 py-2.5 border border-white/[0.08] hover:border-emerald-400/50 bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center justify-center text-zinc-200 transition-all shadow-sm" title="Camera Capture">
+                        <label className="cursor-pointer px-4 py-2.5 border border-white/[0.08] hover:border-white/[0.2] bg-[#14161C] hover:bg-[#1A1D26] rounded-xl flex items-center gap-2 text-xs font-semibold text-zinc-300 transition-all shadow-2xs">
                           <Camera className="w-4 h-4 text-zinc-400" />
+                          <span>Camera Capture</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -4551,55 +4547,61 @@ export default function CampusMaintenanceApp() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[11px] text-zinc-400 mt-2">
-                        Click Upload image to select photos from your device, or Camera Capture to take a photo.
+                      <p className="text-[11px] text-zinc-500 mt-2">
+                        Click <strong>Upload Image</strong> to select photos from your device, or <strong>Camera Capture</strong> to take a photo.
                       </p>
                     </div>
 
                     {/* 6. Email for Department Notifications & Progress Updates */}
-                    <div className="p-4 bg-gradient-to-r from-emerald-950/40 via-teal-950/30 to-slate-900/40 rounded-2xl border border-emerald-500/30 shadow-lg backdrop-blur-md">
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-xs font-bold text-zinc-200 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
-                          <span>Official Delivery Channel <span className="text-rose-400">*</span></span>
+                    <div className="p-4 bg-[#111319] rounded-2xl border border-white/[0.08] shadow-2xs">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-xs"></span>
+                          <span>6. Notification Email for Status & Fix Updates <span className="text-rose-500">*</span></span>
                         </label>
-                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-emerald-400 bg-[#0D2821] border border-[#0F382E] px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <Mail className="w-3 h-3 text-emerald-400" />
                           Official Delivery Channel
                         </span>
                       </div>
                       <div className="relative">
-                        <Mail className="w-4 h-4 text-emerald-400 absolute left-3 top-3.5 pointer-events-none" />
+                        <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-3.5 pointer-events-none" />
                         <input
                           type="email"
                           value={reporterEmail}
                           onChange={(e) => setReporterEmail(e.target.value)}
-                          placeholder="e.g. r240493@rguktrkv.ac.in"
-                          className="w-full pl-9 pr-3 py-2.5 bg-[#081014]/80 border border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 rounded-xl text-xs font-semibold text-emerald-200 placeholder:text-zinc-600 shadow-inner transition-all outline-none"
+                          placeholder="e.g. student@rgukt.ac.in or personal email"
+                          className="w-full pl-9 pr-3 py-2.5 bg-[#0D1117] border border-white/[0.08] focus:border-emerald-500/60 rounded-xl text-xs font-medium text-white placeholder:text-zinc-500 shadow-xs transition-all outline-none"
                           required
                         />
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-1 mt-2 text-[11px] text-zinc-400 font-medium">
-                        <span>Official complaint receipt, technician dispatches, and after verification photos will be emailed here.</span>
-                        <span className="text-zinc-400 font-medium">
-                          Delivered by Browser / In App Mailbox
-                        </span>
+                        <span>Official complaint receipt, technician dispatches, and after-repair verification photos will be emailed here.</span>
+                        {smtpConfig?.activeTransporter === 'REAL_SMTP' ? (
+                          <span className="text-emerald-400 font-medium flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Live SMTP Active ({smtpConfig.service})
+                          </span>
+                        ) : (
+                          <span className="text-zinc-400 font-medium">
+                            Delivered via Ethereal / In-App Mailbox
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Submit Button matching reference image */}
+                    {/* Submit Button */}
                     <button
                       type="submit"
-                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-bold text-sm tracking-wide shadow-[0_4px_25px_rgba(16,185,129,0.4)] hover:shadow-[0_4px_35px_rgba(20,184,166,0.55)] border border-emerald-300/30 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
+                      className="w-full py-3.5 bg-white hover:bg-neutral-200 text-black font-bold rounded-xl shadow-md text-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99] font-sans"
                     >
                       {categoryType === 'ICC' ? (
                         <>
-                          <ShieldCheck className="w-4 h-4 text-white" />
+                          <ShieldCheck className="w-4 h-4 text-purple-700" />
                           <span>Submit Formal Grievance to ICC (Director Chaired)</span>
                         </>
                       ) : (
                         <>
-                          <Building className="w-4 h-4 text-white" />
+                          <Building className="w-4 h-4 text-emerald-800" />
                           <span>Submit to Hostel Warden (Hierarchy Stage 1)</span>
                         </>
                       )}
@@ -9270,17 +9272,42 @@ function AuthScreen({ onLoginSuccess }) {
     const fullName = googleUser.displayName || (email === 'mukkarachaithanya573@gmail.com' ? 'Mukkara Chaithanya' : email.split('@')[0]);
     const profilePic = googleUser.photoURL || null;
 
-    // Check if user is already registered in system
-    const registeredUsers = getRegisteredAccounts();
-    const existingAccount = registeredUsers.find(u => 
+    // Persist verified Google user info to local device storage and register device email binding
+    try {
+      localStorage.setItem('rgukt_google_auth_user', JSON.stringify({ email, displayName: fullName, photoURL: profilePic }));
+      registerEmailOnThisDevice(email);
+    } catch (e) {
+      console.warn('Could not persist Google user info:', e);
+    }
+
+    // Check if user is already registered in local storage or Cloud Firestore
+    let registeredUsers = getRegisteredAccounts();
+    let existingAccount = registeredUsers.find(u => 
       (u.collegeEmail && u.collegeEmail.toLowerCase() === email) ||
       (u.email && u.email.toLowerCase() === email) ||
       (u.idNo && u.idNo.toUpperCase() === idNo)
     );
 
+    // If not found locally, query Cloud Firestore directly to sync registered profile
+    if (!existingAccount) {
+      try {
+        const remoteUsers = await fetchUsersFromFirestore();
+        if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+          syncCloudUsersWithLocal(remoteUsers);
+          registeredUsers = getRegisteredAccounts();
+          existingAccount = registeredUsers.find(u => 
+            (u.collegeEmail && u.collegeEmail.toLowerCase() === email) ||
+            (u.email && u.email.toLowerCase() === email) ||
+            (u.idNo && u.idNo.toUpperCase() === idNo)
+          );
+        }
+      } catch (cloudErr) {
+        console.warn('Cloud user sync during Google login notice:', cloudErr);
+      }
+    }
 
-    // If user is ALREADY registered and this is sign-in mode, let them sign in directly
-    if (authMode === 'signin' && existingAccount) {
+    // If user is ALREADY registered, let them sign in directly
+    if (existingAccount) {
       setIsSubmitting(false);
       onLoginSuccess({
         name: existingAccount.fullName || fullName,
@@ -9303,7 +9330,7 @@ function AuthScreen({ onLoginSuccess }) {
       return;
     }
 
-    // If FIRST TIME REGISTRATION (or not registered yet): MUST VERIFY VIA OTP!
+    // If FIRST TIME REGISTRATION (or not registered yet): Complete profile registration via OTP
     setCollegeEmail(email);
     setFullName(fullName);
     if (profilePic) setProfilePic(profilePic);
@@ -9341,14 +9368,16 @@ function AuthScreen({ onLoginSuccess }) {
     }
   };
 
-  // Check for any returning Google redirect login on initial mount
+  // Check for any returning Google redirect login on initial mount (for web browsers)
   useEffect(() => {
     let isMounted = true;
-    getGoogleRedirectUser().then(user => {
-      if (isMounted && user) {
-        processGoogleUser(user);
-      }
-    }).catch(e => console.warn('Google redirect check notice:', e));
+    if (!isAppEnvironment()) {
+      getGoogleRedirectUser().then(user => {
+        if (isMounted && user) {
+          processGoogleUser(user);
+        }
+      }).catch(e => console.warn('Google redirect check notice:', e));
+    }
     return () => { isMounted = false; };
   }, []);
 
@@ -9366,7 +9395,25 @@ function AuthScreen({ onLoginSuccess }) {
           return;
         }
 
-        // If popup was blocked or failed on a mobile device, fallback to signInWithRedirect
+        const isApp = isAppEnvironment();
+        if (isApp) {
+          console.warn('Google popup in app notice:', popupErr?.code || popupErr);
+          // In Android App: NEVER navigate away via signInWithGoogleRedirect()
+          // Check if user previously connected their Google account on this device:
+          const cachedGoogleRaw = localStorage.getItem('rgukt_google_auth_user');
+          if (cachedGoogleRaw) {
+            try {
+              const cached = JSON.parse(cachedGoogleRaw);
+              if (cached && cached.email) {
+                await processGoogleUser(cached);
+                return;
+              }
+            } catch (e) {}
+          }
+          throw popupErr;
+        }
+
+        // On mobile web browser tabs, fallback to signInWithRedirect if popups are blocked
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
         if (isMobile || popupErr.code === 'auth/popup-blocked') {
           try {
