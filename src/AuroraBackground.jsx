@@ -10,7 +10,6 @@ import React from 'react';
  *    with 60fps GPU acceleration (translate3d, will-change: transform) and 100px Gaussian blur
  * 3. Elevation Mesh: Subtle topographic wireframe contour curves
  * 4. Micro-Texture: Topographic grid texture
- * 5. Ambient Sparkle Stars: 4-point diamond star accents (✦ and ✧)
  */
 export default function AuroraBackground() {
   return (
@@ -72,21 +71,6 @@ export default function AuroraBackground() {
           backgroundSize: '32px 32px, 64px 64px, 64px 64px'
         }}
       />
-
-      {/* Subtle Ambient Sparkle Stars matching reference image */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Bottom Right 4-Point Star Sparkle */}
-        <div className="absolute bottom-16 right-12 text-emerald-300/70 opacity-90 animate-pulse pointer-events-none text-2xl select-none drop-shadow-[0_0_10px_rgba(52,211,153,0.9)]">
-          ✦
-        </div>
-        <div className="absolute bottom-10 right-28 text-cyan-200/60 opacity-70 pointer-events-none text-base select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
-          ✧
-        </div>
-        {/* Top Left Faint Sparkle */}
-        <div className="absolute top-20 left-16 text-emerald-400/50 opacity-60 pointer-events-none text-sm select-none drop-shadow-[0_0_8px_rgba(52,211,153,0.7)]">
-          ✦
-        </div>
-      </div>
     </div>
   );
 }
