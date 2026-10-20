@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+if (typeof window !== 'undefined') {
+  window.Capacitor = Capacitor;
+}
 import { 
   Wrench, Zap, Droplet, Monitor, Sparkles, ShieldAlert, 
   Camera, CheckCircle2, Clock, AlertTriangle, ChevronRight, 
@@ -544,7 +548,18 @@ function CampusQrMapHub({ onOpenModal, onSelectRoomForComplaint, currentRole }) 
 export function isAppEnvironment() {
   if (typeof window === 'undefined') return false;
 
-  // 1. Capacitor native app runtime check
+  // 1. Direct Capacitor instance check
+  try {
+    if (Capacitor && typeof Capacitor.isNativePlatform === 'function' && Capacitor.isNativePlatform()) {
+      return true;
+    }
+    if (Capacitor && typeof Capacitor.getPlatform === 'function') {
+      const p = Capacitor.getPlatform();
+      if (p === 'android' || p === 'ios') return true;
+    }
+  } catch (e) {}
+
+  // 2. Capacitor native app runtime check on window
   if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function') {
     if (window.Capacitor.isNativePlatform()) return true;
   }
@@ -552,24 +567,24 @@ export function isAppEnvironment() {
     return true;
   }
 
-  // 2. Capacitor native origin check (Capacitor serves assets locally on localhost / capacitor: scheme)
+  // 3. Capacitor native origin check (Capacitor serves assets locally on localhost / capacitor: scheme)
   if (
     window.location.protocol === 'capacitor:' ||
     window.location.protocol === 'ionic:' ||
-    (window.location.hostname === 'localhost' && window.location.port === '') ||
+    window.location.hostname === 'localhost' ||
     window.location.origin === 'https://localhost' ||
     window.location.origin === 'http://localhost'
   ) {
     return true;
   }
 
-  // 3. Android WebView detection
+  // 4. Android WebView detection
   const ua = (navigator.userAgent || '').toLowerCase();
   if (ua.includes('wv') || ua.includes('capacitor') || (ua.includes('android') && ua.includes('version/'))) {
     return true;
   }
 
-  // 4. Standalone Installed PWA / Home Screen App mode
+  // 5. Standalone Installed PWA / Home Screen App mode
   if (
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
     (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) ||
@@ -578,7 +593,7 @@ export function isAppEnvironment() {
     return true;
   }
 
-  // 5. Android app referrer check
+  // 6. Android app referrer check
   if (document.referrer && document.referrer.startsWith('android-app://')) {
     return true;
   }
@@ -3029,20 +3044,23 @@ export default function CampusMaintenanceApp() {
       {/* MAIN LAYOUT */}
       <div className="flex-1 w-full h-full min-h-0 flex overflow-hidden relative z-10">
 
-        {/* BACKDROP OVERLAY FOR DASHBOARD (Clicking it goes back and closes dashboard) */}
+        {/* BACKDROP OVERLAY FOR DASHBOARD (Mobile only, so on desktop the form adjusts in-flow) */}
         {isDashboardOpen && (
           <div
             onClick={() => setIsDashboardOpen(false)}
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 transition-opacity animate-in fade-in duration-200"
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 md:hidden transition-opacity animate-in fade-in duration-200"
             aria-hidden="true"
           />
         )}
         
-        {/* DASHBOARD DRAWER (Controlled by 3-Line Bar at Top-Left Corner) */}
+        {/* DASHBOARD DRAWER (Responsive: in-flow on md+ screens so center form adjusts dynamically) */}
         <aside
-          className={`fixed inset-y-0 left-0 w-80 max-w-[85vw] h-full flex flex-col justify-between z-50 overflow-y-auto overscroll-contain transition-transform duration-300 ease-in-out shadow-2xl border-r border-white/[0.08] bg-[#0D1117] backdrop-blur-2xl ${
-            isDashboardOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
-          }`}
+          className={`h-full flex flex-col justify-between overflow-y-auto overscroll-contain transition-all duration-300 ease-in-out border-r border-white/[0.08] bg-[#0D1117] backdrop-blur-2xl z-40
+            fixed md:relative inset-y-0 left-0 max-w-[85vw]
+            ${isDashboardOpen 
+              ? 'w-80 translate-x-0 opacity-100 shadow-2xl' 
+              : 'w-0 -translate-x-full md:translate-x-0 md:w-0 opacity-0 overflow-hidden pointer-events-none border-r-0'
+            }`}
           aria-label="Campus Redressal Dashboard Menu"
         >
           {/* TOP CONTROLS OF DASHBOARD: 3-LINE BAR STATUS & BACK BUTTON */}
@@ -3539,7 +3557,7 @@ export default function CampusMaintenanceApp() {
           </aside>
 
           {/* MAIN DYNAMIC CONTENT WORKSPACE (Independently Scrollable from Top to Bottom) */}
-          <div className="flex-1 min-w-0 w-full h-full flex flex-col overflow-hidden bg-transparent">
+          <div className="flex-1 min-w-0 w-full h-full flex flex-col overflow-hidden bg-transparent transition-all duration-300 ease-in-out">
 
             {/* TOP TITLE LINE MATCHING REFERENCE IMAGE */}
             <div className="shrink-0 px-4 sm:px-6 pt-2 pb-0.5 text-xs font-extrabold tracking-wider text-zinc-300 uppercase select-none flex items-center justify-between font-sans">
@@ -3549,48 +3567,7 @@ export default function CampusMaintenanceApp() {
             {/* TOP HEADER BAR: MATCHING REFERENCE IMAGE */}
             <header className="shrink-0 z-30 px-3 sm:px-6 py-2 bg-[#0C1117]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-md flex items-center justify-between gap-2.5 flex-wrap relative font-sans">
               <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-                {/* STEP BACK BUTTON - PROMINENT AS IN REFERENCE IMAGE */}
-                <button
-                  type="button"
-                  onClick={handleStepBack}
-                  className="px-3 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-200 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-white/[0.1] shadow-xs cursor-pointer active:scale-95"
-                  title="Step Back one screen"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
-                  <span>Back</span>
-                </button>
-
-                {/* RGUKT RK Valley Crest Emblem & Central Governance Badge */}
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-white/[0.04] border border-white/[0.08] p-0.5 flex items-center justify-center shrink-0 shadow-inner">
-                    <img 
-                      src="/logo.png?v=original" 
-                      alt="RGUKT Crest" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="hidden sm:flex flex-col text-left">
-                    <span className="text-xs font-bold text-white tracking-tight leading-tight">RGUKT RK VALLEY</span>
-                    <span className="text-[10px] text-zinc-400 font-medium leading-tight">Internal Complaint System</span>
-                  </div>
-                  <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/50 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold tracking-wide">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Central Redressal Governance
-                  </span>
-                </div>
-
-                {/* ACTIVE TAB PILL */}
-                <span className="text-[11px] px-3 py-0.5 rounded-full font-bold bg-white/10 text-white border border-white/20 shadow-xs uppercase tracking-wide">
-                  {activeTab.toUpperCase()}
-                </span>
-
-                {/* Real-time SLA Status Pill */}
-                <div className="hidden lg:flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-500/30 text-[11px] font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                  <span>SLA Active 4-Tier Matrix</span>
-                </div>
-
-                {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON */}
+                {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON - MOST LEFT POSITION */}
                 <button
                   type="button"
                   onClick={() => setIsDashboardOpen(prev => !prev)}
@@ -3602,8 +3579,34 @@ export default function CampusMaintenanceApp() {
                   title={isDashboardOpen ? "Close Menu" : "Menu"}
                   aria-label="Toggle Dashboard Menu"
                 >
-                  <Menu className="w-3.5 h-3.5 text-current shrink-0 stroke-[2.5]" />
+                  <Menu className="w-4 h-4 text-current shrink-0 stroke-[2.5]" />
                 </button>
+
+                {/* STEP BACK BUTTON */}
+                <button
+                  type="button"
+                  onClick={handleStepBack}
+                  className="px-3 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-200 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-white/[0.1] shadow-xs cursor-pointer active:scale-95"
+                  title="Step Back one screen"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
+                  <span>Back</span>
+                </button>
+
+                {/* RGUKT RK Valley Crest Emblem */}
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-white/[0.04] border border-white/[0.08] p-0.5 flex items-center justify-center shrink-0 shadow-inner">
+                    <img 
+                      src="/logo.png?v=original" 
+                      alt="RGUKT Crest" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-bold text-white tracking-tight leading-tight">RGUKT RK VALLEY</span>
+                    <span className="text-[10px] text-zinc-400 font-medium leading-tight">Internal Complaint System</span>
+                  </div>
+                </div>
               </div>
 
               {/* TOP RIGHT CORNER: STUDENT ID PILL + APP IDEAS + DEMO TOUR */}
@@ -3750,8 +3753,8 @@ export default function CampusMaintenanceApp() {
               <div className="space-y-6">
 
             {activeTab === 'submit' ? (
-              /* SUBMIT COMPLAINT FORM - DYNAMICALLY SIZED TO FIT SCREEN */
-              <div className="w-full max-w-[760px] mx-auto font-sans animate-in fade-in duration-200">
+              /* SUBMIT COMPLAINT FORM - EXPANDED WIDTH & DYNAMICALLY SIZED TO FIT SCREEN */
+              <div className="w-full max-w-4xl lg:max-w-5xl mx-auto font-sans transition-all duration-300 ease-in-out animate-in fade-in">
                 <div className="glass-panel p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-2xl backdrop-blur-2xl border border-white/[0.1] relative">
                   
                   {/* QR Scan Success Toast Banner */}
@@ -3816,162 +3819,150 @@ export default function CampusMaintenanceApp() {
                         </button>
                       </div>
 
-                      {/* Location Badge with Toggle */}
-                      <button
-                        type="button"
-                        onClick={() => setIsLocationExpanded(prev => !prev)}
-                        className="px-2.5 py-1.5 rounded-xl bg-[#0E131E]/80 hover:bg-[#141B2B] text-zinc-300 hover:text-white border border-white/[0.08] text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
-                        title="Click to customize campus location (Block, Floor, Room)"
-                      >
-                        <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <span className="font-semibold text-white">
+                      {/* Current Category Pill */}
+                      <div className="px-2.5 py-1 rounded-xl bg-[#0E131E]/80 text-zinc-300 border border-white/[0.08] text-xs font-medium flex items-center gap-1.5 shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        <span className="font-semibold text-white">{categoryType === 'ICC' ? 'ICC Redressal Track' : 'Maintenance Track'}</span>
+                      </div>
+                    </div>
+
+                    {/* 1. SPECIFIC CAMPUS LOCATION (Rendered normally as part of the form) */}
+                    <div className="p-3.5 sm:p-4 bg-[#0A0E17]/90 rounded-2xl border border-white/[0.08] space-y-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <span className="text-xs font-bold text-white flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>1. SPECIFIC CAMPUS LOCATION</span>
+                          <span className="text-rose-400 text-xs">*</span>
+                        </span>
+                        <span className="text-[11px] text-emerald-400 font-mono font-semibold">
                           {locationType === 'ACADEMICS' ? `${academicLocation} • ${room}` :
                            locationType === 'HOSTEL_DORM' ? `${hostelLocation?.split(' > ')[1] || hostelLocation} • ${room}` :
                            `${separateFacility} • ${room}`}
                         </span>
-                        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${isLocationExpanded ? 'rotate-180 text-emerald-400' : ''}`} />
-                      </button>
-                    </div>
+                      </div>
 
-                    {/* Expandable Location Panel (Only appears when user wants to change location) */}
-                    {isLocationExpanded && (
-                      <div className="p-3.5 bg-[#0A0E17]/90 rounded-2xl border border-emerald-500/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-md">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-xs" />
-                            <span>Select Specific Campus Location</span>
+                      {/* Sector Tabs */}
+                      <div className="bg-[#14161C] p-1 rounded-xl flex items-center gap-1 border border-white/[0.08] text-xs font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setLocationType('ACADEMICS')}
+                          className={`flex-1 py-1.5 rounded-lg transition-all text-center cursor-pointer ${
+                            locationType === 'ACADEMICS' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
+                          }`}
+                        >
+                          Academics
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLocationType('HOSTEL_DORM')}
+                          className={`flex-1 py-1.5 rounded-lg transition-all text-center cursor-pointer ${
+                            locationType === 'HOSTEL_DORM' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
+                          }`}
+                        >
+                          HOSTEL / DORM
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLocationType('FACILITY')}
+                          className={`flex-1 py-1.5 rounded-lg transition-all text-center cursor-pointer ${
+                            locationType === 'FACILITY' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
+                          }`}
+                        >
+                          SAC / HOSPITAL
+                        </button>
+                      </div>
+
+                      {/* Location Selectors */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div>
+                          <span className="text-[10px] text-zinc-400 font-bold block mb-1">
+                            {locationType === 'ACADEMICS' ? 'Academic Department / Hall' : locationType === 'HOSTEL_DORM' ? 'Hostel Block / Wing' : 'Facility'}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setIsLocationExpanded(false)}
-                            className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer"
-                          >
-                            Done ✕
-                          </button>
-                        </div>
-                        {/* Sector Tabs */}
-                        <div className="bg-[#14161C] p-1 rounded-xl flex items-center gap-1 border border-white/[0.08] text-xs font-bold">
-                          <button
-                            type="button"
-                            onClick={() => setLocationType('ACADEMICS')}
-                            className={`flex-1 py-1.5 rounded-lg transition-all text-center cursor-pointer ${
-                              locationType === 'ACADEMICS' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
-                            }`}
-                          >
-                            Academics
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setLocationType('HOSTEL_DORM')}
-                            className={`flex-1 py-1.5 rounded-lg transition-all text-center cursor-pointer ${
-                              locationType === 'HOSTEL_DORM' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
-                            }`}
-                          >
-                            HOSTEL / DORM
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setLocationType('FACILITY')}
-                            className={`flex-1 py-1.5 rounded-lg transition-all text-center cursor-pointer ${
-                              locationType === 'FACILITY' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-md' : 'text-zinc-300 hover:text-white hover:bg-white/[0.05]'
-                            }`}
-                          >
-                            SAC / HOSPITAL
-                          </button>
-                        </div>
-
-                        {/* Location Selectors */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                          <div>
-                            <span className="text-[10px] text-zinc-400 font-bold block mb-1">
-                              {locationType === 'ACADEMICS' ? 'Academic Department / Hall' : locationType === 'HOSTEL_DORM' ? 'Hostel Block / Wing' : 'Facility'}
-                            </span>
-                            {locationType === 'ACADEMICS' && (
-                              <select
-                                value={academicLocation}
-                                onChange={(e) => setAcademicLocation(e.target.value)}
-                                className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
-                              >
-                                <option value="AB-1">AB-1</option>
-                                <option value="AB-2">AB-2</option>
-                                <option value="IQAC">IQAC</option>
-                                <option value="Library">Library</option>
-                                <option value="Lab Complex">Lab Complex</option>
-                                <option value="Computer Center">Computer Center</option>
-                                <optgroup label="Departments">
-                                  <option value="Departments > CSE">CSE</option>
-                                  <option value="Departments > ECE">ECE</option>
-                                  <option value="Departments > EEE">EEE</option>
-                                  <option value="Departments > MME">MME</option>
-                                  <option value="Departments > CIVIL">CIVIL</option>
-                                  <option value="Departments > CHEMICAL">CHEMICAL</option>
-                                  <option value="Departments > MECHANICAL">MECHANICAL</option>
-                                </optgroup>
-                              </select>
-                            )}
-                            {locationType === 'HOSTEL_DORM' && (
-                              <select
-                                value={hostelLocation}
-                                onChange={(e) => setHostelLocation(e.target.value)}
-                                className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
-                              >
-                                <optgroup label="PENNA">
-                                  <option value="PENNA > BH-1{Front Side}">{'BH-1{Front Side}'}</option>
-                                  <option value="PENNA > BH-1{Backside}">{'BH-1{Backside}'}</option>
-                                </optgroup>
-                                <optgroup label="PAPAGNI">
-                                  <option value="PAPAGNI > BH-2{Front Side}">{'BH-2{Front Side}'}</option>
-                                  <option value="PAPAGNI > BH-2{Back side}">{'BH-2{Back side}'}</option>
-                                </optgroup>
-                                <optgroup label="OLD CAMPUS">
-                                  <option value="OLD CAMPUS > RHO">RHO</option>
-                                  <option value="OLD CAMPUS > THETA">THETA</option>
-                                  <option value="OLD CAMPUS > ALPHA">ALPHA</option>
-                                  <option value="OLD CAMPUS > BETA">BETA</option>
-                                  <option value="OLD CAMPUS > GAMMA">GAMMA</option>
-                                  <option value="OLD CAMPUS > DELTA">DELTA</option>
-                                </optgroup>
-                                <option value="KUNDU{GH-1}">{'KUNDU{GH-1}'}</option>
-                                <option value="CHITRAVATI{GH-2}">{'CHITRAVATI{GH-2}'}</option>
-                              </select>
-                            )}
-                            {locationType === 'FACILITY' && (
-                              <select
-                                value={separateFacility}
-                                onChange={(e) => setSeparateFacility(e.target.value)}
-                                className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
-                              >
-                                <option value="SAC">SAC</option>
-                                <option value="HOSPITAL">HOSPITAL</option>
-                              </select>
-                            )}
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-zinc-400 font-bold block mb-1">Floor / Level</span>
+                          {locationType === 'ACADEMICS' && (
                             <select
-                              value={floor}
-                              onChange={(e) => setFloor(e.target.value)}
+                              value={academicLocation}
+                              onChange={(e) => setAcademicLocation(e.target.value)}
                               className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
                             >
-                              {currentFloorOptions.map(f => (
-                                <option key={f} value={f}>{f}</option>
-                              ))}
+                              <option value="AB-1">AB-1</option>
+                              <option value="AB-2">AB-2</option>
+                              <option value="IQAC">IQAC</option>
+                              <option value="Library">Library</option>
+                              <option value="Lab Complex">Lab Complex</option>
+                              <option value="Computer Center">Computer Center</option>
+                              <optgroup label="Departments">
+                                <option value="Departments > CSE">CSE</option>
+                                <option value="Departments > ECE">ECE</option>
+                                <option value="Departments > EEE">EEE</option>
+                                <option value="Departments > MME">MME</option>
+                                <option value="Departments > CIVIL">CIVIL</option>
+                                <option value="Departments > CHEMICAL">CHEMICAL</option>
+                                <option value="Departments > MECHANICAL">MECHANICAL</option>
+                              </optgroup>
                             </select>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-zinc-400 font-bold block mb-1">Room / Space</span>
-                            <input
-                              type="text"
-                              value={room}
-                              onChange={(e) => setRoom(e.target.value)}
-                              placeholder="e.g. Room 304, Lab 104"
-                              className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 outline-none"
-                              required
-                            />
-                          </div>
+                          )}
+                          {locationType === 'HOSTEL_DORM' && (
+                            <select
+                              value={hostelLocation}
+                              onChange={(e) => setHostelLocation(e.target.value)}
+                              className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
+                            >
+                              <optgroup label="PENNA">
+                                <option value="PENNA > BH-1{Front Side}">{'BH-1{Front Side}'}</option>
+                                <option value="PENNA > BH-1{Backside}">{'BH-1{Backside}'}</option>
+                              </optgroup>
+                              <optgroup label="PAPAGNI">
+                                <option value="PAPAGNI > BH-2{Front Side}">{'BH-2{Front Side}'}</option>
+                                <option value="PAPAGNI > BH-2{Back side}">{'BH-2{Back side}'}</option>
+                              </optgroup>
+                              <optgroup label="OLD CAMPUS">
+                                <option value="OLD CAMPUS > RHO">RHO</option>
+                                <option value="OLD CAMPUS > THETA">THETA</option>
+                                <option value="OLD CAMPUS > ALPHA">ALPHA</option>
+                                <option value="OLD CAMPUS > BETA">BETA</option>
+                                <option value="OLD CAMPUS > GAMMA">GAMMA</option>
+                                <option value="OLD CAMPUS > DELTA">DELTA</option>
+                              </optgroup>
+                              <option value="KUNDU{GH-1}">{'KUNDU{GH-1}'}</option>
+                              <option value="CHITRAVATI{GH-2}">{'CHITRAVATI{GH-2}'}</option>
+                            </select>
+                          )}
+                          {locationType === 'FACILITY' && (
+                            <select
+                              value={separateFacility}
+                              onChange={(e) => setSeparateFacility(e.target.value)}
+                              className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
+                            >
+                              <option value="SAC">SAC</option>
+                              <option value="HOSPITAL">HOSPITAL</option>
+                            </select>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-zinc-400 font-bold block mb-1">Floor / Level</span>
+                          <select
+                            value={floor}
+                            onChange={(e) => setFloor(e.target.value)}
+                            className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white outline-none"
+                          >
+                            {currentFloorOptions.map(f => (
+                              <option key={f} value={f}>{f}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-zinc-400 font-bold block mb-1">Room / Space</span>
+                          <input
+                            type="text"
+                            value={room}
+                            onChange={(e) => setRoom(e.target.value)}
+                            placeholder="e.g. Room 304, Lab 104"
+                            className="w-full p-2 bg-[#121824] border border-white/[0.12] rounded-xl text-xs font-bold text-white placeholder:text-zinc-500 outline-none"
+                            required
+                          />
                         </div>
                       </div>
-                    )}
+                    </div>
 
                     {/* If Maintenance is selected, show category trade selector pills & 1-line hierarchy badge */}
                     {categoryType === 'MAINTENANCE' && (
@@ -9015,40 +9006,24 @@ function AuthScreen({ onLoginSuccess }) {
       try {
         googleUser = await signInWithGooglePopup();
       } catch (popupErr) {
+        console.warn('Google popup notice:', popupErr?.code || popupErr);
         if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
           setIsSubmitting(false);
           return;
         }
 
-        const isApp = isAppEnvironment();
-        if (isApp) {
-          console.warn('Google popup in app notice:', popupErr?.code || popupErr);
-          // In Android App: NEVER navigate away via signInWithGoogleRedirect()
-          // Check if user previously connected their Google account on this device:
-          const cachedGoogleRaw = localStorage.getItem('rgukt_google_auth_user');
-          if (cachedGoogleRaw) {
-            try {
-              const cached = JSON.parse(cachedGoogleRaw);
-              if (cached && cached.email) {
-                await processGoogleUser(cached);
-                return;
-              }
-            } catch (e) {}
-          }
-          throw popupErr;
+        // Check if user previously connected their Google account on this device:
+        const cachedGoogleRaw = localStorage.getItem('rgukt_google_auth_user');
+        if (cachedGoogleRaw) {
+          try {
+            const cached = JSON.parse(cachedGoogleRaw);
+            if (cached && cached.email) {
+              await processGoogleUser(cached);
+              return;
+            }
+          } catch (e) {}
         }
 
-        // On mobile web browser tabs, fallback to signInWithRedirect if popups are blocked
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-        if (isMobile || popupErr.code === 'auth/popup-blocked') {
-          try {
-            await signInWithGoogleRedirect();
-            return;
-          } catch (redirErr) {
-            console.warn('Google redirect fallback notice:', redirErr);
-            throw redirErr;
-          }
-        }
         throw popupErr;
       }
 

@@ -79,9 +79,13 @@ public class MainActivity extends BridgeActivity {
                             popupSettings.setDatabaseEnabled(true);
                             popupSettings.setSupportMultipleWindows(true);
                             popupSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+                            popupSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                            popupSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-                            CookieManager.getInstance().setAcceptCookie(true);
-                            CookieManager.getInstance().setAcceptThirdPartyCookies(popupWebView, true);
+                            CookieManager cookieMgr = CookieManager.getInstance();
+                            cookieMgr.setAcceptCookie(true);
+                            cookieMgr.setAcceptThirdPartyCookies(popupWebView, true);
+                            cookieMgr.flush();
 
                             // Container layout
                             LinearLayout root = new LinearLayout(MainActivity.this);
@@ -187,7 +191,7 @@ public class MainActivity extends BridgeActivity {
                                                 if (oauthDialog != null && oauthDialog.isShowing()) {
                                                     oauthDialog.dismiss();
                                                 }
-                                            }, 1500);
+                                            }, 4000);
                                         }
                                     }
                                 }
