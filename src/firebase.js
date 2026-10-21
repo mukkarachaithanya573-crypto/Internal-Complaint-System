@@ -4,7 +4,8 @@ import {
   GoogleAuthProvider, 
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  signInWithCredential
 } from "firebase/auth";
 import { 
   getFirestore,
@@ -21,16 +22,19 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 
-// Firebase Auth Domain must match the Authorized Redirect URI in Google Cloud Console OAuth 2.0 Credentials:
-// https://internal-complaint-system.firebaseapp.com/__/auth/handler
+// Firebase Auth Domain: Supports first-party domain rewrites (/__/auth/**)
+// to eliminate storage partitioning errors (missing initial state in partitioned environments)
 export function getEffectiveAuthDomain() {
+  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+    return window.location.hostname;
+  }
   return "internal-complaint-system.firebaseapp.com";
 }
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCwfI8Vcl4PWckgSZoN-Hcf5jaKJWalq7k",
-  authDomain: "internal-complaint-system.firebaseapp.com",
+  authDomain: getEffectiveAuthDomain(),
   projectId: "internal-complaint-system",
   storageBucket: "internal-complaint-system.firebasestorage.app",
   messagingSenderId: "594451897466",
@@ -282,6 +286,22 @@ export async function signInWithGooglePopup() {
     return result.user;
   } catch (error) {
     console.warn("Firebase Google Auth notice/error:", error?.code || error);
+    throw error;
+  }
+}
+
+/**
+ * Native Google Credential Sign-In
+ * For hybrid/wrapped apps (Capacitor/Cordova) receiving an ID Token directly from native Google Sign-In SDK
+ */
+export async function signInWithGoogleIdToken(idToken) {
+  if (!idToken) throw new Error("No ID Token provided for native Google authentication.");
+  try {
+    const credential = GoogleAuthProvider.credential(idToken);
+    const result = await signInWithCredential(auth, credential);
+    return result.user;
+  } catch (error) {
+    console.error("Firebase Native Google Credential Auth error:", error);
     throw error;
   }
 }

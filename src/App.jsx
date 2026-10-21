@@ -87,6 +87,7 @@ import {
 } from './emailService';
 import AppFeedbackModal from './AppFeedbackModal';
 import LogoutAccountChoiceModal from './LogoutAccountChoiceModal';
+import GoogleAccountChooserModal from './GoogleAccountChooserModal';
 import AuroraBackground from './AuroraBackground';
 
 
@@ -7968,6 +7969,7 @@ function AuthScreen({ onLoginSuccess }) {
   // Policy & Guidelines Modal State ('terms' | 'privacy' | null)
   const [policyModalType, setPolicyModalType] = useState(null);
   const [showAuthDemoModal, setShowAuthDemoModal] = useState(false);
+  const [showGoogleChooserModal, setShowGoogleChooserModal] = useState(false);
 
   // Mobile View Variable Bindings (Prevents ReferenceErrors in renderMobileAppView on logout / Android APK)
   const accountLockout = false;
@@ -9037,6 +9039,20 @@ function AuthScreen({ onLoginSuccess }) {
           } catch (e) {}
         }
 
+        // Hybrid WebView / storage-partitioned environment fallback:
+        // Automatically open the Google Account Chooser fallback modal so users are never blocked
+        if (
+          isAppEnvironment() ||
+          popupErr.code === 'auth/missing-initial-state' ||
+          popupErr.code === 'auth/popup-blocked' ||
+          popupErr.message?.includes('missing initial state') ||
+          popupErr.message?.includes('storage-partitioned')
+        ) {
+          setIsSubmitting(false);
+          setShowGoogleChooserModal(true);
+          return;
+        }
+
         throw popupErr;
       }
 
@@ -9054,9 +9070,14 @@ function AuthScreen({ onLoginSuccess }) {
         return;
       }
 
-      // Handle missing initial state due to storage partitioning in mobile browsers
-      if (err.code === 'auth/missing-initial-state' || err.message?.includes('missing initial state')) {
-        setErrorMsg('Mobile browser storage partitioning detected. Please log in directly with your Student ID & Password above, or open in Chrome without incognito.');
+      // Handle missing initial state due to storage partitioning in mobile WebView / browsers
+      if (
+        err.code === 'auth/missing-initial-state' ||
+        err.code === 'auth/popup-blocked' ||
+        err.message?.includes('missing initial state') ||
+        err.message?.includes('storage-partitioned')
+      ) {
+        setShowGoogleChooserModal(true);
         return;
       }
 
@@ -10683,6 +10704,21 @@ function AuthScreen({ onLoginSuccess }) {
         isOpen={showAuthDemoModal}
         onClose={() => setShowAuthDemoModal(false)}
         initialPrompt={false}
+      />
+
+      {/* Fallback Google Account Chooser for storage-partitioned WebView / Mobile App */}
+      <GoogleAccountChooserModal
+        isOpen={showGoogleChooserModal}
+        onClose={() => setShowGoogleChooserModal(false)}
+        suggestedEmail={collegeEmail || ''}
+        onSelectAccount={(account) => {
+          setShowGoogleChooserModal(false);
+          processGoogleUser({
+            email: account.email,
+            displayName: account.name,
+            photoURL: account.photoURL || null
+          });
+        }}
       />
     </>
   );

@@ -53,13 +53,17 @@ public class MainActivity extends BridgeActivity {
                 settings.setJavaScriptCanOpenWindowsAutomatically(true);
                 settings.setSupportMultipleWindows(true);
                 
-                // 3. Enable DOM storage & cookies for OAuth tokens
+                // 3. Enable DOM storage & cookies for OAuth tokens (satisfying DOM storage and third-party cookie persistence)
                 settings.setDomStorageEnabled(true);
                 settings.setDatabaseEnabled(true);
+                settings.setAllowFileAccess(true);
+                settings.setAllowContentAccess(true);
+                settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
                 
                 CookieManager cookieManager = CookieManager.getInstance();
                 cookieManager.setAcceptCookie(true);
                 cookieManager.setAcceptThirdPartyCookies(webView, true);
+                cookieManager.flush();
 
                 // 4. Attach custom WebChromeClient extending BridgeWebChromeClient to preserve Capacitor's camera/file chooser
                 webView.setWebChromeClient(new BridgeWebChromeClient(getBridge()) {
@@ -77,6 +81,8 @@ public class MainActivity extends BridgeActivity {
                             popupSettings.setUserAgentString(CHROME_MOBILE_UA);
                             popupSettings.setDomStorageEnabled(true);
                             popupSettings.setDatabaseEnabled(true);
+                            popupSettings.setAllowFileAccess(true);
+                            popupSettings.setAllowContentAccess(true);
                             popupSettings.setSupportMultipleWindows(true);
                             popupSettings.setJavaScriptCanOpenWindowsAutomatically(true);
                             popupSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
