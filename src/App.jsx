@@ -607,9 +607,11 @@ export const DEPT_DAILY_SESSION_KEY = 'rgukt_dept_daily_session';
 
 export function isDepartmentRoleOrUser(user) {
   if (!user) return false;
+  // If explicitly student / reporter, never treat as department
+  if (user.userTab === 'student' || user.role === 'REPORTER') return false;
   if (user.userTab === 'department') return true;
-  if (user.role === 'STAFF' || user.role === 'ADMIN') return true;
   if (['WARDEN', 'DSW', 'AO', 'DIRECTOR', 'STAFF'].includes(user.role)) return true;
+  if (user.role === 'ADMIN') return true;
   if (user.hierarchyStage && user.hierarchyStage !== 'STUDENT') return true;
   if (user.idNo && typeof user.idNo === 'string') {
     const upperId = user.idNo.trim().toUpperCase();
@@ -619,7 +621,7 @@ export function isDepartmentRoleOrUser(user) {
   }
   if (user.email && typeof user.email === 'string') {
     const lowerEmail = user.email.toLowerCase();
-    if (['warden', 'dsw', 'admin', 'ao', 'director', 'electrical', 'plumbing', 'civil', 'it', 'sanitation', 'safety', 'dept'].some(k => lowerEmail.includes(k))) {
+    if (['warden', 'dsw', 'admin@', 'director', 'ao@', 'staff@', 'dept@', 'electrical@', 'plumbing@', 'maintenance@'].some(k => lowerEmail.includes(k))) {
       return true;
     }
   }
@@ -3528,7 +3530,7 @@ export default function CampusMaintenanceApp() {
 
               {/* Account Action in Drawer Footer: Staff Leave Work; Students access session in My Profile */}
               <div className="pt-2 pb-1">
-                {isDepartmentRoleOrUser(currentUser) ? (
+                {currentRole !== 'REPORTER' && !currentUser?.userTab?.startsWith('student') && isDepartmentRoleOrUser(currentUser) ? (
                   !isAppEnvironment() ? (
                     <button
                       type="button"
@@ -3696,7 +3698,7 @@ export default function CampusMaintenanceApp() {
                 </button>
 
                 {/* Auth Session Button: ONLY for department/staff in header; students access logout at the end of My Profile */}
-                {isDepartmentRoleOrUser(currentUser) && (
+                {currentRole !== 'REPORTER' && !currentUser?.userTab?.startsWith('student') && isDepartmentRoleOrUser(currentUser) && (
                   !isAppEnvironment() ? (
                     <button
                       type="button"
