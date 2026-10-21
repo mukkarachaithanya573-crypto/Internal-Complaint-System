@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, PhoneCall, GraduationCap, Clock, Building2, MapPin, 
-  Edit3, Save, X, CheckCircle2, ShieldCheck, Camera, Sparkles, AlertCircle 
+  Edit3, Save, X, CheckCircle2, ShieldCheck, Camera, Sparkles, AlertCircle, LogOut 
 } from 'lucide-react';
 import { sanitizeText } from './securityEngine';
 
@@ -412,7 +412,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
 /**
  * Dedicated Full-Page Profile Component rendered when activeTab === 'profile'
  */
-export function FullProfileView({ currentUser, currentRole, onOpenEditModal, complaints = [], onNavigateToTracker }) {
+export function FullProfileView({ currentUser, currentRole, onOpenEditModal, complaints = [], onNavigateToTracker, onLogout }) {
   const isStudent = currentRole === 'REPORTER' || (!currentRole && currentUser?.role !== 'STAFF' && currentUser?.role !== 'ADMIN');
   const userTickets = complaints.filter(c => {
     if (!c) return false;
@@ -709,6 +709,31 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
             ))}
           </div>
         )}
+      </div>
+
+      {/* Account Session / Logout Card at the very end of My Profile */}
+      <div className="p-4 sm:p-5 rounded-3xl border border-rose-500/20 bg-gradient-to-r from-rose-950/20 via-[#0C1117] to-rose-950/20 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+            <LogOut className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-white">Account Session</h4>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Securely sign out of your account on this device or switch to another account.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onLogout}
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/30 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-rose-900/40 active:scale-95 shrink-0"
+          title="Sign out / Logout of account"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span>Sign Out / Logout</span>
+        </button>
       </div>
     </div>
   );
