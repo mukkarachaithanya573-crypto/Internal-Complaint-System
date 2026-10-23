@@ -8078,6 +8078,16 @@ function AuthScreen({ onLoginSuccess }) {
   const lastBackGestureRef = useRef(0);
   const isAuthExitingRef = useRef(false);
 
+  // Registration & Recovery State
+  const [regId, setRegId] = useState(() => savedRegDraft?.regId || '');
+  const [regName, setRegName] = useState(() => savedRegDraft?.regName || '');
+  const [regEmail, setRegEmail] = useState(() => savedRegDraft?.regEmail || '');
+  const [regHostelBlock, setRegHostelBlock] = useState(() => savedRegDraft?.regHostelBlock || 'BH-1');
+  const [regRoomNumber, setRegRoomNumber] = useState(() => savedRegDraft?.regRoomNumber || '');
+  const [regPassword, setRegPassword] = useState(() => savedRegDraft?.regPassword || '');
+  const [regConfirmPassword, setRegConfirmPassword] = useState(() => savedRegDraft?.regConfirmPassword || '');
+  const [forgotEmail, setForgotEmail] = useState(() => savedRegDraft?.forgotEmail || '');
+
   // Clear registration draft on successful auth
   const triggerLoginSuccess = (userPayload) => {
     try {
@@ -8301,15 +8311,6 @@ function AuthScreen({ onLoginSuccess }) {
   const handleLogin = (e) => handleSubmit(e);
   const handleGoogleSignIn = handleGoogleLogin;
 
-  const [regId, setRegId] = useState(() => savedRegDraft?.regId || '');
-  const [regName, setRegName] = useState(() => savedRegDraft?.regName || '');
-  const [regEmail, setRegEmail] = useState(() => savedRegDraft?.regEmail || '');
-  const [regHostelBlock, setRegHostelBlock] = useState(() => savedRegDraft?.regHostelBlock || 'BH-1');
-  const [regRoomNumber, setRegRoomNumber] = useState(() => savedRegDraft?.regRoomNumber || '');
-  const [regPassword, setRegPassword] = useState(() => savedRegDraft?.regPassword || '');
-  const [regConfirmPassword, setRegConfirmPassword] = useState(() => savedRegDraft?.regConfirmPassword || '');
-
-  const [forgotEmail, setForgotEmail] = useState(() => savedRegDraft?.forgotEmail || '');
   const otpCode = enteredOtp;
   const setOtpCode = setEnteredOtp;
 
