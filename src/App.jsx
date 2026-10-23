@@ -1189,13 +1189,23 @@ export default function CampusMaintenanceApp() {
     }
   }, [scanSuccessToast]);
 
+  // Complaint Form Draft State: Persisted so app switching never wipes draft
+  const [savedComplaintDraft] = useState(() => {
+    try {
+      const raw = localStorage.getItem('rgukt_complaint_form_draft');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   // Form State - RGUKT Location Hierarchy
-  const [locationType, setLocationType] = useState('HOSTEL_DORM'); // 'ACADEMICS' | 'HOSTEL_DORM' | 'FACILITY'
-  const [academicLocation, setAcademicLocation] = useState('AB-1');
-  const [hostelLocation, setHostelLocation] = useState('PENNA > BH-1{Backside}');
-  const [separateFacility, setSeparateFacility] = useState('SAC');
-  const [floor, setFloor] = useState('3rd Floor');
-  const [room, setRoom] = useState('Room 304');
+  const [locationType, setLocationType] = useState(() => savedComplaintDraft?.locationType || 'HOSTEL_DORM'); // 'ACADEMICS' | 'HOSTEL_DORM' | 'FACILITY'
+  const [academicLocation, setAcademicLocation] = useState(() => savedComplaintDraft?.academicLocation || 'AB-1');
+  const [hostelLocation, setHostelLocation] = useState(() => savedComplaintDraft?.hostelLocation || 'PENNA > BH-1{Backside}');
+  const [separateFacility, setSeparateFacility] = useState(() => savedComplaintDraft?.separateFacility || 'SAC');
+  const [floor, setFloor] = useState(() => savedComplaintDraft?.floor || '3rd Floor');
+  const [room, setRoom] = useState(() => savedComplaintDraft?.room || 'Room 304');
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [showAdvancedIccDetails, setShowAdvancedIccDetails] = useState(false);
 
@@ -1209,8 +1219,8 @@ export default function CampusMaintenanceApp() {
       setFloor(currentFloorOptions[0]);
     }
   }, [currentFloorOptions, floor]);
-  const [category, setCategory] = useState('Internal Complaints Committee (ICC)');
-  const [categoryType, setCategoryType] = useState('ICC'); // 'ICC' | 'MAINTENANCE'
+  const [category, setCategory] = useState(() => savedComplaintDraft?.category || 'Internal Complaints Committee (ICC)');
+  const [categoryType, setCategoryType] = useState(() => savedComplaintDraft?.categoryType || 'ICC'); // 'ICC' | 'MAINTENANCE'
   const [iccGrievanceNature, setIccGrievanceNature] = useState('Anti-Ragging & Harassment (POSH)');
   const [iccCommitteeLevel, setIccCommitteeLevel] = useState('Level 2: Medium Committee (6 Members)');
   const [iccIsConfidential, setIccIsConfidential] = useState(true);
@@ -1224,11 +1234,29 @@ export default function CampusMaintenanceApp() {
   const [selectedIccModalTicket, setSelectedIccModalTicket] = useState(null);
   const [showHostelEscalationModal, setShowHostelEscalationModal] = useState(false);
   const [selectedHostelTicket, setSelectedHostelTicket] = useState(null);
-  const [urgency, setUrgency] = useState('HIGH');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [photos, setPhotos] = useState([]);
+  const [urgency, setUrgency] = useState(() => savedComplaintDraft?.urgency || 'HIGH');
+  const [title, setTitle] = useState(() => savedComplaintDraft?.title || '');
+  const [description, setDescription] = useState(() => savedComplaintDraft?.description || '');
+  const [photos, setPhotos] = useState(() => savedComplaintDraft?.photos || []);
   const [selectedTicket, setSelectedTicket] = useState(null);
+
+  // Back Gesture Toast Notification State
+  const [appBackToast, setAppBackToast] = useState('');
+  const lastAppBackPressRef = useRef(0);
+  const isAppExitingRef = useRef(false);
+
+  // Auto-persist complaint draft so app switching (e.g. to Camera, Gallery or WhatsApp) never wipes input
+  useEffect(() => {
+    try {
+      if (title || description || (photos && photos.length > 0)) {
+        localStorage.setItem('rgukt_complaint_form_draft', JSON.stringify({
+          title, description, urgency, category, categoryType,
+          locationType, academicLocation, hostelLocation, separateFacility,
+          floor, room, photos, updatedAt: Date.now()
+        }));
+      }
+    } catch (e) {}
+  }, [title, description, urgency, category, categoryType, locationType, academicLocation, hostelLocation, separateFacility, floor, room, photos]);
 
   // Complaints State
   const [complaints, setComplaints] = useState([]);
@@ -1343,6 +1371,18 @@ export default function CampusMaintenanceApp() {
       setShowSmtpModal(false);
       return;
     }
+    if (showLogoutChoiceModal) {
+      setShowLogoutChoiceModal(false);
+      return;
+    }
+    if (isAppFeedbackOpen) {
+      setIsAppFeedbackOpen(false);
+      return;
+    }
+    if (postSubmitFeedbackTicket) {
+      setPostSubmitFeedbackTicket(null);
+      return;
+    }
     if (resolveModalTicket) {
       setResolveModalTicket(null);
       return;
@@ -1365,12 +1405,31 @@ export default function CampusMaintenanceApp() {
     }
 
     // 3. Fallback based on role if no history
-    if (currentRole === 'REPORTER' && activeTab !== 'my-complaints') {
-      setActiveTab('my-complaints');
+    if (currentRole === 'REPORTER') {
+      if (activeTab === 'profile' || activeTab === 'wayfinder') {
+        setActiveTab('my-complaints');
+        return;
+      } else if (activeTab === 'my-complaints') {
+        setActiveTab('submit');
+        return;
+      }
     } else if (currentRole === 'STAFF' && activeTab !== 'tracker') {
       setActiveTab('tracker');
+      return;
     } else if (currentRole === 'ADMIN' && activeTab !== 'dashboard') {
       setActiveTab('dashboard');
+      return;
+    }
+
+    // 4. User is on base root screen: double-gesture exit guard so accidental swipes never close the link
+    const now = Date.now();
+    if (now - lastAppBackPressRef.current < 2000) {
+      isAppExitingRef.current = true;
+      window.history.go(-2);
+    } else {
+      lastAppBackPressRef.current = now;
+      setAppBackToast('Swipe back again to exit portal');
+      setTimeout(() => setAppBackToast(''), 2000);
     }
   };
 
@@ -1386,19 +1445,31 @@ export default function CampusMaintenanceApp() {
     }
   };
 
+  // Push initial guard state when authenticated app mounts
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+      window.history.pushState({ icsAppGuard: true }, '', window.location.href);
+    }
+  }, []);
+
   // Intercept browser / mobile hardware back button so it steps back inside the app instead of navigating away
   useEffect(() => {
     const handlePopState = (e) => {
-      e.preventDefault();
+      if (isAppExitingRef.current) return;
+      // Re-push history guard immediately to guarantee the website link cannot close on back gesture
+      if (window.history && window.history.pushState) {
+        window.history.pushState({ icsAppGuard: true }, '', window.location.href);
+      }
       handleStepBack();
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [
-    activeTab, tabHistory, 
-    showMediumCommitteeModal, showHostelEscalationModal, 
-    showProfileEditModal, showMailboxModal, showSmtpModal, showDemoModal,
-    resolveModalTicket, rejectModalTicket, feedbackModalTicket
+    isDashboardOpen, activeTab, tabHistory, currentRole,
+    showDemoModal, showMediumCommitteeModal, showHostelEscalationModal, 
+    showProfileEditModal, showMailboxModal, showSmtpModal, showLogoutChoiceModal,
+    isAppFeedbackOpen, resolveModalTicket, rejectModalTicket, feedbackModalTicket,
+    postSubmitFeedbackTicket
   ]);
 
   // Comprehensive Fetch from API & Cloud Firestore with sync guarantees
@@ -2438,6 +2509,9 @@ export default function CampusMaintenanceApp() {
     setTitle('');
     setDescription('');
     setPhotos([]);
+    try {
+      localStorage.removeItem('rgukt_complaint_form_draft');
+    } catch (e) {}
     setComplaints(prev => [newComplaint, ...prev.filter(c => c.id !== newComplaint.id)]);
     setSelectedTicket(newComplaint);
     setActiveTab('my-complaints');
@@ -7135,6 +7209,13 @@ export default function CampusMaintenanceApp() {
         onCancel={() => setShowLogoutChoiceModal(false)}
       />
 
+      {/* Sleek Floating Toast for Back Gesture Prevention */}
+      {appBackToast && (
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-full bg-slate-900/95 border border-white/20 text-white text-xs font-semibold shadow-2xl backdrop-blur-md animate-in fade-in duration-200 pointer-events-none flex items-center gap-2">
+          <span>{appBackToast}</span>
+        </div>
+      )}
+
       {/* MOBILE BOTTOM NAVIGATION BAR (Screens < 768px, native app and mobile browser) */}
       <nav className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-[#0A0C10]/95 backdrop-blur-xl border-t border-white/[0.08] px-3 py-2 flex items-center justify-around safe-area-bottom shadow-2xl">
         {currentRole === 'REPORTER' && (
@@ -7906,8 +7987,23 @@ export function syncCloudUsersWithLocal(remoteUsers, currentUser = null, setCurr
   }
 }
 
+// Registration Form Draft Key
+const REG_DRAFT_KEY = 'rgukt_registration_form_draft';
+
+function loadRegistrationDraft() {
+  try {
+    const raw = localStorage.getItem(REG_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function AuthScreen({ onLoginSuccess }) {
-  const [authMode, setAuthMode] = useState('signin'); // 'signin' (every time login) | 'signup' (first time register)
+  // Restore persisted draft if user switched apps or tab reloaded
+  const [savedRegDraft] = useState(() => loadRegistrationDraft());
+
+  const [authMode, setAuthMode] = useState(() => savedRegDraft?.authMode || 'signin'); // 'signin' (every time login) | 'signup' (first time register)
   
   // Check if user chose "Log in with Same Account" upon logging out
   const [prefillAccount] = useState(() => {
@@ -7920,18 +8016,19 @@ function AuthScreen({ onLoginSuccess }) {
   });
 
   const [userTab, setUserTab] = useState(() => {
+    if (savedRegDraft?.userTab) return savedRegDraft.userTab;
     if (prefillAccount?.userTab) return prefillAccount.userTab;
     if (prefillAccount?.role && prefillAccount.role !== 'REPORTER') return 'department';
     return 'student';
   });
 
-  // Input states - initialized with same account credentials if requested, else blank
-  const [idNo, setIdNo] = useState(() => prefillAccount?.idNo || '');
-  const [collegeEmail, setCollegeEmail] = useState(() => prefillAccount?.collegeEmail || prefillAccount?.email || '');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [profilePic, setProfilePic] = useState(null);
-  const [mobileNumber, setMobileNumber] = useState('');
+  // Input states - initialized with saved registration draft, same account credentials if requested, else blank
+  const [idNo, setIdNo] = useState(() => savedRegDraft?.idNo || prefillAccount?.idNo || '');
+  const [collegeEmail, setCollegeEmail] = useState(() => savedRegDraft?.collegeEmail || prefillAccount?.collegeEmail || prefillAccount?.email || '');
+  const [password, setPassword] = useState(() => savedRegDraft?.password || '');
+  const [fullName, setFullName] = useState(() => savedRegDraft?.fullName || '');
+  const [profilePic, setProfilePic] = useState(() => savedRegDraft?.profilePic || null);
+  const [mobileNumber, setMobileNumber] = useState(() => savedRegDraft?.mobileNumber || '');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
@@ -7939,6 +8036,9 @@ function AuthScreen({ onLoginSuccess }) {
   // User feedback alerts
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState(() => {
+    if (savedRegDraft?.otpSent && savedRegDraft?.otpTargetEmail) {
+      return `ℹ️ Restored registration draft for ${savedRegDraft.otpTargetEmail}. Enter your verification OTP below.`;
+    }
     if (prefillAccount?.idNo || prefillAccount?.collegeEmail) {
       return `ℹ️ Re-authenticating with same account (${prefillAccount.idNo || prefillAccount.collegeEmail}). Enter password to sign in.`;
     }
@@ -7947,31 +8047,246 @@ function AuthScreen({ onLoginSuccess }) {
 
   // Email OTP Verification States
   const [loginMethod, setLoginMethod] = useState('password'); // 'password' | 'otp'
-  const [signupStep, setSignupStep] = useState('form'); // 'form' (enter details & click request OTP) | 'otp' (enter OTP and enter app)
-  const [enteredOtp, setEnteredOtp] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
+  const [signupStep, setSignupStep] = useState(() => savedRegDraft?.signupStep || 'form'); // 'form' (enter details & click request OTP) | 'otp' (enter OTP and enter app)
+  const [enteredOtp, setEnteredOtp] = useState(() => savedRegDraft?.enteredOtp || '');
+  const [generatedOtp, setGeneratedOtp] = useState(() => savedRegDraft?.generatedOtp || '');
+  const [otpSent, setOtpSent] = useState(() => Boolean(savedRegDraft?.otpSent));
   const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [otpTargetEmail, setOtpTargetEmail] = useState('');
+  const [otpTargetEmail, setOtpTargetEmail] = useState(() => savedRegDraft?.otpTargetEmail || '');
 
   // PixelFlow V3 OTP UI States & Refs
-  const [otpTimer, setOtpTimer] = useState(45);
-  const [canResendOtp, setCanResendOtp] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(() => (typeof savedRegDraft?.otpTimer === 'number' ? savedRegDraft.otpTimer : 45));
+  const [canResendOtp, setCanResendOtp] = useState(() => Boolean(savedRegDraft?.canResendOtp));
   const otpInputRefs = useRef([]);
 
   // Forgot Password Specific States
   // forgotStep: 'request' (enter ID/email & click send OTP) | 'verify' (enter OTP) | 'reset' (enter new password & confirm)
-  const [forgotStep, setForgotStep] = useState('request');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [forgotStep, setForgotStep] = useState(() => savedRegDraft?.forgotStep || 'request');
+  const [newPassword, setNewPassword] = useState(() => savedRegDraft?.newPassword || '');
+  const [confirmPassword, setConfirmPassword] = useState(() => savedRegDraft?.confirmPassword || '');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [forgotTargetAccount, setForgotTargetAccount] = useState(null);
+  const [forgotTargetAccount, setForgotTargetAccount] = useState(() => savedRegDraft?.forgotTargetAccount || null);
 
   // Policy & Guidelines Modal State ('terms' | 'privacy' | null)
   const [policyModalType, setPolicyModalType] = useState(null);
   const [showAuthDemoModal, setShowAuthDemoModal] = useState(false);
   const [showGoogleChooserModal, setShowGoogleChooserModal] = useState(false);
+
+  // Back Gesture Toast & Guard State for Website
+  const [backToast, setBackToast] = useState('');
+  const lastBackGestureRef = useRef(0);
+  const isAuthExitingRef = useRef(false);
+
+  // Clear registration draft on successful auth
+  const triggerLoginSuccess = (userPayload) => {
+    try {
+      localStorage.removeItem(REG_DRAFT_KEY);
+      sessionStorage.removeItem(REG_DRAFT_KEY);
+    } catch (e) {}
+    onLoginSuccess(userPayload);
+  };
+
+  // Explicit user reset for registration form
+  const handleClearRegDraft = () => {
+    try {
+      localStorage.removeItem(REG_DRAFT_KEY);
+      sessionStorage.removeItem(REG_DRAFT_KEY);
+    } catch (e) {}
+    setFullName('');
+    setIdNo('');
+    setCollegeEmail('');
+    setPassword('');
+    setMobileNumber('');
+    setProfilePic(null);
+    setEnteredOtp('');
+    setGeneratedOtp('');
+    setOtpTargetEmail('');
+    setOtpSent(false);
+    setSignupStep('form');
+    setRegId('');
+    setRegName('');
+    setRegEmail('');
+    setRegPassword('');
+    setRegConfirmPassword('');
+    setErrorMsg('');
+    setSuccessMsg('Registration form cleared.');
+  };
+
+  // Auto-persist registration draft so app switching (e.g. to Gmail for OTP or checking student ID) never wipes data
+  useEffect(() => {
+    try {
+      const hasContent = fullName || idNo || collegeEmail || password || mobileNumber || 
+                         enteredOtp || generatedOtp || newPassword || confirmPassword ||
+                         regId || regName || regEmail || regPassword;
+      if (hasContent || authMode === 'signup' || authMode === 'forgot') {
+        const payload = {
+          authMode,
+          signupStep,
+          userTab,
+          idNo,
+          collegeEmail,
+          fullName,
+          password,
+          mobileNumber,
+          profilePic,
+          enteredOtp,
+          generatedOtp,
+          otpTargetEmail,
+          otpSent,
+          otpTimer,
+          canResendOtp,
+          forgotStep,
+          newPassword,
+          confirmPassword,
+          forgotTargetAccount,
+          regId,
+          regName,
+          regEmail,
+          regHostelBlock,
+          regRoomNumber,
+          regPassword,
+          regConfirmPassword,
+          forgotEmail,
+          savedAt: Date.now()
+        };
+        localStorage.setItem(REG_DRAFT_KEY, JSON.stringify(payload));
+      }
+    } catch (e) {
+      console.warn('Could not save registration draft:', e);
+    }
+  }, [
+    authMode, signupStep, userTab, idNo, collegeEmail, fullName, password,
+    mobileNumber, profilePic, enteredOtp, generatedOtp, otpTargetEmail, otpSent,
+    otpTimer, canResendOtp, forgotStep, newPassword, confirmPassword, forgotTargetAccount,
+    regId, regName, regEmail, regHostelBlock, regRoomNumber, regPassword, regConfirmPassword, forgotEmail
+  ]);
+
+  // Save registration draft immediately when switching apps (visibilitychange), minimizing, or closing tab
+  useEffect(() => {
+    const handleBackgroundSave = () => {
+      try {
+        const payload = {
+          authMode,
+          signupStep,
+          userTab,
+          idNo,
+          collegeEmail,
+          fullName,
+          password,
+          mobileNumber,
+          profilePic,
+          enteredOtp,
+          generatedOtp,
+          otpTargetEmail,
+          otpSent,
+          otpTimer,
+          canResendOtp,
+          forgotStep,
+          newPassword,
+          confirmPassword,
+          forgotTargetAccount,
+          regId,
+          regName,
+          regEmail,
+          regHostelBlock,
+          regRoomNumber,
+          regPassword,
+          regConfirmPassword,
+          forgotEmail,
+          savedAt: Date.now()
+        };
+        localStorage.setItem(REG_DRAFT_KEY, JSON.stringify(payload));
+      } catch (e) {}
+    };
+
+    document.addEventListener('visibilitychange', handleBackgroundSave);
+    window.addEventListener('pagehide', handleBackgroundSave);
+    window.addEventListener('beforeunload', handleBackgroundSave);
+    return () => {
+      document.removeEventListener('visibilitychange', handleBackgroundSave);
+      window.removeEventListener('pagehide', handleBackgroundSave);
+      window.removeEventListener('beforeunload', handleBackgroundSave);
+    };
+  }, [
+    authMode, signupStep, userTab, idNo, collegeEmail, fullName, password,
+    mobileNumber, profilePic, enteredOtp, generatedOtp, otpTargetEmail, otpSent,
+    otpTimer, canResendOtp, forgotStep, newPassword, confirmPassword, forgotTargetAccount,
+    regId, regName, regEmail, regHostelBlock, regRoomNumber, regPassword, regConfirmPassword, forgotEmail
+  ]);
+
+  // Push history guard and intercept browser back gesture to prevent closing the link
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.history || !window.history.pushState) return;
+
+    // Push initial guard state so there is always a forward state to pop
+    window.history.pushState({ icsAuthGuard: true, time: Date.now() }, '', window.location.href);
+
+    const handlePopState = (e) => {
+      if (isAuthExitingRef.current) return;
+      // Re-push immediately so that the link is protected against closing
+      window.history.pushState({ icsAuthGuard: true, time: Date.now() }, '', window.location.href);
+
+      // 1. If any modal in AuthScreen is open, dismiss it
+      if (policyModalType) {
+        setPolicyModalType(null);
+        return;
+      }
+      if (showAuthDemoModal) {
+        setShowAuthDemoModal(false);
+        return;
+      }
+      if (showGoogleChooserModal) {
+        setShowGoogleChooserModal(false);
+        return;
+      }
+
+      // 2. If in OTP verification step, step back to details form
+      if (authMode === 'signup') {
+        if (signupStep === 'otp') {
+          setSignupStep('form');
+          setErrorMsg('');
+          return;
+        } else {
+          // In signup form, step back to signin
+          setAuthMode('signin');
+          setErrorMsg('');
+          return;
+        }
+      }
+
+      // 3. If in forgot password flow
+      if (authMode === 'forgot') {
+        if (forgotStep !== 'request') {
+          setForgotStep('request');
+          setErrorMsg('');
+          return;
+        } else {
+          setAuthMode('signin');
+          setErrorMsg('');
+          return;
+        }
+      }
+
+      // 4. At base signin screen: double-gesture exit guard
+      const now = Date.now();
+      if (now - lastBackGestureRef.current < 2000) {
+        // User deliberately swiped back twice -> allow exit
+        isAuthExitingRef.current = true;
+        window.history.go(-2);
+      } else {
+        lastBackGestureRef.current = now;
+        setBackToast('Swipe back again to exit portal');
+        setTimeout(() => setBackToast(''), 2000);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [
+    policyModalType, showAuthDemoModal, showGoogleChooserModal,
+    authMode, signupStep, forgotStep
+  ]);
 
   // Mobile View Variable Bindings (Prevents ReferenceErrors in renderMobileAppView on logout / Android APK)
   const accountLockout = false;
@@ -7986,15 +8301,15 @@ function AuthScreen({ onLoginSuccess }) {
   const handleLogin = (e) => handleSubmit(e);
   const handleGoogleSignIn = handleGoogleLogin;
 
-  const [regId, setRegId] = useState('');
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regHostelBlock, setRegHostelBlock] = useState('BH-1');
-  const [regRoomNumber, setRegRoomNumber] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [regId, setRegId] = useState(() => savedRegDraft?.regId || '');
+  const [regName, setRegName] = useState(() => savedRegDraft?.regName || '');
+  const [regEmail, setRegEmail] = useState(() => savedRegDraft?.regEmail || '');
+  const [regHostelBlock, setRegHostelBlock] = useState(() => savedRegDraft?.regHostelBlock || 'BH-1');
+  const [regRoomNumber, setRegRoomNumber] = useState(() => savedRegDraft?.regRoomNumber || '');
+  const [regPassword, setRegPassword] = useState(() => savedRegDraft?.regPassword || '');
+  const [regConfirmPassword, setRegConfirmPassword] = useState(() => savedRegDraft?.regConfirmPassword || '');
 
-  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotEmail, setForgotEmail] = useState(() => savedRegDraft?.forgotEmail || '');
   const otpCode = enteredOtp;
   const setOtpCode = setEnteredOtp;
 
@@ -8612,7 +8927,7 @@ function AuthScreen({ onLoginSuccess }) {
         
         setTimeout(() => {
           setIsSubmitting(false);
-          onLoginSuccess({
+          triggerLoginSuccess({
             name: newUser.fullName,
             email: newUser.collegeEmail,
             idNo: newUser.idNo,
@@ -8658,7 +8973,7 @@ function AuthScreen({ onLoginSuccess }) {
 
         setTimeout(() => {
           setIsSubmitting(false);
-          onLoginSuccess({
+          triggerLoginSuccess({
             name: newUser.fullName,
             email: newUser.collegeEmail,
             idNo: newUser.idNo,
@@ -8755,7 +9070,7 @@ function AuthScreen({ onLoginSuccess }) {
             if (raw) customSaved = JSON.parse(raw);
           } catch (e) {}
         }
-        onLoginSuccess({
+        triggerLoginSuccess({
           name: customSaved?.name || customSaved?.fullName || matched.fullName || matched.name || `Student (${matched.idNo})`,
           email: customSaved?.email || customSaved?.collegeEmail || matched.collegeEmail || matched.email || `${matched.idNo.toLowerCase()}@rgukt.ac.in`,
           idNo: matched.idNo,
@@ -8851,7 +9166,7 @@ function AuthScreen({ onLoginSuccess }) {
       setIsSubmitting(true);
       setTimeout(() => {
         setIsSubmitting(false);
-        onLoginSuccess({
+        triggerLoginSuccess({
           name: matched.fullName || matched.name || 'Department Staff',
           email: matched.collegeEmail || matched.email || lowerInput,
           idNo: matched.idNo || upperInput,
@@ -8942,7 +9257,7 @@ function AuthScreen({ onLoginSuccess }) {
     // If user is ALREADY registered, let them sign in directly
     if (existingAccount) {
       setIsSubmitting(false);
-      onLoginSuccess({
+      triggerLoginSuccess({
         name: existingAccount.fullName || fullName,
         email: existingAccount.collegeEmail || email,
         idNo: existingAccount.idNo || idNo,
@@ -9419,6 +9734,25 @@ function AuthScreen({ onLoginSuccess }) {
                     <span>Request Verification OTP</span>
                   )}
                 </button>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMode('signin')}
+                    className="text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    ← Back to Sign In
+                  </button>
+                  {(fullName || idNo || collegeEmail || password) && (
+                    <button
+                      type="button"
+                      onClick={handleClearRegDraft}
+                      className="text-zinc-500 hover:text-rose-400 text-[11px] transition-colors cursor-pointer"
+                    >
+                      Clear Details
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               /* OTP Verification Step */
@@ -10215,6 +10549,25 @@ function AuthScreen({ onLoginSuccess }) {
                           <span>Request Verification OTP</span>
                         )}
                       </button>
+
+                      <div className="flex items-center justify-between text-xs pt-1 px-1">
+                        <button
+                          type="button"
+                          onClick={() => setAuthMode('signin')}
+                          className="text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                        >
+                          ← Back to Sign In
+                        </button>
+                        {(fullName || idNo || collegeEmail || password || regId || regName || regEmail) && (
+                          <button
+                            type="button"
+                            onClick={handleClearRegDraft}
+                            className="text-zinc-500 hover:text-rose-400 text-[11px] transition-colors cursor-pointer"
+                          >
+                            Clear Details
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     /* OTP Verification Step */
@@ -10722,6 +11075,12 @@ function AuthScreen({ onLoginSuccess }) {
           });
         }}
       />
+      {/* Toast notification for back gesture exit guard */}
+      {backToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-full bg-slate-900/95 border border-white/20 text-white text-xs font-semibold shadow-2xl backdrop-blur-md animate-in fade-in duration-200 pointer-events-none flex items-center gap-2">
+          <span>{backToast}</span>
+        </div>
+      )}
     </>
   );
 }
