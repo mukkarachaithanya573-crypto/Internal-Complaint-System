@@ -22,19 +22,15 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 
-// Firebase Auth Domain: Supports first-party domain rewrites (/__/auth/**)
-// to eliminate storage partitioning errors (missing initial state in partitioned environments)
+// Firebase standard authorized Auth Domain
 export function getEffectiveAuthDomain() {
-  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
-    return window.location.hostname;
-  }
   return "internal-complaint-system.firebaseapp.com";
 }
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCwfI8Vcl4PWckgSZoN-Hcf5jaKJWalq7k",
-  authDomain: getEffectiveAuthDomain(),
+  authDomain: "internal-complaint-system.firebaseapp.com",
   projectId: "internal-complaint-system",
   storageBucket: "internal-complaint-system.firebasestorage.app",
   messagingSenderId: "594451897466",

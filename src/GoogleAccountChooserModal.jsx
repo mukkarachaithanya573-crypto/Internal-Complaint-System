@@ -46,6 +46,47 @@ export default function GoogleAccountChooserModal({
         }
       });
 
+      // Merge previously authenticated Google user if available
+      try {
+        const cachedGoogle = localStorage.getItem('rgukt_google_auth_user');
+        if (cachedGoogle) {
+          const g = JSON.parse(cachedGoogle);
+          if (g && g.email && !emailMap.has(g.email.toLowerCase())) {
+            loadedAccounts.unshift({
+              name: g.displayName || g.email.split('@')[0],
+              email: g.email.toLowerCase(),
+              avatar: g.photoURL || null,
+              initial: (g.displayName || g.email).charAt(0).toUpperCase(),
+              badge: 'Connected Google Account'
+            });
+            emailMap.add(g.email.toLowerCase());
+          }
+        }
+      } catch (err) {}
+
+      // Merge registered campus users
+      try {
+        const campusUsersRaw = localStorage.getItem('rgukt_campus_users');
+        if (campusUsersRaw) {
+          const campusUsers = JSON.parse(campusUsersRaw);
+          if (Array.isArray(campusUsers)) {
+            campusUsers.forEach(u => {
+              const uEmail = (u.collegeEmail || u.email || '').toLowerCase().trim();
+              if (uEmail && !emailMap.has(uEmail)) {
+                loadedAccounts.push({
+                  name: u.fullName || u.name || uEmail.split('@')[0],
+                  email: uEmail,
+                  avatar: u.profilePic || null,
+                  initial: (u.fullName || u.name || uEmail).charAt(0).toUpperCase(),
+                  badge: u.role === 'ADMIN' ? 'Administrator' : u.role === 'STAFF' ? 'Department Staff' : 'Registered Student'
+                });
+                emailMap.add(uEmail);
+              }
+            });
+          }
+        }
+      } catch (err) {}
+
       if (suggestedEmail && !emailMap.has(suggestedEmail.toLowerCase())) {
         loadedAccounts.unshift({
           name: suggestedEmail.split('@')[0].toUpperCase(),

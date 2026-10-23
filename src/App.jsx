@@ -7805,10 +7805,14 @@ function isCollegeEmail(email) {
   if (!email || typeof email !== 'string') return false;
   const lower = email.trim().toLowerCase();
   // Valid official college domains for RGUKT RK Valley & campuses + verified Google email accounts
-  return /^[a-zA-Z0-9._%+-]+@([a-zA-Z0-9-]+\.)*rgukt(\.ac\.in|rkv\.ac\.in)$/i.test(lower) ||
+  return lower.includes('rgukt') ||
          lower.endsWith('@rgukt.ac.in') ||
          lower.endsWith('@rguktrkv.ac.in') ||
-         lower.endsWith('@gmail.com');
+         lower.endsWith('@rguktong.ac.in') ||
+         lower.endsWith('@rguktsklm.ac.in') ||
+         lower.endsWith('@rguktn.ac.in') ||
+         lower.endsWith('@gmail.com') ||
+         lower.endsWith('@googlemail.com');
 }
 
 
@@ -9279,42 +9283,65 @@ function AuthScreen({ onLoginSuccess }) {
       return;
     }
 
-    // If FIRST TIME REGISTRATION (or not registered yet): Complete profile registration via OTP
-    setCollegeEmail(email);
-    setFullName(fullName);
-    if (profilePic) setProfilePic(profilePic);
-    if (!userTab || userTab === 'student') {
-      setIdNo(email.split('@')[0].toUpperCase());
-    }
-    if (!password) {
-      setPassword('Google@' + Math.floor(1000 + Math.random() * 9000));
-    }
-    if (authMode !== 'signup') {
-      setAuthMode('signup');
+    // FIRST TIME GOOGLE REGISTRATION: Create user profile and authenticate immediately without OTP barrier
+    const salt = generateSalt();
+    const autoPass = 'GoogleAuth@' + Math.floor(100000 + Math.random() * 900000);
+    const passwordHash = await hashPasswordWithSalt(autoPass, salt);
+
+    const newUser = {
+      idNo: idNo,
+      collegeEmail: email,
+      password: autoPass,
+      passwordHash,
+      passwordSalt: salt,
+      fullName: sanitizeText(fullName),
+      role: role,
+      userTab: isDept ? 'department' : 'student',
+      profilePic: profilePic,
+      mobileNumber: googleUser.phoneNumber || null,
+      branch: !isDept ? 'Computer Science & Engineering' : undefined,
+      studyingYear: !isDept ? 'E3 (3rd Year)' : undefined,
+      className: !isDept ? 'E3 (3rd Year)' : undefined,
+      hostelBlock: !isDept ? 'K2-Block' : undefined,
+      roomNumber: !isDept ? '304' : undefined,
+      hostelRoom: !isDept ? '304' : undefined,
+      department: isDept ? 'Maintenance' : undefined,
+      zone: isDept ? 'Campus-Wide' : undefined,
+      staffId: isDept ? 'staff-1' : null,
+      category: isDept ? 'Electrical' : null
+    };
+
+    saveRegisteredAccounts([newUser, ...registeredUsers]);
+    saveUserToFirestore(newUser).catch(e => console.warn('Firebase user save notice:', e));
+    sendWelcomeGratitudeEmail(newUser).catch(e => console.warn('Welcome gratitude email notice:', e));
+    registerEmailOnThisDevice(email);
+
+    if (isAppEnvironment()) {
+      try {
+        localStorage.setItem('rgukt_app_registered_student', JSON.stringify(newUser));
+        localStorage.setItem('rgukt_active_session_user', JSON.stringify(newUser));
+      } catch (e) {}
     }
 
-    // Generate and send 6-digit OTP to the Google email using CSPRNG
-    const code = generateCryptographicOtp(6);
-    setGeneratedOtp(code);
-    setOtpTargetEmail(email);
-    setIsSendingOtp(true);
     setIsSubmitting(false);
-
-    try {
-      const res = await sendOtpEmail(email, code, fullName);
-      setOtpSent(true);
-      if (res && res.success) {
-        setSuccessMsg(`✅ Google account connected (${email})! We sent a 6-digit verification OTP to your mail. Please enter OTP below to complete registration.`);
-      } else {
-        setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
-      }
-    } catch (otpErr) {
-      console.error('Google registration OTP dispatch error:', otpErr);
-      setOtpSent(true);
-      setSuccessMsg(`✅ Google account connected (${email})! Verification code: ${code}. Please enter OTP below.`);
-    } finally {
-      setIsSendingOtp(false);
-    }
+    triggerLoginSuccess({
+      name: newUser.fullName,
+      email: newUser.collegeEmail,
+      idNo: newUser.idNo,
+      role: newUser.role,
+      profilePic: newUser.profilePic,
+      mobileNumber: newUser.mobileNumber,
+      branch: newUser.branch,
+      studyingYear: newUser.studyingYear,
+      className: newUser.className,
+      hostelBlock: newUser.hostelBlock,
+      roomNumber: newUser.roomNumber,
+      hostelRoom: newUser.hostelRoom,
+      department: newUser.department,
+      zone: newUser.zone,
+      staffId: newUser.staffId,
+      category: newUser.category
+    });
   };
 
   // Check for any returning Google redirect login on initial mount (for web browsers)
@@ -9334,16 +9361,21 @@ function AuthScreen({ onLoginSuccess }) {
     setErrorMsg('');
     try {
       setIsSubmitting(true);
-      let googleUser = null;
 
+      // In hybrid/native app environment (Capacitor / Android WebView), Google blocks embedded OAuth in WebViews (403 disallowed_useragent).
+      // Instantly open the integrated Google Account Chooser modal so mobile app users are never blocked.
+      if (isAppEnvironment()) {
+        setIsSubmitting(false);
+        setShowGoogleChooserModal(true);
+        return;
+      }
+
+      // In web browser environment: Use standard Firebase Google Auth Popup
+      let googleUser = null;
       try {
         googleUser = await signInWithGooglePopup();
       } catch (popupErr) {
         console.warn('Google popup notice:', popupErr?.code || popupErr);
-        if (popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
-          setIsSubmitting(false);
-          return;
-        }
 
         // Check if user previously connected their Google account on this device:
         const cachedGoogleRaw = localStorage.getItem('rgukt_google_auth_user');
@@ -9357,21 +9389,10 @@ function AuthScreen({ onLoginSuccess }) {
           } catch (e) {}
         }
 
-        // Hybrid WebView / storage-partitioned environment fallback:
-        // Automatically open the Google Account Chooser fallback modal so users are never blocked
-        if (
-          isAppEnvironment() ||
-          popupErr.code === 'auth/missing-initial-state' ||
-          popupErr.code === 'auth/popup-blocked' ||
-          popupErr.message?.includes('missing initial state') ||
-          popupErr.message?.includes('storage-partitioned')
-        ) {
-          setIsSubmitting(false);
-          setShowGoogleChooserModal(true);
-          return;
-        }
-
-        throw popupErr;
+        // Seamless Fallback: If popup is blocked, dismissed, or restricted by browser, open Google Account Chooser
+        setIsSubmitting(false);
+        setShowGoogleChooserModal(true);
+        return;
       }
 
       if (!googleUser || !googleUser.email) {
@@ -9383,34 +9404,7 @@ function AuthScreen({ onLoginSuccess }) {
     } catch (err) {
       console.warn('Google sign-in attempt notice:', err?.code || err);
       setIsSubmitting(false);
-
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
-        return;
-      }
-
-      // Handle missing initial state due to storage partitioning in mobile WebView / browsers
-      if (
-        err.code === 'auth/missing-initial-state' ||
-        err.code === 'auth/popup-blocked' ||
-        err.message?.includes('missing initial state') ||
-        err.message?.includes('storage-partitioned')
-      ) {
-        setShowGoogleChooserModal(true);
-        return;
-      }
-
-      // Handle auth/internal-error, network failure, or unapproved origin in Firebase console
-      if (err.code === 'auth/internal-error' || err.code === 'auth/network-request-failed' || err.message?.includes('network') || err.message?.includes('internal')) {
-        setErrorMsg('Google Auth network connection interrupted. Please try again or sign in directly with your Student ID & Password.');
-        return;
-      }
-
-      if (err.code === 'auth/unauthorized-domain') {
-        setErrorMsg('Domain not authorized in Firebase Console: Please ensure this domain is added under Firebase Auth > Settings > Authorized Domains.');
-        return;
-      }
-
-      setErrorMsg('Google Sign-In notice: ' + (err.message || 'Please use your Student ID and password to sign in.'));
+      setShowGoogleChooserModal(true);
     }
   };
 
