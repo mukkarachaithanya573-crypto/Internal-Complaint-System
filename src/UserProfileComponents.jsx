@@ -156,14 +156,14 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
 
   return (
     <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="portal-modal-drawer relative w-full max-w-xl bg-[#111319] rounded-3xl shadow-2xl border border-white/[0.08] overflow-hidden flex flex-col max-h-[92vh] md:max-h-[90vh]">
+      <div className="portal-modal-drawer relative w-full max-w-xl bg-[#121820] rounded-3xl shadow-2xl border border-teal-500/25 dynamic-emerald-border overflow-hidden flex flex-col max-h-[92vh] md:max-h-[90vh]">
         {/* Mobile Swipe Indicator Pill */}
         <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
 
         {/* Header */}
-        <div className="px-6 py-4 bg-[#0D2821] border-b border-[#0F382E] text-white flex items-center justify-between shrink-0">
+        <div className="px-6 py-4 bg-[#0E151E] border-b border-teal-500/15 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.1] backdrop-blur-xs flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#070C12] border border-teal-500/20 backdrop-blur-xs flex items-center justify-center">
               <Edit3 className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
@@ -174,7 +174,7 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center text-white transition-colors cursor-pointer border border-white/[0.08]"
+            className="w-8 h-8 rounded-full bg-[#070C12] hover:bg-white/[0.12] flex items-center justify-center text-white transition-colors cursor-pointer border border-teal-500/20"
           >
             <X className="w-4 h-4" />
           </button>
@@ -183,16 +183,16 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1">
           {validationError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-rose-700 text-xs font-semibold">
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center gap-2 text-rose-400 text-xs font-semibold">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{validationError}</span>
             </div>
           )}
 
           {/* Photo + Identity Banner */}
-          <div className="flex items-center gap-4 p-3.5 cyber-card-subtle rounded-2xl border border-slate-700/60/80">
+          <div className="flex items-center gap-4 p-3.5 bg-[#0E151E] rounded-2xl border border-teal-500/20">
             <div className="relative shrink-0">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-white shadow-md flex items-center justify-center text-white font-black text-xl">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-800 border-2 border-emerald-400/40 shadow-md flex items-center justify-center text-white font-black text-xl">
                 {photoPreview ? (
                   <img src={photoPreview} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -201,10 +201,10 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
               </div>
               <label 
                 htmlFor="profile-pic-modal-upload"
-                className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-white hover:bg-zinc-100 text-black font-bold flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-110"
+                className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-bold flex items-center justify-center shadow-md cursor-pointer transition-transform hover:scale-110"
                 title="Change Photo"
               >
-                <Camera className="w-3 h-3" />
+                <Camera className="w-3 h-3 text-[#070C12]" />
                 <input 
                   id="profile-pic-modal-upload" 
                   type="file" 
@@ -219,16 +219,16 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
                 <span className="text-xs font-black text-white truncate">
                   ID: {currentUser?.idNo || 'R240493'}
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] font-bold border border-blue-200">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 font-bold">
                   {currentUser?.role || currentRole || 'Student'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 truncate mt-0.5" title={currentUser?.email || 'student@rguktrkv.ac.in'}>
+              <p className="text-[11px] text-zinc-400 truncate mt-0.5" title={currentUser?.email || 'student@rguktrkv.ac.in'}>
                 {currentUser?.email || 'student@rguktrkv.ac.in'}
               </p>
               <label 
                 htmlFor="profile-pic-modal-upload"
-                className="inline-block mt-1 text-[11px] font-bold text-emerald-400 hover:text-blue-800 cursor-pointer"
+                className="inline-block mt-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 cursor-pointer"
               >
                 Change Profile Photo
               </label>
@@ -387,17 +387,17 @@ export function UserProfileEditModal({ isOpen, onClose, currentUser, currentRole
           </div>
 
           {/* Footer buttons */}
-          <div className="flex items-center gap-3 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center gap-3 pt-3 border-t border-teal-500/15">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 min-h-[48px] py-3 px-4 rounded-xl border border-white/[0.08] hover:bg-[#1A1D26] text-zinc-300 hover:text-white font-semibold text-xs transition-all cursor-pointer active:scale-[0.98]"
+              className="flex-1 min-h-[48px] py-3 px-4 rounded-xl border border-teal-500/20 hover:bg-[#1A2230] text-zinc-300 hover:text-white font-semibold text-xs transition-all cursor-pointer active:scale-[0.98]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 min-h-[48px] py-3 px-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+              className="flex-1 min-h-[48px] py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-xs shadow-md shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
             >
               <Save className="w-4 h-4" />
               <span>Save Profile Changes</span>
@@ -433,13 +433,13 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Banner / Header Card */}
-      <div className="cyber-card rounded-3xl border border-slate-700/60 shadow-sm overflow-hidden">
+      <div className="cyber-card rounded-3xl border border-teal-500/25 shadow-sm overflow-hidden">
         {/* Cover graphic */}
-        <div className="h-36 sm:h-44 bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-600 relative overflow-hidden">
+        <div className="h-36 sm:h-44 bg-gradient-to-r from-[#064E3B] via-[#0F766E] to-[#042F2E] relative overflow-hidden">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full cyber-card/20 backdrop-blur-md text-white text-xs font-bold border border-white/30 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse"></span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#070C12]/80 backdrop-blur-md text-emerald-300 text-xs font-bold border border-teal-500/30 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Verified Campus Resident
             </span>
           </div>
@@ -449,7 +449,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
         <div className="px-6 pb-6 pt-0 relative">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-16 sm:-mt-14 mb-4">
             <div className="flex items-end gap-4">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl cyber-card p-1.5 shadow-xl border border-slate-700/60/80 shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-[#0E151E] p-1.5 shadow-xl border border-teal-500/30 shrink-0">
                 {currentUser?.profilePic ? (
                   <img
                     src={currentUser.profilePic}
@@ -467,11 +467,11 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
                   <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight truncate">
                     {currentUser?.name || 'M.Chaithanya'}
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#0D2821] text-emerald-400 border border-[#0F382E] text-[11px] font-bold border border-blue-200 shrink-0">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold shrink-0">
                     ID: {currentUser?.idNo || 'R240493'}
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
+                <p className="text-xs sm:text-sm font-semibold text-zinc-400 mt-0.5">
                   {currentUser?.role || currentRole || 'Student'} • RGUKT RK Valley
                 </p>
               </div>
@@ -482,7 +482,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
               <button
                 type="button"
                 onClick={onOpenEditModal}
-                className="px-4 py-2.5 rounded-xl bg-white hover:bg-zinc-100 text-black font-bold text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl cyber-btn-gradient text-white font-bold text-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
@@ -491,22 +491,22 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
           </div>
 
           {/* Quick Stats Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100 text-center">
-            <div className="p-3 bg-blue-50/70 rounded-2xl border border-blue-100">
-              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Total Filed</span>
-              <span className="text-lg font-black text-blue-900">{userTickets.length} Complaints</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-teal-500/15 text-center">
+            <div className="p-3 bg-[#070C12] rounded-2xl border border-teal-500/20">
+              <span className="text-[10px] text-teal-400 font-bold uppercase tracking-wider block">Total Filed</span>
+              <span className="text-lg font-black text-white">{userTickets.length} Complaints</span>
             </div>
-            <div className="p-3 bg-emerald-50/70 rounded-2xl border border-emerald-100">
-              <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider block">Resolved</span>
-              <span className="text-lg font-black text-emerald-900">{resolvedCount} Solved</span>
+            <div className="p-3 bg-[#070C12] rounded-2xl border border-teal-500/20">
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Resolved</span>
+              <span className="text-lg font-black text-emerald-400">{resolvedCount} Solved</span>
             </div>
-            <div className="p-3 bg-amber-50/70 rounded-2xl border border-amber-100">
-              <span className="text-[10px] text-amber-600 font-bold uppercase tracking-wider block">In Progress</span>
-              <span className="text-lg font-black text-amber-900">{activeCount} Pending</span>
+            <div className="p-3 bg-[#070C12] rounded-2xl border border-teal-500/20">
+              <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">In Progress</span>
+              <span className="text-lg font-black text-amber-300">{activeCount} Pending</span>
             </div>
-            <div className="p-3 bg-purple-50/70 rounded-2xl border border-purple-100">
-              <span className="text-[10px] text-purple-600 font-bold uppercase tracking-wider block">Campus Status</span>
-              <span className="text-lg font-black text-purple-900">Active</span>
+            <div className="p-3 bg-[#070C12] rounded-2xl border border-teal-500/20">
+              <span className="text-[10px] text-teal-300 font-bold uppercase tracking-wider block">Campus Status</span>
+              <span className="text-lg font-black text-emerald-400">Active</span>
             </div>
           </div>
         </div>
@@ -626,17 +626,17 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
       </div>
 
       {/* Card 3: My Complaint Status Section for the logged in person */}
-      <div className="cyber-card rounded-3xl p-6 border border-slate-700/60 shadow-sm space-y-4">
+      <div className="cyber-card rounded-3xl p-6 border border-teal-500/25 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 text-emerald-400 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold">
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <h3 className="text-sm font-black text-white uppercase tracking-wider">
                 My Complaint Status & Redressal Tracking
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-zinc-400">
                 Live status tracking and history for complaints lodged by {currentUser?.name || 'you'}
               </p>
             </div>
@@ -645,7 +645,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
             <button
               type="button"
               onClick={onNavigateToTracker}
-              className="px-3.5 py-2 bg-blue-50 hover:bg-[#0D2821] text-emerald-400 border border-[#0F382E] font-bold text-xs rounded-xl border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              className="px-3.5 py-2 bg-[#0E151E] hover:bg-[#15202B] text-emerald-400 border border-teal-500/30 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <span>Open Detailed Tracker</span>
               <Edit3 className="w-3.5 h-3.5" />
@@ -654,12 +654,12 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
         </div>
 
         {userTickets.length === 0 ? (
-          <div className="p-8 text-center cyber-card-subtle rounded-2xl border border-slate-700/60/80">
-            <div className="w-12 h-12 rounded-2xl cyber-card border border-slate-700/60 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+          <div className="p-8 text-center bg-[#070C12] rounded-2xl border border-teal-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-[#0E151E] border border-teal-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-2.5">
               <Building2 className="w-6 h-6" />
             </div>
-            <p className="text-xs font-bold text-slate-200">No Complaints Registered Under Your Profile</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-xs font-bold text-white">No Complaints Registered Under Your Profile</p>
+            <p className="text-[11px] text-zinc-400 mt-0.5">
               When you submit a hostel or campus issue, its live progress and authority stage will show right here.
             </p>
           </div>
@@ -669,22 +669,22 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
               <div
                 key={ticket.id}
                 onClick={onNavigateToTracker}
-                className="p-4 rounded-2xl border border-slate-700/60 hover:border-blue-400 cyber-card-subtle/60 hover:cyber-card transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs hover:shadow-xs group"
+                className="p-4 rounded-2xl border border-teal-500/20 hover:border-emerald-400/50 bg-[#070C12] hover:bg-[#0E151E] transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs hover:shadow-xs group"
               >
                 <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-mono font-bold text-white group-hover:text-emerald-400 transition-colors">
+                    <span className="text-xs font-mono font-bold text-emerald-400">
                       {ticket.ticketNumber}
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-200 text-slate-900">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#141C26] text-teal-300 border border-teal-500/20">
                       {ticket.category}
                     </span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      ticket.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' :
-                      ticket.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' :
-                      ticket.status === 'REOPENED' ? 'bg-purple-100 text-purple-800' :
-                      ticket.status === 'REJECTED' ? 'bg-rose-100 text-rose-800' :
-                      'bg-blue-100 text-blue-800'
+                      ticket.status === 'RESOLVED' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30' :
+                      ticket.status === 'IN_PROGRESS' ? 'bg-amber-950/60 text-amber-300 border border-amber-500/30' :
+                      ticket.status === 'REOPENED' ? 'bg-purple-950/60 text-purple-300 border border-purple-500/30' :
+                      ticket.status === 'REJECTED' ? 'bg-rose-950/60 text-rose-300 border border-rose-500/30' :
+                      'bg-teal-950/60 text-teal-300 border border-teal-500/30'
                     }`}>
                       ● {ticket.status}
                     </span>
@@ -692,8 +692,8 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
                   <h4 className="text-xs sm:text-sm font-bold text-white truncate">
                     {ticket.title}
                   </h4>
-                  <p className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
-                    <MapPin className="w-3 h-3 text-slate-400" />
+                  <p className="text-[11px] text-zinc-400 flex items-center gap-1 truncate">
+                    <MapPin className="w-3 h-3 text-emerald-400" />
                     <span>{ticket.location}</span>
                     <span className="mx-1">•</span>
                     <span>Assigned: {ticket.assignedStaffName || 'Pending Warden Review'}</span>
@@ -701,7 +701,7 @@ export function FullProfileView({ currentUser, currentRole, onOpenEditModal, com
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-bold text-emerald-400 group-hover:text-blue-700 group-hover:underline">
+                  <span className="text-xs font-bold text-emerald-400 group-hover:text-emerald-300 group-hover:underline">
                     Track Complaint Status →
                   </span>
                 </div>

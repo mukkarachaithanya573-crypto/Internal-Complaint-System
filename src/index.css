@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* =========================================================================
-   ENTERPRISE TYPOGRAPHY STANDARDIZATION (10/10 Polish)
+   ENTERPRISE TYPOGRAPHY STANDARDIZATION (Emerald Teal Charcoal System)
    Clean modern sans-serif stack, strict tracking, and zero decorative fonts
    ========================================================================= */
 :root, html, body, #root {
@@ -31,7 +31,6 @@ p, span, div, label, li, a {
    TOUCH TARGET & INPUT OPTIMIZATION (Mobile Touch Target >= 48px)
    ========================================================================= */
 @media (max-width: 767px) {
-  /* Interactive inputs and controls minimum touch height */
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -47,10 +46,10 @@ p, span, div, label, li, a {
   }
 }
 
-/* Crisp 1px border transitions: resting rgba(255, 255, 255, 0.08) transitioning smoothly to accent focus */
+/* Crisp 1px border transitions: resting subtle border transitioning smoothly to emerald-teal focus */
 input, select, textarea {
   box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -69,15 +68,15 @@ input:focus, select:focus, textarea:focus {
   .portal-modal-drawer {
     width: 100% !important;
     max-width: 100% !important;
-    border-top-left-radius: 1.5rem !important; /* rounded-t-3xl */
+    border-top-left-radius: 1.5rem !important;
     border-top-right-radius: 1.5rem !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(20, 184, 166, 0.25) !important;
     border-left: none !important;
     border-right: none !important;
     border-bottom: none !important;
-    background-color: #111319 !important;
+    background-color: #121820 !important;
     max-height: 92vh !important;
     margin: 0 !important;
   }
@@ -85,124 +84,331 @@ input:focus, select:focus, textarea:focus {
 
 /* Top swipe-indicator pill for mobile bottom sheets */
 .modal-swipe-pill {
-  width: 2.5rem;
-  height: 0.375rem;
-  background-color: #404040;
+  width: 2.75rem;
+  height: 0.35rem;
+  background-color: #2e3846;
   border-radius: 9999px;
   margin: 0.625rem auto;
   flex-shrink: 0;
 }
 
 /* =========================================================================
-   AURORA AMBIENT MESH GLOW & FROSTED GLASSMORPHISM (60fps GPU Accelerated)
+   EMERALD TEAL CHARCOAL DYNAMIC KEYFRAME ANIMATIONS (60fps GPU Accelerated)
    ========================================================================= */
 
-@keyframes auroraDriftEmerald {
+@keyframes dynamicGradientFlow {
   0% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.9;
+    background-position: 0% 50%;
   }
   50% {
-    transform: translate3d(50px, 35px, 0) scale(1.12);
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulseGlowEmerald {
+  0%, 100% {
+    box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.25), 0 0 30px -6px rgba(20, 184, 166, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 25px 0px rgba(16, 185, 129, 0.45), 0 0 45px -4px rgba(20, 184, 166, 0.3);
+  }
+}
+
+@keyframes pulseGlowTeal {
+  0%, 100% {
+    box-shadow: 0 0 12px -2px rgba(20, 184, 166, 0.3), 0 0 24px -4px rgba(6, 182, 212, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 22px 2px rgba(20, 184, 166, 0.5), 0 0 38px 0px rgba(6, 182, 212, 0.35);
+  }
+}
+
+@keyframes dynamicShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes dynamicModalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
     opacity: 1;
-  }
-  100% {
-    transform: translate3d(-30px, 15px, 0) scale(0.96);
-    opacity: 0.9;
+    transform: scale(1) translateY(0);
   }
 }
 
-@keyframes auroraDriftBlue {
+@keyframes cyberFadeInUp {
   0% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.85;
+    opacity: 0;
+    transform: translateY(14px);
   }
-  50% {
-    transform: translate3d(-45px, 40px, 0) scale(1.14);
+  100% {
     opacity: 1;
-  }
-  100% {
-    transform: translate3d(25px, -20px, 0) scale(0.92);
-    opacity: 0.85;
+    transform: translateY(0);
   }
 }
 
-@keyframes auroraDriftTeal {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translate3d(35px, -35px, 0) scale(1.08);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translate3d(-20px, 30px, 0) scale(1);
-    opacity: 0.8;
-  }
+/* Staggered entrance helpers */
+.cyber-stagger-1 { animation: cyberFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both; }
+.cyber-stagger-2 { animation: cyberFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+.cyber-stagger-3 { animation: cyberFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both; }
+
+/* =========================================================================
+   EMERALD TEAL CHARCOAL THEME TOKENS & SURFACES
+   ========================================================================= */
+
+/* Root Charcoal Surface with Dynamic Emerald-Teal Mesh */
+.charcoal-emerald-mesh,
+.cyber-canvas-bg {
+  background-color: #0B0F14 !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.09) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(20, 184, 166, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.07) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.05) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
+  color: #f1f5f9 !important;
 }
 
-.aurora-orb {
-  will-change: transform;
-  pointer-events: none;
-}
-
-.aurora-orb-emerald {
-  animation: auroraDriftEmerald 14s ease-in-out infinite alternate;
-}
-
-.aurora-orb-blue {
-  animation: auroraDriftBlue 16s ease-in-out infinite alternate;
-}
-
-.aurora-orb-teal {
-  animation: auroraDriftTeal 12s ease-in-out infinite alternate;
-}
-
-/* Mobile viewport adaptation: center glow slightly beneath primary interaction sheet */
-@media (max-width: 767px) {
-  .aurora-orb-emerald {
-    top: 5% !important;
-    left: -20% !important;
-    width: 480px !important;
-    height: 480px !important;
-  }
-  .aurora-orb-blue {
-    top: 40% !important;
-    right: -20% !important;
-    width: 460px !important;
-    height: 460px !important;
-  }
-  .aurora-orb-teal {
-    bottom: -10% !important;
-    left: -10% !important;
-    width: 440px !important;
-    height: 440px !important;
-  }
-}
-
-/* Frosted Glass Containers (Desktop & Mobile) */
+/* Deep Charcoal Frosted Glass Cards & Panels */
+.glass-panel,
+.cyber-card,
 .frosted-glass-card,
 .portal-card,
 .portal-modal-drawer,
 .frosted-panel {
-  background: rgba(18, 24, 32, 0.75) !important;
+  background: rgba(20, 27, 36, 0.85) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(20, 184, 166, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 45px -10px rgba(0, 0, 0, 0.85) !important;
+  color: #f1f5f9 !important;
+  border-radius: 1rem !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Interactive Card with Dynamic Emerald Hover Lift & Sheen */
+.cyber-card-interactive,
+.glass-panel-interactive {
+  background: rgba(20, 27, 36, 0.82) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(20, 184, 166, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -8px rgba(0, 0, 0, 0.8) !important;
+  border-radius: 1rem !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-card-interactive:hover,
+.glass-panel-interactive:hover {
+  background: rgba(24, 33, 44, 0.92) !important;
+  transform: translateY(-2px) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 
+    0 16px 40px -10px rgba(0, 0, 0, 0.95),
+    0 0 25px -4px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Subtle Inset Well Containers */
+.glass-panel-subtle,
+.cyber-card-subtle {
+  background: rgba(14, 20, 28, 0.7) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(20, 184, 166, 0.12) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9 !important;
+  border-radius: 0.75rem !important;
+}
+
+/* Charcoal Frosted Glass Sidebar */
+.glass-sidebar,
+.cyber-sidebar {
+  background: rgba(16, 22, 30, 0.92) !important;
   -webkit-backdrop-filter: blur(24px) !important;
   backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+  border-right: 1px solid rgba(20, 184, 166, 0.14) !important;
+  box-shadow: 12px 0 35px -5px rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Charcoal Frosted Glass Topbar / Header */
+.glass-header,
+.cyber-header {
+  background: rgba(14, 19, 26, 0.92) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: blur(24px) !important;
+  border-bottom: 1px solid rgba(20, 184, 166, 0.14) !important;
+  box-shadow: 0 4px 25px -2px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Dynamic Emerald Border effect */
+.dynamic-emerald-border {
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.2) !important;
+  transition: all 0.25s ease !important;
+}
+
+.dynamic-emerald-border:hover {
+  border-color: rgba(52, 211, 153, 0.6) !important;
+  box-shadow: 0 0 25px -2px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Dynamic Teal Border effect */
+.dynamic-teal-border {
+  border: 1px solid rgba(20, 184, 166, 0.35) !important;
+  box-shadow: 0 0 15px -3px rgba(20, 184, 166, 0.2) !important;
+  transition: all 0.25s ease !important;
+}
+
+.dynamic-teal-border:hover {
+  border-color: rgba(45, 212, 191, 0.6) !important;
+  box-shadow: 0 0 25px -2px rgba(20, 184, 166, 0.35) !important;
 }
 
 /* =========================================================================
-   NATIVE MOBILE APP & PWA STYLING (Capacitor / Android / iOS / Standalone)
+   BUTTONS: VIBRANT EMERALD-TEAL-CYAN GRADIENT WITH DYNAMIC GLOW
    ========================================================================= */
 
-/* 1. Disable touch tap highlighting across all elements */
+.cyber-btn-gradient,
+.glossy-btn {
+  background: linear-gradient(135deg, #10B981 0%, #14B8A6 50%, #06B6D4 100%) !important;
+  background-size: 200% 200% !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer;
+  position: relative;
+}
+
+.cyber-btn-gradient:hover,
+.glossy-btn:hover {
+  background-position: 100% 50% !important;
+  box-shadow: 0 8px 26px rgba(16, 185, 129, 0.55), 0 0 18px rgba(20, 184, 166, 0.4) !important;
+  transform: translateY(-1.5px) !important;
+  color: #ffffff !important;
+}
+
+.cyber-btn-gradient:active,
+.glossy-btn:active {
+  transform: scale(0.98) translateY(0) !important;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Secondary Charcoal Glass Button */
+.cyber-btn-secondary,
+.glossy-btn-secondary {
+  background: rgba(22, 30, 40, 0.8) !important;
+  border: 1px solid rgba(20, 184, 166, 0.22) !important;
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer;
+}
+
+.cyber-btn-secondary:hover,
+.glossy-btn-secondary:hover {
+  background: rgba(28, 38, 50, 0.95) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(16, 185, 129, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.cyber-btn-secondary:active,
+.glossy-btn-secondary:active {
+  transform: scale(0.98) translateY(0) !important;
+}
+
+/* =========================================================================
+   INPUTS: RECESSED CHARCOAL WELLS WITH CRISP EMERALD FOCUS
+   ========================================================================= */
+
+.cyber-input,
+.glossy-input {
+  background: rgba(12, 17, 24, 0.85) !important;
+  border: 1px solid rgba(20, 184, 166, 0.2) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.04) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cyber-input:focus,
+.glossy-input:focus {
+  background: rgba(16, 23, 32, 0.95) !important;
+  border-color: #10B981 !important;
+  box-shadow: 
+    0 0 0 3px rgba(16, 185, 129, 0.25),
+    0 0 18px rgba(20, 184, 166, 0.3),
+    inset 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+  outline: none !important;
+}
+
+.cyber-input::placeholder,
+.glossy-input::placeholder {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+/* =========================================================================
+   SEGMENTED ROLE BAR & TOGGLES (Emerald-Teal Charcoal Active Pill)
+   ========================================================================= */
+
+.glossy-segmented-bar {
+  background: rgba(12, 17, 24, 0.8) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(20, 184, 166, 0.16) !important;
+  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.5);
+  border-radius: 0.875rem !important;
+}
+
+.glossy-segmented-active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.85) 0%, rgba(20, 184, 166, 0.9) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 4px 14px rgba(16, 185, 129, 0.35),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.4) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Floating Glass Profile Avatar / Step Pill */
+.glossy-piece-glass {
+  background: rgba(18, 25, 34, 0.85) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(20, 184, 166, 0.2) !important;
+  box-shadow: 
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.15),
+    0 8px 24px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================================
+   NATIVE MOBILE APP & PWA STYLING (Capacitor / Android / Standalone)
+   ========================================================================= */
+
 *, *::before, *::after {
   -webkit-tap-highlight-color: transparent !important;
 }
 
-/* 2. Safe area insets for phone notches, dynamic islands, and navigation bars */
 :root {
   --sat: env(safe-area-inset-top, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
@@ -214,15 +420,14 @@ html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
-  background-color: #070A0F;
+  background-color: #0B0F14;
 }
 
 body {
   height: 100%;
   margin: 0;
-  background-color: #070A0F;
-  color: #f4f4f5;
-  /* Safe area inset padding for phone notches and bottom navigation bars */
+  background-color: #0B0F14;
+  color: #f1f5f9;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-left: env(safe-area-inset-left, 0px);
@@ -239,7 +444,7 @@ body {
   box-sizing: border-box;
 }
 
-/* 3. Disable text selection on buttons and inputs/interactive controls */
+/* Disable text selection on buttons and interactive controls */
 button,
 input,
 select,
@@ -267,7 +472,7 @@ textarea {
   user-select: text;
 }
 
-/* Safe area inset utilities */
+/* Safe area utilities */
 .safe-area-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -283,756 +488,111 @@ textarea {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
-/* Custom Scrollbar */
+/* =========================================================================
+   CUSTOM SCROLLBAR (Emerald-Teal Thumb on Charcoal Track)
+   ========================================================================= */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #0B0F14;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: linear-gradient(180deg, #10B981, #14B8A6);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: linear-gradient(180deg, #34D399, #2DD4BF);
 }
 
 /* =========================================================================
-   COSMIC FLOATING GLASS UI & VISIONOS DEPTH STYLING
+   HIGH-CONTRAST TYPOGRAPHY & VISIBILITY RULES
    ========================================================================= */
 
-@keyframes cosmicFloat {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-9px) rotate(0.35deg);
-  }
-}
-
-@keyframes floatLayerA {
-  0%, 100% {
-    transform: translateY(0px) translateZ(20px);
-  }
-  50% {
-    transform: translateY(-5px) translateZ(28px);
-  }
-}
-
-@keyframes floatLayerB {
-  0%, 100% {
-    transform: translateY(0px) translateZ(10px);
-  }
-  50% {
-    transform: translateY(-3px) translateZ(16px);
-  }
-}
-
-@keyframes cosmicPulseGlow {
-  0%, 100% {
-    box-shadow: 
-      0 30px 80px -15px rgba(0, 0, 0, 0.9),
-      0 0 50px -5px rgba(56, 189, 248, 0.35),
-      0 0 70px -10px rgba(129, 140, 248, 0.25);
-  }
-  50% {
-    box-shadow: 
-      0 35px 90px -15px rgba(0, 0, 0, 0.95),
-      0 0 65px 0px rgba(168, 85, 247, 0.45),
-      0 0 85px -5px rgba(56, 189, 248, 0.35);
-  }
-}
-
-
-
-/* Cosmic Glassy Segmented Role Bar */
-.glossy-segmented-bar {
-  background: rgba(15, 23, 42, 0.75) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 
-    inset 0 1.5px 3px rgba(0, 0, 0, 0.4),
-    0 1px 1px rgba(255, 255, 255, 0.1);
-}
-
-.glossy-segmented-active {
-  background: rgba(255, 255, 255, 0.22) !important;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.45) !important;
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.8),
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    0 0 18px rgba(56, 189, 248, 0.35) !important;
-  color: #ffffff !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-/* Floating Glass Profile Avatar / Step Pill */
-.glossy-piece-glass {
-  background: rgba(15, 23, 42, 0.7) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.3),
-    0 8px 24px -4px rgba(0, 0, 0, 0.5);
-}
-
-/* Cosmic Glossy Vision Input with High-Contrast Typography */
-.glossy-input {
-  background: rgba(15, 23, 42, 0.7) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  box-shadow: 
-    inset 0 1.5px 3px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px rgba(255, 255, 255, 0.18),
-    0 4px 12px rgba(0, 0, 0, 0.2) !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glossy-input::placeholder {
-  color: rgba(203, 213, 225, 0.8) !important; /* Slate-300 with high readability */
-  font-weight: 600 !important;
-  text-shadow: none !important;
-}
-
-.glossy-input:focus {
-  background: rgba(15, 23, 42, 0.9) !important;
-  border-color: #38bdf8 !important;
-  box-shadow: 
-    0 0 0 3px rgba(56, 189, 248, 0.35),
-    inset 0 1px 2px rgba(0, 0, 0, 0.4),
-    0 0 24px rgba(56, 189, 248, 0.45) !important;
-}
-
-/* VisionOS Cosmic Primary Action Button */
-.glossy-btn {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.95) 0%, rgba(99, 102, 241, 1) 50%, rgba(168, 85, 247, 0.95) 100%) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.7),
-    0 10px 28px -4px rgba(99, 102, 241, 0.55),
-    0 0 24px rgba(56, 189, 248, 0.35) !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glossy-btn:hover {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 1) 0%, rgba(99, 102, 241, 1) 50%, rgba(168, 85, 247, 1) 100%) !important;
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.9),
-    0 14px 34px -4px rgba(99, 102, 241, 0.7),
-    0 0 32px rgba(56, 189, 248, 0.5) !important;
-  transform: translateY(-1.5px);
-}
-
-.glossy-btn:active {
-  transform: translateY(0);
-}
-
-/* VisionOS Cosmic Secondary / Google Glass Button */
-.glossy-btn-secondary {
-  background: rgba(255, 255, 255, 0.12) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.35),
-    0 4px 16px rgba(0, 0, 0, 0.3) !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glossy-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.5),
-    0 8px 24px rgba(0, 0, 0, 0.45),
-    0 0 18px rgba(255, 255, 255, 0.25) !important;
-  transform: translateY(-1.5px);
-}
-
-.glossy-btn-secondary:active {
-  transform: translateY(0);
-}
-
-/* =========================================================================
-   CYBER DARK GLASSMORPHISM UI/UX SYSTEM
-   Deep navy background (#050914 / #0a0f24), translucent glass cards,
-   neon blue-purple gradients, glowing borders, hover-lift effects,
-   staggered card entrance animations, and ambient floating orbs.
-   ========================================================================= */
-
-/* =========================================================================
-   INSTITUTIONAL OBSIDIAN SLATE & EMERALD DESIGN SYSTEM TOKENS
-   - Root Canvas: Deep Obsidian Slate (#0A0C10)
-   - Accent & Hero Panels: Deep Institutional Forest-Green/Emerald (#0D2821 / #0F382E)
-   - Cards & Containers: Matte Charcoal (#111319) with 1px hairline borders (rgba(255, 255, 255, 0.08))
-   - Action Buttons: High-Contrast Solid White (#FFFFFF text-black) & Dark Pills (#1A1D26 text-white)
-   ========================================================================= */
-
-/* Root Obsidian Slate Canvas */
-.cyber-canvas-bg {
-  background: #0A0C10 !important;
-  color: #f4f4f5 !important;
-  background-attachment: fixed !important;
-}
-
-/* Zero-Gravity Diffused Ambient Accents */
-.ambient-neon-cyan,
-.ambient-neon-purple {
-  display: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* Frosted Glass Institutional Cards & Containers */
-.glass-panel,
-.cyber-card,
-.frosted-glass-card,
-.portal-card,
-.portal-modal-drawer,
-.frosted-panel {
-  background: rgba(18, 24, 34, 0.72) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 16px 40px -10px rgba(0, 0, 0, 0.7) !important;
-  color: #f4f4f5 !important;
-  border-radius: 1rem !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-/* Interactive Card with Subtle Emerald Elevation on Hover */
-.cyber-card-interactive,
-.glass-panel-interactive {
-  background: rgba(18, 24, 34, 0.75) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 30px -8px rgba(0, 0, 0, 0.75) !important;
-  border-radius: 1rem !important;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.cyber-card-interactive:hover,
-.glass-panel-interactive:hover {
-  background: rgba(22, 30, 42, 0.85) !important;
-  transform: translateY(-2px) !important;
-  border-color: rgba(16, 185, 129, 0.45) !important;
-  box-shadow: 
-    0 16px 40px -10px rgba(0, 0, 0, 0.9),
-    0 0 24px -4px rgba(16, 185, 129, 0.25) !important;
-}
-
-/* Subtle Internal Glass Containers */
-.glass-panel-subtle,
-.cyber-card-subtle {
-  background: rgba(20, 26, 36, 0.55) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-  color: #f4f4f5 !important;
-  border-radius: 0.75rem !important;
-}
-
-/* Institutional Frosted Glass Sidebar */
-.glass-sidebar,
-.cyber-sidebar {
-  background: rgba(18, 24, 34, 0.85) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  backdrop-filter: blur(24px) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 10px 0 30px -5px rgba(0, 0, 0, 0.85) !important;
-}
-
-/* Institutional Frosted Glass Topbar / Header */
-.glass-header,
-.cyber-header {
-  background: rgba(12, 17, 23, 0.85) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  backdrop-filter: blur(24px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7) !important;
-}
-
-/* Vibrant Emerald-Cyan Gradient Primary Button matching reference image */
-.cyber-btn-gradient {
-  background: linear-gradient(135deg, #10B981 0%, #14B8A6 50%, #06B6D4 100%) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4) !important;
-  border-radius: 0.75rem !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.cyber-btn-gradient:hover {
-  background: linear-gradient(135deg, #34D399 0%, #2DD4BF 50%, #22D3EE 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 6px 28px rgba(16, 185, 129, 0.55) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* Recessed Translucent Dark Input Fields with Clean Hairline Borders */
-.cyber-input {
-  background: rgba(10, 14, 23, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-  border-radius: 0.75rem !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
-  transition: all 0.2s ease !important;
-}
-
-.cyber-input:focus {
-  background: #161922 !important;
-  border-color: rgba(16, 185, 129, 0.6) !important;
-  box-shadow: 
-    0 0 0 2px rgba(16, 185, 129, 0.2),
-    inset 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-  outline: none !important;
-}
-
-/* Smooth Staggered Entrances */
-@keyframes cyberFadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.cyber-stagger-1 { animation: cyberFadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
-/* =========================================================================
-   GLOBAL CYBER DARK HIGH-CONTRAST TYPOGRAPHY & VISIBILITY RULES
-   Ensures 100% crisp visibility, high contrast, and readability of all
-   headings, body copy, descriptions, captions, labels, tables, and inputs.
-   ========================================================================= */
-
-/* High-contrast base text overrides for all dark containers */
-.cyber-canvas-bg,
+.charcoal-emerald-mesh,
 .cyber-card,
 .glass-panel,
 .cyber-card-subtle {
-  color: #f8fafc !important; /* Slate-50 pure crisp white */
+  color: #f8fafc !important;
 }
 
-/* Headings on dark cyber backgrounds: luminous white */
-.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h1:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h2:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h3:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h4:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h5:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="from-teal-"]):not([class*="from-amber-"]) h6:not(.bg-white *):not([class*="from-teal-"] *):not([class*="from-amber-"] *),
+/* Headings on charcoal backgrounds: crisp luminous white */
+.charcoal-emerald-mesh:not(.bg-white) h1,
+.charcoal-emerald-mesh:not(.bg-white) h2,
+.charcoal-emerald-mesh:not(.bg-white) h3,
+.charcoal-emerald-mesh:not(.bg-white) h4,
+.charcoal-emerald-mesh:not(.bg-white) h5,
+.charcoal-emerald-mesh:not(.bg-white) h6,
 .cyber-card h1, .cyber-card h2, .cyber-card h3, .cyber-card h4,
 .glass-panel h1, .glass-panel h2, .glass-panel h3, .glass-panel h4 {
   color: #ffffff !important;
   font-weight: 800 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Secondary descriptions and labels on dark glass (strictly scoped to dark backgrounds only) */
-.cyber-card > p,
-.cyber-card > div > p,
-.cyber-card p:not(.bg-white *):not([class*="bg-white"] *):not(.bg-emerald-50 *):not([class*="bg-emerald-"] *):not(.bg-amber-50 *):not([class*="bg-amber-"] *):not([class*="from-amber-"] *):not(.bg-slate-50 *):not(.bg-slate-100 *):not(.bg-slate-200 *):not([class*="from-teal-"] *):not([class*="from-purple-"] *):not([class*="from-sky-"] *),
-.glass-panel p:not(.bg-white *):not([class*="bg-white"] *):not(.bg-emerald-50 *):not([class*="bg-emerald-"] *):not(.bg-amber-50 *):not([class*="bg-amber-"] *):not([class*="from-amber-"] *):not(.bg-slate-50 *):not(.bg-slate-100 *):not(.bg-slate-200 *):not([class*="from-teal-"] *):not([class*="from-purple-"] *):not([class*="from-sky-"] *),
-.cyber-card-subtle p:not(.bg-white *):not([class*="bg-white"] *):not(.bg-emerald-50 *):not([class*="bg-emerald-"] *):not(.bg-amber-50 *):not([class*="bg-amber-"] *):not([class*="from-amber-"] *):not(.bg-slate-50 *):not(.bg-slate-100 *):not(.bg-slate-200 *):not([class*="from-teal-"] *):not([class*="from-purple-"] *):not([class*="from-sky-"] *) {
-  color: #e2e8f0 !important;
-}
-
-/* Auto-boost low-contrast tailwind text utility classes ONLY on dark navy backgrounds */
-.cyber-canvas-bg > .text-slate-400,
-.cyber-canvas-bg > .text-slate-500,
-.cyber-canvas-bg > .text-slate-600 {
-  color: #cbd5e1 !important;
-}
-
-.cyber-canvas-bg > .text-slate-700,
-.cyber-canvas-bg > .text-slate-800,
-.cyber-canvas-bg > .text-slate-900 {
-  color: #f8fafc !important;
-}
-
-/* =========================================================================
-   MANDATORY HIGH-CONTRAST RULES FOR GENUINE SOLID WHITE & LIGHT BOXES
-   Target ONLY actual solid white containers/inputs and light notification cards.
-   Strictly excludes transparent dark glass (.cyber-canvas-bg, hover:bg-white/5, etc.)
-   ========================================================================= */
-
-/* Solid white cards, white modals, and light alert containers */
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *):not(.cyber-sidebar *):not(.cyber-header *),
-.modal-white-card,
-.bg-slate-100:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *):not(.cyber-sidebar *),
-[class*="bg-teal-50"]:not(#cinematic-intro *):not(.rotating-border-content *),
-[class*="bg-amber-50"]:not(#cinematic-intro *):not(.rotating-border-content *),
-[class*="bg-emerald-50"]:not(#cinematic-intro *):not(.rotating-border-content *) {
-  color: #0f172a !important;
-}
-
-/* Headings inside genuine solid white boxes */
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h1,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h2,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h3,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h4,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h5,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) h6,
-.modal-white-card h1, .modal-white-card h2, .modal-white-card h3, .modal-white-card h4 {
-  color: #0f172a !important;
-  font-weight: 900 !important;
-  text-shadow: none !important;
-}
-
-/* Paragraphs and text inside genuine solid white containers */
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *) > p,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *):not(.glass-panel *):not(.cyber-card *) > div > p,
-.modal-white-card p {
-  color: #0f172a !important;
-  font-weight: 700;
-}
-
-/* Accidental white text inside genuine solid white boxes is forced to dark slate */
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-white,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-slate-100,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-slate-200,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not(#cinematic-intro *):not(.rotating-border-content *) .text-slate-300 {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-}
-
-/* =========================================================================
-   PROTECTED DARK THEME HIGH-CONTRAST TYPOGRAPHY
-   Guarantees 100% luminous contrast for Launching, Auth, and Dashboard
-   ========================================================================= */
-
-/* Launching Screen (CinematicIntro) */
-#cinematic-intro,
-#cinematic-intro * {
-  -webkit-font-smoothing: antialiased;
-}
-
-#cinematic-intro #stage div {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-}
-
-#cinematic-intro #site h1,
-#cinematic-intro .cinematic-portal-title {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  letter-spacing: 0.2em !important;
-  text-shadow: 0 0 35px rgba(255,255,255,1), 0 0 65px rgba(56,189,248,0.95), 0 2px 10px rgba(0,0,0,0.95) !important;
-}
-
-#cinematic-intro #site small {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 15px rgba(56, 189, 248, 0.8) !important;
-}
-
-/* Auth Card (.rotating-border-content) */
-.rotating-border-content,
-.rotating-border-content h1,
-.rotating-border-content h2,
-.rotating-border-content h3 {
-  color: #ffffff !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9) !important;
-}
-
-.rotating-border-content p,
-.rotating-border-content span:not([class*="bg-"]):not([class*="text-sky-"]):not([class*="text-purple-"]):not([class*="text-amber-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]) {
-  color: #f1f5f9 !important;
-}
-
-.rotating-border-content label {
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95) !important;
-}
-
-/* Dashboard Sidebar buttons (Transparent Dark Glass) */
-.cyber-sidebar button:not(.cyber-btn-gradient),
-.glass-sidebar button:not(.cyber-btn-gradient) {
-  color: #e2e8f0 !important;
-}
-
-.cyber-sidebar button:not(.cyber-btn-gradient):hover,
-.glass-sidebar button:not(.cyber-btn-gradient):hover {
-  color: #ffffff !important;
-  background-color: rgba(30, 41, 59, 0.6) !important;
-}
-
-/* =========================================================================
-   AMBER / YELLOW ALERT BOXES (Mandatory notices, warnings)
-   Forces text in genuine light yellow boxes to dark amber-950 for contrast
-   ========================================================================= */
-.bg-amber-50,
-.bg-amber-100,
-.from-amber-50,
-.from-amber-100 {
-  color: #451a03 !important;
-}
-
-.bg-amber-50 p,
-.bg-amber-50 span,
-.bg-amber-50 div,
-.bg-amber-50 strong,
-.bg-amber-100 p,
-.bg-amber-100 span,
-.bg-amber-100 div,
-.bg-amber-100 strong {
-  color: #451a03 !important;
-  font-weight: 700 !important;
-  text-shadow: none !important;
-}
-
-/* =========================================================================
-   EMERALD / GREEN STAGE BOXES (Completed milestones)
-   Forces text in light green boxes to dark emerald-950
-   ========================================================================= */
-.bg-emerald-50,
-.bg-emerald-100,
-.from-emerald-50,
-.from-emerald-100 {
-  color: #064e3b !important;
-}
-
-.bg-emerald-50 h5,
-.bg-emerald-50 h4,
-.bg-emerald-50 p,
-.bg-emerald-50 span,
-.bg-emerald-50 strong,
-.bg-emerald-100 h5,
-.bg-emerald-100 h4,
-.bg-emerald-100 p,
-.bg-emerald-100 span,
-.bg-emerald-100 strong {
-  color: #064e3b !important;
-  font-weight: 800 !important;
-  text-shadow: none !important;
-}
-
-/* Table headers & cells readability */
-.cyber-canvas-bg table th {
-  color: #38bdf8 !important; /* Neon cyan for table headers */
-  font-weight: 800 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.cyber-canvas-bg table td {
-  color: #f1f5f9 !important;
-  font-weight: 600;
-}
-
-/* Form labels readability: 100% Bold Luminous White on dark themes */
-.cyber-canvas-bg label,
+/* Form labels on dark panels */
+.charcoal-emerald-mesh label,
 .cyber-card label,
 .glass-panel label,
-.rotating-border-content label,
 form label,
 .form-label {
   color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
 }
 
-/* Inside genuine light/white containers, labels must be dark slate-950 */
-.bg-white:not([class*="/"]):not([class*="hover:"]):not([class*="focus:"]) > label,
-.bg-white:not([class*="/"]):not([class*="hover:"]):not([class*="focus:"]) > div > label,
-.modal-white-card label,
-.bg-slate-50 label,
-.bg-slate-100 label,
-.bg-amber-50 label,
-.bg-amber-100 label {
-  color: #0f172a !important;
-  font-weight: 800 !important;
-  text-shadow: none !important;
-}
-
-/* Dark Cyber Form Inputs (default on dark panels) */
-.cyber-canvas-bg input:not(.bg-white):not(.bg-slate-50):not(.bg-slate-100),
-.cyber-canvas-bg textarea:not(.bg-white):not(.bg-slate-50):not(.bg-slate-100),
-.cyber-canvas-bg select:not(.bg-white):not(.bg-slate-50):not(.bg-slate-100),
-.glossy-input,
-.cyber-input {
-  color: #ffffff !important;
-  font-weight: 700 !important;
-}
-
-/* Placeholder text visibility in all dark forms */
-.cyber-canvas-bg input:not(.bg-white)::placeholder,
-.cyber-canvas-bg textarea:not(.bg-white)::placeholder,
-.glossy-input::placeholder,
-.cyber-input::placeholder {
-  color: #94a3b8 !important; /* Highly visible light slate */
-  font-weight: 600 !important;
-  opacity: 1 !important;
-}
-
-/* Light / White Input Boxes & Textareas: 100% High Contrast Solid Dark Text */
-input.bg-white, textarea.bg-white, select.bg-white,
-input.bg-slate-50, textarea.bg-slate-50, select.bg-slate-50,
-input.bg-slate-100, textarea.bg-slate-100, select.bg-slate-100 {
-  color: #020617 !important; /* Pure Slate-950 high contrast text */
-  font-weight: 800 !important;
-}
-
-input.bg-white::placeholder, textarea.bg-white::placeholder {
-  color: #64748b !important;
-  font-weight: 600 !important;
-  opacity: 1 !important;
-}
-
-/* Option elements in dropdowns: always clean dark text on crisp background */
+/* Dropdown select options */
 select option,
 select optgroup {
-  background-color: #ffffff !important;
-  color: #020617 !important;
-  font-weight: 700 !important;
+  background-color: #121820 !important;
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
 }
-.cyber-canvas-bg select.cyber-input option,
-.cyber-canvas-bg select:not([class*="bg-"]) option {
-  background-color: #0b1329 !important;
-  color: #ffffff !important;
-}
-.cyber-canvas-bg select[class*="bg-"] option,
+
 .bg-white select option {
   background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
 /* =========================================================================
-   UNIVERSAL HIGH-CONTRAST VISIBILITY FOR ALL SYMBOLS & ICONS
+   SYMBOLS & ICONS WITH DYNAMIC EMERALD & TEAL GLOW ACCENTS
    ========================================================================= */
-.cyber-canvas-bg .lucide,
-.cyber-canvas-bg svg {
+.charcoal-emerald-mesh .lucide,
+.charcoal-emerald-mesh svg,
+.cyber-card .lucide,
+.cyber-card svg {
   stroke-width: 2.1px;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.3));
 }
 
-/* Eliminate dark/invisible icon strokes in cyber canvas (only when on dark background) */
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-900:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-800:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-700:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-slate-600:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-900:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-800:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-700:not(.bg-white *):not([class*="bg-white"] *),
-.cyber-canvas-bg:not(.bg-white):not([class*="bg-white"]) svg.text-gray-600:not(.bg-white *):not([class*="bg-white"] *) {
-  color: #38bdf8 !important;
-  stroke: #38bdf8 !important;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.45)) !important;
+/* Emerald & Teal icons glow */
+svg.text-emerald-400,
+svg.text-emerald-500 {
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.55)) !important;
 }
 
-/* Dark/slate icons inside white and light boxes remain crisp dark slate */
-.bg-white svg.text-slate-900,
-.bg-white svg.text-slate-800,
-.bg-white svg.text-slate-700,
-.bg-white svg.text-slate-600,
-[class*="bg-white"] svg.text-slate-900,
-[class*="bg-white"] svg.text-slate-800,
-[class*="bg-white"] svg.text-slate-700,
-[class*="bg-white"] svg.text-slate-600,
-.bg-slate-50 svg.text-slate-700,
-.bg-slate-100 svg.text-slate-700,
-.bg-slate-200 svg.text-slate-700 {
-  color: #0f172a !important;
-  stroke: #0f172a !important;
-  filter: none !important;
+svg.text-teal-400,
+svg.text-teal-500,
+svg.text-cyan-400 {
+  filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.55)) !important;
 }
 
-/* Glowing accents for specific status symbols */
-.cyber-canvas-bg svg.text-amber-400,
-.cyber-canvas-bg svg.text-amber-500,
-.cyber-canvas-bg svg.text-yellow-400,
-.cyber-canvas-bg svg.text-yellow-500 {
-  color: #fbbf24 !important;
-  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.6)) !important;
+svg.text-amber-400,
+svg.text-amber-500 {
+  filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5)) !important;
 }
 
-.cyber-canvas-bg svg.text-rose-400,
-.cyber-canvas-bg svg.text-rose-500,
-.cyber-canvas-bg svg.text-red-400,
-.cyber-canvas-bg svg.text-red-500 {
-  color: #f43f5e !important;
-  filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.6)) !important;
+svg.text-rose-400,
+svg.text-rose-500 {
+  filter: drop-shadow(0 0 5px rgba(244, 63, 94, 0.5)) !important;
 }
 
-.cyber-canvas-bg svg.text-emerald-400,
-.cyber-canvas-bg svg.text-emerald-500,
-.cyber-canvas-bg svg.text-green-400,
-.cyber-canvas-bg svg.text-green-500 {
-  color: #34d399 !important;
-  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.6)) !important;
+/* Modal pop-in animation */
+.portal-modal-drawer {
+  animation: dynamicModalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
-.cyber-canvas-bg svg.text-cyan-400,
-.cyber-canvas-bg svg.text-cyan-500,
-.cyber-canvas-bg svg.text-sky-400,
-.cyber-canvas-bg svg.text-sky-500,
-.cyber-canvas-bg svg.text-blue-400 {
-  color: #38bdf8 !important;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6)) !important;
-}
-
-.cyber-canvas-bg svg.text-purple-400,
-.cyber-canvas-bg svg.text-purple-500,
-.cyber-canvas-bg svg.text-indigo-400 {
-  color: #c084fc !important;
-  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.6)) !important;
-}
-
-.cyber-canvas-bg svg.text-white {
-  color: #ffffff !important;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)) !important;
-}
-
-/* Category & Urgency badge symbols high visibility */
-.cyber-canvas-bg .badge,
-.cyber-canvas-bg [class*="rounded-full"] svg,
-.cyber-canvas-bg button svg {
-  flex-shrink: 0;
-}
-
-/* Zero-Gravity Obsidian Aesthetic Floating Animation */
-@keyframes zeroGravityFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-.zero-gravity-modal {
-  animation: zeroGravityFloat 6s ease-in-out infinite;
-}
-
-
-
-
-
-
-
-

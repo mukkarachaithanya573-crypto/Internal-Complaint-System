@@ -107,24 +107,24 @@ export default function AppFeedbackModal({
   return (
     <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in">
       <div 
-        className="portal-modal-drawer relative w-full max-w-lg rounded-3xl bg-[#111319] border border-white/[0.08] shadow-2xl overflow-hidden my-auto"
+        className="portal-modal-drawer relative w-full max-w-lg rounded-3xl bg-[#121820] border border-teal-500/25 dynamic-emerald-border shadow-2xl overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Swipe Indicator Pill */}
         <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
 
         {/* TOP BAR / CLOSE BUTTON */}
-        <div className="relative z-10 flex items-center justify-between p-4 sm:p-5 border-b border-white/[0.08] bg-[#0D2821]">
+        <div className="relative z-10 flex items-center justify-between p-4 sm:p-5 border-b border-teal-500/15 bg-[#0E151E]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-amber-400 shadow-inner">
-              <Lightbulb className="w-5 h-5 text-amber-400" />
+            <div className="w-10 h-10 rounded-2xl bg-[#070C12] border border-teal-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
+              <Lightbulb className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold tracking-wider text-amber-400 uppercase">
+                <span className="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">
                   Continuous Improvement
                 </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/[0.06] text-emerald-300 border border-emerald-500/30">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-950/40 text-emerald-300 border border-emerald-500/30">
                   Direct to Developer
                 </span>
               </div>
@@ -136,7 +136,7 @@ export default function AppFeedbackModal({
           <button
             type="button"
             onClick={handleFinish}
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/[0.08]"
+            className="w-8 h-8 rounded-full bg-[#070C12] hover:bg-white/[0.12] text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-teal-500/20"
             title="Close"
           >
             <X className="w-4 h-4" />
@@ -159,24 +159,24 @@ export default function AppFeedbackModal({
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-left text-xs space-y-2 text-slate-300">
-                <div className="flex items-center gap-2 text-amber-300 font-bold">
+              <div className="p-3.5 rounded-2xl bg-[#070C12] border border-teal-500/20 text-left text-xs space-y-2 text-slate-300">
+                <div className="flex items-center gap-2 text-emerald-300 font-bold">
                   <Sparkles className="w-4 h-4" />
                   <span>Developer Redressal Commitment</span>
                 </div>
                 <p className="text-[11.5px] leading-relaxed text-slate-300">
                   Every student idea is carefully reviewed. If your suggestion is valuable for campus residents, it will be designed, coded, and deployed in upcoming app updates!
                 </p>
-                <div className="pt-1 flex items-center justify-between text-[10.5px] text-slate-400 border-t border-slate-800/80">
+                <div className="pt-1 flex items-center justify-between text-[10.5px] text-slate-400 border-t border-teal-500/15">
                   <span>Mailed to: {DEVELOPER_INFO.email}</span>
-                  <span className="text-cyan-400 font-bold">Status: Queued for Review</span>
+                  <span className="text-emerald-400 font-bold">Status: Queued for Review</span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleFinish}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black text-sm shadow-lg shadow-cyan-500/25 transition-all cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all cursor-pointer active:scale-98"
               >
                 {postSubmitTicket ? 'Continue to Complaint Details' : 'Close & Return'}
               </button>
@@ -185,7 +185,7 @@ export default function AppFeedbackModal({
             <div className="space-y-4 sm:space-y-5">
               {/* POST-SUBMISSION BANNER IF OPENED RIGHT AFTER LODGING PROBLEM */}
               {postSubmitTicket && (
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-900 to-cyan-950/60 border border-emerald-500/40 space-y-2">
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-[#0E141D] to-teal-950/60 border border-teal-500/40 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-wider">
                     <CheckCircle className="w-4 h-4" />
                     <span>Complaint Registered: #{postSubmitTicket.ticketNumber}</span>
@@ -197,8 +197,8 @@ export default function AppFeedbackModal({
               )}
 
               {/* INSPIRATION CALLOUT */}
-              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-slate-950 to-cyan-500/10 border border-amber-500/30 space-y-1.5">
-                <div className="flex items-center gap-2 text-amber-300 font-black text-xs uppercase tracking-wider">
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-[#0E141D] to-teal-500/10 border border-teal-500/30 space-y-1.5">
+                <div className="flex items-center gap-2 text-emerald-300 font-black text-xs uppercase tracking-wider">
                   <Sparkles className="w-4 h-4" />
                   <span>We are here to implement valuable ideas!</span>
                 </div>
@@ -226,8 +226,8 @@ export default function AppFeedbackModal({
                           onClick={() => setCategory(cat.id)}
                           className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                             isSelected 
-                              ? `${cat.color} ring-2 ring-cyan-400/50 shadow-md` 
-                              : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                              ? `${cat.color} ring-2 ring-emerald-400/50 shadow-md` 
+                              : 'bg-[#070C12] border-teal-500/15 text-slate-400 hover:text-slate-200 hover:bg-[#0E151E]'
                           }`}
                         >
                           <IconComponent className="w-3.5 h-3.5 shrink-0" />
@@ -249,7 +249,7 @@ export default function AppFeedbackModal({
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Add instant SMS alert / cleaner dark mode toggle"
                     maxLength={100}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#070C12] border border-teal-500/20 text-white placeholder-teal-300/30 text-xs focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 transition-all"
                   />
                 </div>
 
@@ -268,7 +268,7 @@ export default function AppFeedbackModal({
                     placeholder="Describe the changes you would like to see in this app, or explain your new feature idea in detail. We read every word and will build valuable ideas!"
                     maxLength={1000}
                     required
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#070C12] border border-teal-500/20 text-white placeholder-teal-300/30 text-xs focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 transition-all resize-none"
                   />
                 </div>
 
@@ -302,12 +302,12 @@ export default function AppFeedbackModal({
                 </div>
 
                 {/* STUDENT INFO BADGE */}
-                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="p-2.5 rounded-xl bg-[#070C12] border border-teal-500/20 flex items-center justify-between text-[11px] text-slate-400">
                   <div className="flex items-center gap-1.5 truncate">
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span className="truncate">Sending as <strong className="text-white">{studentName}</strong> ({studentId})</span>
                   </div>
-                  <span className="text-[10px] text-cyan-400 font-mono shrink-0 ml-2">Developer Mailer</span>
+                  <span className="text-[10px] text-emerald-400 font-mono shrink-0 ml-2">Developer Mailer</span>
                 </div>
 
                 {errorMessage && (
@@ -321,11 +321,11 @@ export default function AppFeedbackModal({
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+                    className="flex-1 py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         <span>Notifying Developer...</span>
                       </>
                     ) : (
@@ -340,7 +340,7 @@ export default function AppFeedbackModal({
                     <button
                       type="button"
                       onClick={handleFinish}
-                      className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs transition-all cursor-pointer"
+                      className="py-3 px-4 rounded-xl bg-[#0E151E] hover:bg-[#15202B] text-slate-300 hover:text-white border border-teal-500/20 font-bold text-xs transition-all cursor-pointer"
                     >
                       View Complaint Details
                     </button>

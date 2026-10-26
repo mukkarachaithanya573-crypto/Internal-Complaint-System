@@ -99,33 +99,39 @@ export default function GoogleAccountChooserModal({
 
       setAccounts(loadedAccounts);
     } catch (e) {
+      console.warn('Could not load google accounts:', e);
       setAccounts(DEFAULT_ACCOUNTS);
     }
   }, [suggestedEmail, isOpen]);
 
   if (!isOpen) return null;
 
-  const handlePickAccount = (account) => {
-    setSelectedEmail(account.email);
-    // Persist to local accounts list
+  const handlePickAccount = (acc) => {
+    setSelectedEmail(acc.email);
+    
+    // Remember this account for future rapid logins
     try {
-      const existing = accounts.filter(a => a.email.toLowerCase() !== account.email.toLowerCase());
-      const updated = [account, ...existing];
-      localStorage.setItem('rgukt_google_accounts', JSON.stringify(updated));
+      const savedRaw = localStorage.getItem('rgukt_google_accounts');
+      let current = savedRaw ? JSON.parse(savedRaw) : [];
+      if (!current.some(a => a.email.toLowerCase() === acc.email.toLowerCase())) {
+        current.unshift(acc);
+        localStorage.setItem('rgukt_google_accounts', JSON.stringify(current));
+      }
     } catch (e) {}
 
     setTimeout(() => {
       onSelectAccount({
-        email: account.email,
-        name: account.name || account.email.split('@')[0],
-        photoURL: account.avatar || null
+        displayName: acc.name,
+        email: acc.email,
+        photoURL: acc.avatar || null,
+        uid: 'google-sim-' + btoa(acc.email).replace(/[^a-zA-Z0-9]/g, '')
       });
       onClose();
     }, 200);
   };
 
   const handleAddNewAccount = (e) => {
-    e?.preventDefault();
+    e.preventDefault();
     setErrorMsg('');
     const cleanEmail = (newEmail || '').trim().toLowerCase();
     
@@ -149,18 +155,18 @@ export default function GoogleAccountChooserModal({
   return (
     <div className="portal-modal-overlay fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
       <div 
-        className="portal-modal-drawer relative w-full max-w-sm sm:max-w-md rounded-3xl bg-[#111319] border border-white/[0.08] shadow-2xl overflow-hidden my-auto text-slate-100"
+        className="portal-modal-drawer relative w-full max-w-sm sm:max-w-md rounded-3xl bg-[#121820] border border-teal-500/20 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.9)] overflow-hidden my-auto text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Swipe Indicator Pill */}
         <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
 
         {/* Google Header Accent */}
-        <div className="p-5 sm:p-6 pb-3 text-center relative border-b border-white/[0.08]">
+        <div className="p-5 sm:p-6 pb-3 text-center relative border-b border-teal-500/15 bg-[#0E141B]">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-white/10"
             title="Cancel"
           >
             <X className="w-4 h-4" />
@@ -189,13 +195,13 @@ export default function GoogleAccountChooserModal({
           </div>
 
           <h2 className="text-lg font-bold text-white tracking-tight">Choose an account</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            to continue to <strong className="text-cyan-300">Internal Complaint System (RGUKT)</strong>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            to continue to <strong className="text-emerald-400">Internal Complaint System (RGUKT)</strong>
           </p>
         </div>
 
         {/* ACCOUNT LIST */}
-        <div className="p-4 sm:p-5 max-h-[60vh] overflow-y-auto space-y-2">
+        <div className="p-4 sm:p-5 max-h-[60vh] overflow-y-auto space-y-2.5">
           {!isAddingNew ? (
             <>
               {accounts.map((acc, idx) => {
@@ -207,8 +213,8 @@ export default function GoogleAccountChooserModal({
                     onClick={() => handlePickAccount(acc)}
                     className={`w-full p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
                       isCurrent
-                        ? 'bg-cyan-500/20 border-cyan-400 ring-2 ring-cyan-400/50 shadow-lg'
-                        : 'bg-slate-900/80 border-slate-800 hover:bg-slate-800 hover:border-slate-700'
+                        ? 'bg-emerald-500/20 border-emerald-400 ring-2 ring-emerald-400/40 shadow-lg'
+                        : 'bg-[#0D1219] border-teal-500/15 hover:bg-[#161F28] hover:border-emerald-500/40'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -216,11 +222,11 @@ export default function GoogleAccountChooserModal({
                         <img 
                           src={acc.avatar} 
                           alt={acc.name} 
-                          className="w-10 h-10 rounded-full border border-slate-700 object-cover shrink-0"
+                          className="w-10 h-10 rounded-full border border-teal-500/30 object-cover shrink-0"
                           onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-600 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md">
                           {acc.initial || acc.name.charAt(0)}
                         </div>
                       )}
@@ -228,19 +234,19 @@ export default function GoogleAccountChooserModal({
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <p className="text-xs font-bold text-white truncate">{acc.name}</p>
                           {acc.badge && (
-                            <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-slate-800 text-cyan-300 border border-slate-700">
+                            <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">
                               {acc.badge}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-400 font-mono truncate">{acc.email}</p>
+                        <p className="text-[11px] text-zinc-400 font-mono truncate">{acc.email}</p>
                       </div>
                     </div>
 
                     {isCurrent ? (
-                      <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     ) : (
-                      <ArrowRight className="w-4 h-4 text-slate-500 shrink-0" />
+                      <ArrowRight className="w-4 h-4 text-zinc-500 shrink-0" />
                     )}
                   </button>
                 );
@@ -250,14 +256,14 @@ export default function GoogleAccountChooserModal({
               <button
                 type="button"
                 onClick={() => setIsAddingNew(true)}
-                className="w-full p-3 rounded-2xl border border-dashed border-slate-700 hover:border-cyan-500/60 bg-slate-900/40 hover:bg-slate-850 text-left transition-all flex items-center gap-3 cursor-pointer text-slate-300 hover:text-white"
+                className="w-full p-3 rounded-2xl border border-dashed border-teal-500/25 hover:border-emerald-400/60 bg-[#0D1219]/60 hover:bg-[#161F28] text-left transition-all flex items-center gap-3 cursor-pointer text-zinc-300 hover:text-white"
               >
-                <div className="w-10 h-10 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center shrink-0 border border-slate-700">
-                  <Plus className="w-5 h-5 text-cyan-400" />
+                <div className="w-10 h-10 rounded-full bg-white/[0.04] text-emerald-400 flex items-center justify-center shrink-0 border border-white/10">
+                  <Plus className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold">Use another Google account</p>
-                  <p className="text-[10.5px] text-slate-400">Sign in with any @gmail.com or @rgukt.ac.in ID</p>
+                  <p className="text-xs font-bold text-white">Use another Google account</p>
+                  <p className="text-[10.5px] text-zinc-400">Sign in with any @gmail.com or @rgukt.ac.in ID</p>
                 </div>
               </button>
             </>
@@ -265,8 +271,8 @@ export default function GoogleAccountChooserModal({
             /* ADD ANOTHER ACCOUNT FORM */
             <form onSubmit={handleAddNewAccount} className="space-y-3.5 py-1">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Google or College Email Address <span className="text-cyan-400">*</span>
+                <label className="block text-xs font-bold text-zinc-300 mb-1">
+                  Google or College Email Address <span className="text-emerald-400">*</span>
                 </label>
                 <input
                   type="email"
@@ -275,25 +281,25 @@ export default function GoogleAccountChooserModal({
                   placeholder="e.g. mukkarachaithanya573@gmail.com or r240493@rguktrkv.ac.in"
                   required
                   autoFocus
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  className="cyber-input w-full px-3.5 py-2.5 text-xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Your Full Name <span className="text-slate-500 font-normal">(optional)</span>
+                <label className="block text-xs font-bold text-zinc-300 mb-1">
+                  Your Full Name <span className="text-zinc-500 font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. Mukkara Chaithanya"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  className="cyber-input w-full px-3.5 py-2.5 text-xs"
                 />
               </div>
 
               {errorMsg && (
-                <p className="text-xs text-rose-400 font-bold bg-rose-500/10 border border-rose-500/30 p-2 rounded-xl">
+                <p className="text-xs text-rose-400 font-bold bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-xl">
                   {errorMsg}
                 </p>
               )}
@@ -301,14 +307,14 @@ export default function GoogleAccountChooserModal({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs transition-all shadow-lg cursor-pointer"
+                  className="cyber-btn-gradient flex-1 py-2.5 px-4 text-xs font-bold"
                 >
                   Continue with this Account
                 </button>
                 <button
                   type="button"
                   onClick={() => { setIsAddingNew(false); setErrorMsg(''); }}
-                  className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                  className="cyber-btn-secondary py-2.5 px-3.5 text-xs"
                 >
                   Back
                 </button>
@@ -318,7 +324,7 @@ export default function GoogleAccountChooserModal({
         </div>
 
         {/* GOOGLE PRIVACY FOOTER */}
-        <div className="p-3.5 bg-slate-950/70 border-t border-slate-800 text-[10px] text-slate-400 text-center leading-relaxed">
+        <div className="p-3.5 bg-[#0E141B] border-t border-teal-500/15 text-[10px] text-zinc-400 text-center leading-relaxed">
           <span>To continue, Google will share your name and email with Internal Complaint System.</span>
         </div>
       </div>

@@ -34,7 +34,7 @@ export default function LogoutAccountChoiceModal({
       }}
     >
       <div 
-        className="w-full max-w-md bg-[#111319] border border-white/10 rounded-3xl p-5 sm:p-6 shadow-[0_25px_70px_rgba(0,0,0,0.95)] portal-modal-drawer flex flex-col font-sans relative overflow-hidden"
+        className="w-full max-w-md bg-[#121820] border border-teal-500/25 dynamic-emerald-border rounded-3xl p-5 sm:p-6 shadow-[0_25px_70px_rgba(0,0,0,0.95)] portal-modal-drawer flex flex-col font-sans relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Mobile Swipe-Indicator Pill */}
@@ -42,12 +42,12 @@ export default function LogoutAccountChoiceModal({
 
         {/* Ambient Top Glow */}
         <div className="absolute -top-20 -right-20 w-44 h-44 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-44 h-44 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-44 h-44 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
 
         {/* Top Header Row with Close Icon */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] relative z-10">
+        <div className="flex items-center justify-between pb-3 border-b border-teal-500/15 relative z-10">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1.5 flex items-center justify-center shadow-inner">
+            <div className="w-9 h-9 rounded-xl bg-[#070C12] border border-teal-500/20 p-1.5 flex items-center justify-center shadow-inner">
               <img 
                 src="/logo.png?v=original" 
                 alt="RGUKT Crest" 
@@ -67,7 +67,7 @@ export default function LogoutAccountChoiceModal({
           <button
             type="button"
             onClick={onCancel}
-            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-white/[0.06]"
+            className="w-8 h-8 rounded-full bg-[#070C12] hover:bg-white/[0.08] text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-teal-500/20"
             title="Cancel and stay logged in"
           >
             <X className="w-4 h-4" />
@@ -85,7 +85,7 @@ export default function LogoutAccountChoiceModal({
         </div>
 
         {/* Current Active Account Profile Card */}
-        <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-3 mb-4 relative z-10">
+        <div className="p-3 rounded-2xl bg-[#0E151E] border border-teal-500/20 flex items-center gap-3 mb-4 relative z-10">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-900/60 to-slate-900 border border-emerald-500/30 flex items-center justify-center text-emerald-300 font-bold text-sm shrink-0 overflow-hidden">
             {currentUser?.profilePic ? (
               <img 
@@ -116,7 +116,7 @@ export default function LogoutAccountChoiceModal({
           <button
             type="button"
             onClick={onSelectSameAccount}
-            className="w-full p-3.5 rounded-2xl bg-[#161922] hover:bg-[#1C212D] border border-emerald-500/30 hover:border-emerald-500/60 text-left transition-all cursor-pointer group flex items-center gap-3.5 shadow-sm active:scale-[0.99] min-h-[48px]"
+            className="w-full p-3.5 rounded-2xl bg-[#0E151E] hover:bg-[#15202B] border border-teal-500/30 hover:border-emerald-400/60 text-left transition-all cursor-pointer group flex items-center gap-3.5 shadow-sm active:scale-[0.99] min-h-[48px]"
           >
             <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
               <RotateCcw className="w-4 h-4" />
@@ -141,17 +141,17 @@ export default function LogoutAccountChoiceModal({
           <button
             type="button"
             onClick={onSelectAnotherAccount}
-            className="w-full p-3.5 rounded-2xl bg-[#161922] hover:bg-[#1C212D] border border-white/[0.08] hover:border-cyan-500/50 text-left transition-all cursor-pointer group flex items-center gap-3.5 shadow-sm active:scale-[0.99] min-h-[48px]"
+            className="w-full p-3.5 rounded-2xl bg-[#0A0E14] hover:bg-[#121820] border border-teal-500/20 hover:border-teal-400/60 text-left transition-all cursor-pointer group flex items-center gap-3.5 shadow-sm active:scale-[0.99] min-h-[48px]"
           >
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0 group-hover:scale-105 transition-transform">
               <Users className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs sm:text-sm font-bold text-white group-hover:text-cyan-300 transition-colors">
+                <span className="text-xs sm:text-sm font-bold text-white group-hover:text-teal-300 transition-colors">
                   Log in with Another Account
                 </span>
-                <span className="text-[9.5px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0">
+                <span className="text-[9.5px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 shrink-0">
                   Switch User
                 </span>
               </div>
@@ -159,12 +159,12 @@ export default function LogoutAccountChoiceModal({
                 Clear saved session & open a clean login screen for another Student ID or Google SSO.
               </p>
             </div>
-            <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-teal-400 group-hover:translate-x-0.5 transition-all shrink-0" />
           </button>
         </div>
 
         {/* Footer Cancel Action */}
-        <div className="mt-4 pt-3 border-t border-white/[0.06] text-center relative z-10">
+        <div className="mt-4 pt-3 border-t border-teal-500/15 text-center relative z-10">
           <button
             type="button"
             onClick={onCancel}

@@ -1266,7 +1266,7 @@ export default function CampusMaintenanceApp() {
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [rejectModalTicket, setRejectModalTicket] = useState(null);
   const [showMailboxModal, setShowMailboxModal] = useState(false);
-  const [showIntro, setShowIntro] = useState(!initialDeptSession);
+  const [showIntro, setShowIntro] = useState(false);
   const [showSmtpModal, setShowSmtpModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [profileEditSuccessToast, setProfileEditSuccessToast] = useState(false);
@@ -3034,23 +3034,6 @@ export default function CampusMaintenanceApp() {
     );
   }
 
-  // Show Cinematic Intro Screen before login page
-  if (showIntro) {
-    return (
-      <>
-        <AuroraBackground />
-        {updateAvailable && isAppEnvironment() && (
-          <AppUpdateModal
-            appVersion={appVersion}
-            onUpdate={handleApplyUpdate}
-            onSkip={handleSkipUpdate}
-          />
-        )}
-        <CinematicIntro onEnter={() => setShowIntro(false)} />
-      </>
-    );
-  }
-
   // If user is not yet logged in, render the Auth Screen as designed in the reference image
   if (!isAuthenticated) {
     return (
@@ -3069,7 +3052,7 @@ export default function CampusMaintenanceApp() {
   }
 
   return (
-    <div className="h-screen bg-transparent text-zinc-100 flex flex-col font-sans overflow-hidden relative">
+    <div className="h-screen charcoal-emerald-mesh text-zinc-100 flex flex-col font-sans overflow-hidden relative">
       {/* Global Aurora Ambient Mesh Glow with Frosted Glassmorphism Canvas */}
       <AuroraBackground />
       
@@ -3107,10 +3090,10 @@ export default function CampusMaintenanceApp() {
 
       {/* SUB-HEADER / NOTIFICATION ALERT TICKER */}
       {notifications.length > 0 && (
-        <div className="shrink-0 bg-slate-950/85 backdrop-blur-md text-white px-4 py-2 text-xs flex items-center justify-between z-30 border-b border-cyan-500/20 shadow-lg shadow-cyan-950/20">
+        <div className="shrink-0 bg-slate-950/85 backdrop-blur-md text-white px-4 py-2 text-xs flex items-center justify-between z-30 border-b border-teal-500/20 shadow-lg shadow-teal-950/20">
           <div className="max-w-7xl mx-auto w-full flex items-center gap-2 overflow-hidden">
-            <Bell className="w-3.5 h-3.5 shrink-0 text-cyan-400 animate-pulse" />
-            <span className="font-bold shrink-0 text-cyan-300">System Notification:</span>
+            <Bell className="w-3.5 h-3.5 shrink-0 text-emerald-400 animate-pulse" />
+            <span className="font-bold shrink-0 text-emerald-300">System Notification:</span>
             <span className="truncate opacity-95">
               [{notifications[0].channel}] {notifications[0].title}: {notifications[0].body}
             </span>
@@ -3132,7 +3115,7 @@ export default function CampusMaintenanceApp() {
         
         {/* DASHBOARD DRAWER (Responsive: in-flow on md+ screens so center form adjusts dynamically) */}
         <aside
-          className={`h-full flex flex-col justify-between overflow-y-auto overscroll-contain transition-all duration-300 ease-in-out border-r border-white/[0.08] bg-[#0D1117] backdrop-blur-2xl z-40
+          className={`h-full flex flex-col justify-between overflow-y-auto overscroll-contain transition-all duration-300 ease-in-out border-r border-teal-500/15 bg-[#10161E] backdrop-blur-2xl z-40
             fixed md:relative inset-y-0 left-0 max-w-[85vw]
             ${isDashboardOpen 
               ? 'w-80 translate-x-0 opacity-100 shadow-2xl' 
@@ -3141,9 +3124,9 @@ export default function CampusMaintenanceApp() {
           aria-label="Campus Redressal Dashboard Menu"
         >
           {/* TOP CONTROLS OF DASHBOARD: 3-LINE BAR STATUS & BACK BUTTON */}
-          <div className="p-3.5 border-b border-[#0F382E] bg-[#0D2821] flex items-center justify-between shrink-0">
+          <div className="p-3.5 border-b border-teal-500/20 bg-[#0E151E] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-white/[0.08] text-emerald-400 border border-white/10 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-white/[0.08] text-emerald-400 border border-teal-500/30 flex items-center justify-center">
                 <Menu className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold uppercase text-white tracking-wider">
@@ -3153,7 +3136,7 @@ export default function CampusMaintenanceApp() {
             <button
               type="button"
               onClick={() => setIsDashboardOpen(false)}
-              className="px-2.5 py-1 rounded-lg bg-[#1A1D26] hover:bg-[#222736] text-zinc-300 hover:text-white border border-white/[0.08] text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+              className="px-2.5 py-1 rounded-lg bg-[#141B24] hover:bg-[#1A232F] text-zinc-300 hover:text-white border border-teal-500/20 text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
               title="Close Dashboard & Go Back"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-emerald-400" />
@@ -3165,7 +3148,7 @@ export default function CampusMaintenanceApp() {
           <div className="p-4 flex-1 flex flex-col justify-between h-full">
             <div className="space-y-1.5">
               {/* HEAD OF THE DASHBOARD: INTERNAL COMPLAINT SYSTEM BRANDING */}
-              <div className="p-3 mb-2 bg-[#111319] border border-white/[0.08] rounded-2xl flex items-center gap-3">
+              <div className="p-3 mb-2 bg-[#131A23] border border-teal-500/15 rounded-2xl flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1 shadow-inner flex items-center justify-center shrink-0">
                   <img 
                     src="/logo.png?v=original" 
@@ -3196,7 +3179,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('submit')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'submit'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3205,7 +3188,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'submit' ? 'font-bold text-white' : ''}>Submit Complaint</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-lg font-semibold ${
-                      activeTab === 'submit' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'submit' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       New
                     </span>
@@ -3215,7 +3198,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('my-complaints')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'my-complaints'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3224,7 +3207,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'my-complaints' ? 'font-bold text-white' : ''}>My Complaints</span>
                     </div>
                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'my-complaints' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'my-complaints' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {visibleComplaints.length}
                     </span>
@@ -3234,7 +3217,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('tracker')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'tracker'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3243,7 +3226,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'tracker' ? 'font-bold text-white' : ''}>My Complaint Status</span>
                     </div>
                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'tracker' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'tracker' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       Live Track
                     </span>
@@ -3253,7 +3236,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('profile')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'profile'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3262,7 +3245,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'profile' ? 'font-bold text-white' : ''}>My Profile</span>
                     </div>
                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'profile' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'profile' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       Editable
                     </span>
@@ -3293,7 +3276,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('tracker')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'tracker'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3302,7 +3285,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'tracker' ? 'font-bold text-white' : ''}>Active Work Orders</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'tracker' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'tracker' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {visibleComplaints.filter(c => c.status === 'ASSIGNED' || c.status === 'IN_PROGRESS' || c.status === 'REOPENED').length}
                     </span>
@@ -3312,7 +3295,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('solved')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'solved'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3321,7 +3304,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'solved' ? 'font-bold text-white' : ''}>Solved Complaints</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'solved' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'solved' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
                     </span>
@@ -3331,7 +3314,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('profile')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'profile'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3340,7 +3323,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'profile' ? 'font-bold text-white' : ''}>Staff Profile</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'profile' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'profile' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       Edit
                     </span>
@@ -3354,7 +3337,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('tracker')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'tracker'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3363,7 +3346,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'tracker' ? 'font-bold text-white' : ''}>Stage Tracker & Actions</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'tracker' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'tracker' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {visibleComplaints.length}
                     </span>
@@ -3372,7 +3355,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('dashboard')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'dashboard'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3381,7 +3364,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'dashboard' ? 'font-bold text-white' : ''}>Analytics Dashboard</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-lg font-semibold ${
-                      activeTab === 'dashboard' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'dashboard' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       Live
                     </span>
@@ -3391,7 +3374,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('complaints')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'complaints'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3400,7 +3383,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'complaints' ? 'font-bold text-white' : ''}>All Complaints</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'complaints' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'complaints' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {visibleComplaints.length}
                     </span>
@@ -3410,7 +3393,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('solved')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'solved'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3419,7 +3402,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'solved' ? 'font-bold text-white' : ''}>Solved Complaints</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'solved' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'solved' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {visibleComplaints.filter(c => c.status === 'RESOLVED' || c.status === 'CLOSED').length}
                     </span>
@@ -3429,7 +3412,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('staff')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'staff'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3438,7 +3421,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'staff' ? 'font-bold text-white' : ''}>Department Staff</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'staff' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'staff' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       {staffList.length || 6}
                     </span>
@@ -3448,7 +3431,7 @@ export default function CampusMaintenanceApp() {
                     onClick={() => navigateToTab('profile')}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       activeTab === 'profile'
-                        ? 'bg-[#0D2821] text-emerald-400 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-l-2 border-emerald-400 rounded-r-xl shadow-xs'
                         : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -3457,7 +3440,7 @@ export default function CampusMaintenanceApp() {
                       <span className={activeTab === 'profile' ? 'font-bold text-white' : ''}>Admin Profile</span>
                     </div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                      activeTab === 'profile' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#1A1D26] text-zinc-400 border border-white/[0.08]'
+                      activeTab === 'profile' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-[#141B24] text-zinc-400 border border-teal-500/15'
                     }`}>
                       Edit
                     </span>
@@ -3656,7 +3639,7 @@ export default function CampusMaintenanceApp() {
             </div>
 
             {/* TOP HEADER BAR: MATCHING REFERENCE IMAGE */}
-            <header className="shrink-0 z-30 px-3 sm:px-6 py-2 bg-[#0C1117]/80 backdrop-blur-xl border-b border-white/[0.08] shadow-md flex items-center justify-between gap-2.5 flex-wrap relative font-sans">
+            <header className="shrink-0 z-30 px-3 sm:px-6 py-2 bg-[#0B0F14]/90 backdrop-blur-xl border-b border-teal-500/20 shadow-md flex items-center justify-between gap-2.5 flex-wrap relative font-sans">
               <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                 {/* 3-LINE BAR (HAMBURGER MENU) ICON BUTTON - MOST LEFT POSITION */}
                 <button
@@ -3664,8 +3647,8 @@ export default function CampusMaintenanceApp() {
                   onClick={() => setIsDashboardOpen(prev => !prev)}
                   className={`p-1.5 rounded-xl text-xs font-semibold transition-all flex items-center border shadow-xs cursor-pointer active:scale-95 ${
                     isDashboardOpen
-                      ? 'bg-white text-black border-white shadow-md'
-                      : 'bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-300 border-white/[0.08]'
+                      ? 'cyber-btn-gradient text-white border-teal-400 shadow-md'
+                      : 'bg-[#0E151E] hover:bg-[#141E2B] text-zinc-300 border-teal-500/20'
                   }`}
                   title={isDashboardOpen ? "Close Menu" : "Menu"}
                   aria-label="Toggle Dashboard Menu"
@@ -3677,7 +3660,7 @@ export default function CampusMaintenanceApp() {
                 <button
                   type="button"
                   onClick={handleStepBack}
-                  className="px-3 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-200 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-white/[0.1] shadow-xs cursor-pointer active:scale-95"
+                  className="px-3 py-1.5 bg-[#0E151E] hover:bg-[#141E2B] text-zinc-200 hover:text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border border-teal-500/20 shadow-xs cursor-pointer active:scale-95"
                   title="Step Back one screen"
                 >
                   <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
@@ -3686,7 +3669,7 @@ export default function CampusMaintenanceApp() {
 
                 {/* RGUKT RK Valley Crest Emblem */}
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-white/[0.04] border border-white/[0.08] p-0.5 flex items-center justify-center shrink-0 shadow-inner">
+                  <div className="w-7 h-7 rounded-xl bg-[#070C12] border border-teal-500/20 p-0.5 flex items-center justify-center shrink-0 shadow-inner">
                     <img 
                       src="/logo.png?v=original" 
                       alt="RGUKT Crest" 
@@ -3704,7 +3687,7 @@ export default function CampusMaintenanceApp() {
               <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
                 {/* Student Pill (Roll ID: R240493 - Penna BH-1...) */}
                 {currentUser && (
-                  <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#141822]/80 rounded-full border border-white/[0.1] text-xs shadow-xs">
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-[#0E151E] rounded-full border border-teal-500/20 text-xs shadow-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                     <span className="font-semibold text-zinc-200">
                       Roll ID: {currentUser.idNo || currentUser.staffId || 'R240493'}
@@ -3723,10 +3706,10 @@ export default function CampusMaintenanceApp() {
                     setPostSubmitFeedbackTicket(null);
                     setIsAppFeedbackOpen(true);
                   }}
-                  className="px-2.5 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-amber-300 border border-white/[0.1] rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#0E151E] hover:bg-[#141E2B] text-emerald-300 border border-teal-500/20 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Submit Ideas, Suggestions & Changes Needed in this App"
                 >
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                  <Lightbulb className="w-3.5 h-3.5 text-emerald-400" />
                   <span className="hidden md:inline">App Ideas</span>
                 </button>
 
@@ -3737,7 +3720,7 @@ export default function CampusMaintenanceApp() {
                     setDemoInitialPrompt(false);
                     setShowDemoModal(true);
                   }}
-                  className="px-2.5 py-1.5 bg-[#141822]/80 hover:bg-[#1A2230] text-zinc-200 hover:text-white border border-white/[0.1] rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 bg-[#0E151E] hover:bg-[#141E2B] text-zinc-200 hover:text-white border border-teal-500/20 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                   title="Watch Project Demo Video & Feature Walkthrough"
                 >
                   <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
@@ -3748,7 +3731,7 @@ export default function CampusMaintenanceApp() {
                 <button
                   type="button"
                   onClick={() => setShowMailboxModal(true)}
-                  className="relative p-2 bg-[#1A1D26] hover:bg-[#222736] text-zinc-200 border border-white/[0.08] rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center active:scale-95"
+                  className="relative p-2 bg-[#0E151E] hover:bg-[#141E2B] text-zinc-200 border border-teal-500/20 rounded-xl transition-all shadow-sm cursor-pointer flex items-center justify-center active:scale-95"
                   title="View All Campus Notifications & Email Dispatches"
                 >
                   <Bell className="w-4 h-4 text-zinc-300" />
@@ -3759,15 +3742,15 @@ export default function CampusMaintenanceApp() {
                   )}
                 </button>
 
-                {/* Solid White Sync/Refresh Button */}
+                {/* Cyber Button Gradient Sync/Refresh Button */}
                 <button
                   type="button"
                   onClick={fetchData}
                   disabled={isRefreshing}
-                  className="px-2.5 py-1.5 bg-white hover:bg-neutral-200 text-black border border-white/20 rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
+                  className="px-2.5 py-1.5 cyber-btn-gradient text-white border border-teal-400/40 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50 active:scale-95"
                   title="Refresh & sync campus complaints data in real-time"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 text-black ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Refresh'}</span>
                 </button>
 
@@ -7217,7 +7200,7 @@ export default function CampusMaintenanceApp() {
       )}
 
       {/* MOBILE BOTTOM NAVIGATION BAR (Screens < 768px, native app and mobile browser) */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-[#0A0C10]/95 backdrop-blur-xl border-t border-white/[0.08] px-3 py-2 flex items-center justify-around safe-area-bottom shadow-2xl">
+      <nav className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-[#0F1620]/95 backdrop-blur-xl border-t border-teal-500/20 px-3 py-2 flex items-center justify-around safe-area-bottom shadow-2xl">
         {currentRole === 'REPORTER' && (
           <>
             <button
@@ -7227,7 +7210,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'submit' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'submit' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'submit' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Send className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Submit</span>
@@ -7240,7 +7223,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'my-complaints' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`relative p-1 rounded-xl transition-all ${activeTab === 'my-complaints' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`relative p-1 rounded-xl transition-all ${activeTab === 'my-complaints' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Layers className="w-5 h-5" />
                 {visibleComplaints.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-emerald-500 text-black text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
@@ -7258,7 +7241,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'tracker' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Navigation className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Tracker</span>
@@ -7271,7 +7254,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'profile' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <User className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Profile</span>
@@ -7288,7 +7271,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'tracker' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Wrench className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Orders</span>
@@ -7301,7 +7284,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'solved' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'solved' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'solved' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Solved</span>
@@ -7314,7 +7297,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'profile' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <User className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Profile</span>
@@ -7331,7 +7314,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'dashboard' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <BarChart3 className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Dashboard</span>
@@ -7344,7 +7327,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'tracker' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'tracker' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Clock className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Tracker</span>
@@ -7357,7 +7340,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'complaints' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`relative p-1 rounded-xl transition-all ${activeTab === 'complaints' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`relative p-1 rounded-xl transition-all ${activeTab === 'complaints' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Layers className="w-5 h-5" />
                 {visibleComplaints.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-emerald-500 text-black text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
@@ -7375,7 +7358,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'staff' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'staff' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'staff' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <Users className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Staff</span>
@@ -7388,7 +7371,7 @@ export default function CampusMaintenanceApp() {
                 activeTab === 'profile' ? 'text-emerald-400 font-bold' : 'text-zinc-400 hover:text-white font-medium'
               }`}
             >
-              <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-[#0D2821] border border-[#0F382E]' : ''}`}>
+              <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-950/40' : ''}`}>
                 <User className="w-5 h-5" />
               </div>
               <span className="text-[10px] tracking-tight">Profile</span>
@@ -9414,31 +9397,31 @@ function AuthScreen({ onLoginSuccess }) {
   // 📱 MOBILE APP VIEW: Sleek Dark Obsidian Floating Modal (No Constellation)
   // --------------------------------------------------------------------------
   const renderMobileAppView = () => (
-    <div className="fixed inset-0 min-h-screen bg-[#04060c] overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 font-sans select-none relative z-10">
-      {/* Zero-Gravity Ambient Back-Glow (Subtle diffused atmospheric orbs, zero particle canvas) */}
-      <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-indigo-900/20 via-blue-950/10 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-cyan-900/15 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-white/[0.015] blur-[120px] pointer-events-none" />
+    <div className="fixed inset-0 min-h-screen charcoal-emerald-mesh overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 font-sans select-none relative z-10">
+      {/* Dynamic Ambient Back-Glows (Subtle diffused atmospheric orbs) */}
+      <div className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full bg-gradient-to-br from-emerald-900/20 via-teal-950/15 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute -bottom-32 -right-32 w-[550px] h-[550px] rounded-full bg-gradient-to-tl from-teal-900/15 via-slate-900/15 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] rounded-full bg-emerald-500/[0.02] blur-[120px] pointer-events-none" />
 
       {/* Top-Right Demo Video Button */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-40 flex items-center gap-2">
         <button
           type="button"
           onClick={() => setShowAuthDemoModal(true)}
-          className="px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] hover:border-white/[0.16] text-xs font-medium transition-all backdrop-blur-xl flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
+          className="px-3.5 py-1.5 rounded-full bg-[#121822]/90 hover:bg-[#182230] text-emerald-300 hover:text-white border border-teal-500/25 text-xs font-medium transition-all backdrop-blur-xl flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
           title="Watch Project Demo Video & Feature Walkthrough"
         >
-          <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+          <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
           <span>Demo Video</span>
         </button>
       </div>
 
-      {/* Floating Dark Obsidian Modal Card (Zero-Gravity Ambient Style) */}
-      <div className="relative z-20 w-full max-w-[420px] rounded-3xl bg-[#090d16]/90 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.08] border-t-white/[0.2] shadow-[0_30px_100px_-15px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.05)] p-6 sm:p-8 transition-all zero-gravity-modal my-auto">
+      {/* Floating Dark Charcoal Modal Card (Dynamic Emerald Border) */}
+      <div className="relative z-20 w-full max-w-[420px] rounded-3xl bg-[#121822]/95 backdrop-blur-2xl border border-teal-500/25 dynamic-emerald-border shadow-[0_30px_100px_-15px_rgba(0,0,0,0.95)] p-6 sm:p-8 transition-all my-auto">
         
         {/* Brand Insignia & Title */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.1] p-2 flex items-center justify-center shadow-inner mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-teal-500/30 p-2 flex items-center justify-center shadow-inner mb-3">
             <img 
               src="/logo.png?v=original" 
               alt="ICS Logo" 
@@ -9448,13 +9431,13 @@ function AuthScreen({ onLoginSuccess }) {
           <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
             Internal Complaint System
           </h1>
-          <p className="text-[11px] font-medium tracking-wide text-zinc-400 uppercase mt-0.5">
+          <p className="text-[11px] font-medium tracking-wide text-emerald-400/90 uppercase mt-0.5">
             RGUKT RK Valley • Campus Redressal
           </p>
         </div>
 
         {/* Student / Faculty Segmented Control */}
-        <div className="flex p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl mb-5 relative">
+        <div className="flex p-1 bg-[#0A0E14] border border-teal-500/20 rounded-2xl mb-5 relative">
           <button
             type="button"
             onClick={() => {
@@ -9464,7 +9447,7 @@ function AuthScreen({ onLoginSuccess }) {
             }}
             className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               userTab === 'student'
-                ? 'bg-white/[0.12] text-white shadow-sm border border-white/[0.1]'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-950/50 border border-emerald-400/40'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -9480,7 +9463,7 @@ function AuthScreen({ onLoginSuccess }) {
             }}
             className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               userTab === 'department'
-                ? 'bg-white/[0.12] text-white shadow-sm border border-white/[0.1]'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-950/50 border border-emerald-400/40'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -9511,8 +9494,8 @@ function AuthScreen({ onLoginSuccess }) {
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                   {userTab === 'student' ? 'Student ID NO' : 'Faculty ID / Email'}
                 </label>
-                <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                  <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                  <IdCard className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                   <input
                     type="text"
                     value={userTab === 'student' ? idNo : (idNo || collegeEmail)}
@@ -9546,13 +9529,13 @@ function AuthScreen({ onLoginSuccess }) {
                       setErrorMsg('');
                       setSuccessMsg('');
                     }}
-                    className="text-[11px] text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    className="text-[11px] text-emerald-400/90 hover:text-emerald-300 transition-colors cursor-pointer"
                   >
                     Forgot?
                   </button>
                 </div>
-                <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                  <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                  <KeyRound className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -9574,10 +9557,10 @@ function AuthScreen({ onLoginSuccess }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                className="cyber-btn-gradient w-full py-3 px-4 font-bold text-sm shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <span>Sign In</span>
                 )}
@@ -9585,18 +9568,18 @@ function AuthScreen({ onLoginSuccess }) {
             </form>
 
             <div className="flex items-center my-4 gap-3">
-              <div className="h-px flex-1 bg-white/[0.08]"></div>
+              <div className="h-px flex-1 bg-teal-500/15"></div>
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
                 or continue with
               </span>
-              <div className="h-px flex-1 bg-white/[0.08]"></div>
+              <div className="h-px flex-1 bg-teal-500/15"></div>
             </div>
 
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={isSubmitting}
-              className="w-full py-2.5 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/[0.16] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#0E151E] hover:bg-[#151E2B] border border-teal-500/20 hover:border-emerald-500/40 text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer shadow-sm"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -9629,7 +9612,7 @@ function AuthScreen({ onLoginSuccess }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="text-white hover:underline font-semibold cursor-pointer"
+                className="text-emerald-400 hover:text-emerald-300 hover:underline font-bold cursor-pointer"
               >
                 Register Account
               </button>
@@ -9646,8 +9629,8 @@ function AuthScreen({ onLoginSuccess }) {
                   <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                     Full Name
                   </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <User className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                    <User className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                     <input
                       type="text"
                       value={fullName}
@@ -9663,8 +9646,8 @@ function AuthScreen({ onLoginSuccess }) {
                   <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                     {userTab === 'student' ? 'Student ID NO' : 'Faculty / Staff ID'}
                   </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                    <IdCard className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                     <input
                       type="text"
                       value={idNo}
@@ -9680,8 +9663,8 @@ function AuthScreen({ onLoginSuccess }) {
                   <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                     Official Email (@rgukt.ac.in)
                   </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <Mail className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                    <Mail className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                     <input
                       type="email"
                       value={collegeEmail}
@@ -9697,8 +9680,8 @@ function AuthScreen({ onLoginSuccess }) {
                   <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                     Create Password
                   </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                    <KeyRound className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
@@ -9721,10 +9704,10 @@ function AuthScreen({ onLoginSuccess }) {
                   type="button"
                   onClick={handleSendOtp}
                   disabled={isSendingOtp}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="cyber-btn-gradient w-full py-3 px-4 font-bold text-sm shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
                   {isSendingOtp ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <span>Request Verification OTP</span>
                   )}
@@ -9774,7 +9757,7 @@ function AuthScreen({ onLoginSuccess }) {
                       onChange={(e) => handleOtpBoxChange(e, index)}
                       onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
                       onPaste={handleOtpBoxPaste}
-                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl outline-none transition-all"
+                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-[#0A0E14] text-white border border-teal-500/25 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/25 rounded-xl outline-none transition-all"
                     />
                   ))}
                 </div>
@@ -9790,7 +9773,7 @@ function AuthScreen({ onLoginSuccess }) {
                           otpInputRefs.current[5].focus();
                         }
                       }}
-                      className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
+                      className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-lg text-[10px] font-mono cursor-pointer transition-all"
                     >
                       Auto-fill OTP ({generatedOtp})
                     </button>
@@ -9809,7 +9792,7 @@ function AuthScreen({ onLoginSuccess }) {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={!canResendOtp || isSendingOtp}
-                    className="text-white hover:underline font-semibold disabled:opacity-40 cursor-pointer"
+                    className="text-emerald-400 hover:text-emerald-300 hover:underline font-bold disabled:opacity-40 cursor-pointer"
                   >
                     Resend Code
                   </button>
@@ -9818,10 +9801,10 @@ function AuthScreen({ onLoginSuccess }) {
                 <button
                   type="submit"
                   disabled={isSubmitting || (enteredOtp || '').length < 6}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                  className="cyber-btn-gradient w-full py-3 px-4 font-bold text-sm shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <span>Verify & Enter Portal</span>
                   )}
@@ -9863,8 +9846,8 @@ function AuthScreen({ onLoginSuccess }) {
                   <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                     Student ID or Registered Email
                   </label>
-                  <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                    <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                  <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                    <IdCard className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                     <input
                       type="text"
                       value={idNo || collegeEmail}
@@ -9883,10 +9866,10 @@ function AuthScreen({ onLoginSuccess }) {
                   type="button"
                   onClick={handleSendForgotOtp}
                   disabled={isSendingOtp}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="cyber-btn-gradient w-full py-3 px-4 font-bold text-sm shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
                   {isSendingOtp ? (
-                    <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <span>Send Recovery OTP</span>
                   )}
@@ -9896,7 +9879,7 @@ function AuthScreen({ onLoginSuccess }) {
               <>
                 <div className="text-center">
                   <p className="text-xs text-zinc-300">Enter the 6-digit recovery code sent to</p>
-                  <p className="text-xs font-mono text-cyan-300 font-semibold mt-0.5">{otpTargetEmail}</p>
+                  <p className="text-xs font-mono text-emerald-300 font-semibold mt-0.5">{otpTargetEmail}</p>
                 </div>
                 <div className="flex items-center justify-center gap-2 my-3">
                   {[0, 1, 2, 3, 4, 5].map((index) => (
@@ -9911,7 +9894,7 @@ function AuthScreen({ onLoginSuccess }) {
                       onChange={(e) => handleOtpBoxChange(e, index)}
                       onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
                       onPaste={handleOtpBoxPaste}
-                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl outline-none transition-all"
+                      className="w-10 h-12 text-center text-lg font-mono font-bold bg-[#0A0E14] text-white border border-teal-500/25 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/25 rounded-xl outline-none transition-all"
                     />
                   ))}
                 </div>
@@ -9927,7 +9910,7 @@ function AuthScreen({ onLoginSuccess }) {
                           otpInputRefs.current[5].focus();
                         }
                       }}
-                      className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-zinc-300 hover:text-white rounded-lg text-[10px] font-mono cursor-pointer transition-all"
+                      className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-lg text-[10px] font-mono cursor-pointer transition-all"
                     >
                       Auto-fill OTP ({generatedOtp})
                     </button>
@@ -9941,9 +9924,9 @@ function AuthScreen({ onLoginSuccess }) {
                 <button
                   type="button"
                   onClick={handleVerifyForgotOtp}
-                  className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
+                  className="cyber-btn-gradient w-full py-3 px-4 font-bold text-sm shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <CheckCircle2 className="w-4 h-4 text-white" />
                   <span>Verify OTP & Continue</span>
                 </button>
 
@@ -9951,7 +9934,7 @@ function AuthScreen({ onLoginSuccess }) {
                   <button
                     type="button"
                     onClick={() => setForgotStep('request')}
-                    className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
                   >
                     ← Change ID / Email
                   </button>
@@ -9964,8 +9947,8 @@ function AuthScreen({ onLoginSuccess }) {
                     <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                       New Password
                     </label>
-                    <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                      <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                    <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                      <KeyRound className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                       <input
                         type={showNewPassword ? 'text' : 'password'}
                         value={newPassword}
@@ -9988,8 +9971,8 @@ function AuthScreen({ onLoginSuccess }) {
                     <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                       Confirm New Password
                     </label>
-                    <div className="relative flex items-center bg-black/40 border border-white/[0.08] hover:border-white/[0.14] focus-within:border-white/35 focus-within:ring-1 focus-within:ring-white/20 rounded-xl transition-all">
-                      <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
+                    <div className="relative flex items-center bg-[#0A0E14] border border-teal-500/20 hover:border-teal-500/35 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
+                      <KeyRound className="w-4 h-4 text-emerald-400/70 ml-3.5 shrink-0" />
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
                         value={confirmPassword}
@@ -10012,10 +9995,10 @@ function AuthScreen({ onLoginSuccess }) {
                     type="button"
                     onClick={handleResetPasswordSubmit}
                     disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.25)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    className="cyber-btn-gradient w-full py-3 px-4 font-bold text-sm shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
                   >
                     {isSubmitting ? (
-                      <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <span>Save Password & Sign In</span>
                     )}
@@ -10032,7 +10015,7 @@ function AuthScreen({ onLoginSuccess }) {
                   setErrorMsg('');
                   setSuccessMsg('');
                 }}
-                className="text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
               >
                 ← Back to Sign In
               </button>
@@ -10046,7 +10029,7 @@ function AuthScreen({ onLoginSuccess }) {
           <button
             type="button"
             onClick={() => setPolicyModalType('terms')}
-            className="text-zinc-300 hover:text-white hover:underline font-semibold cursor-pointer transition-colors"
+            className="text-emerald-400 hover:text-emerald-300 hover:underline font-semibold cursor-pointer transition-colors"
           >
             Terms of Service
           </button>{' '}
@@ -10054,7 +10037,7 @@ function AuthScreen({ onLoginSuccess }) {
           <button
             type="button"
             onClick={() => setPolicyModalType('privacy')}
-            className="text-zinc-300 hover:text-white hover:underline font-semibold cursor-pointer transition-colors"
+            className="text-emerald-400 hover:text-emerald-300 hover:underline font-semibold cursor-pointer transition-colors"
           >
             Privacy Policy
           </button>
@@ -10069,14 +10052,14 @@ function AuthScreen({ onLoginSuccess }) {
   // Deep Forest-Green / Matte-Black Institutional Branding + Auth Form
   // --------------------------------------------------------------------------
   const renderDesktopSafariView = () => (
-    <div className="min-h-screen w-full bg-[#030607] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] flex flex-col items-center justify-center p-3 sm:p-5 md:p-8 lg:p-10 font-sans select-none relative overflow-y-auto z-10">
+    <div className="min-h-screen w-full bg-[#0B0F14] charcoal-emerald-mesh flex flex-col items-center justify-center p-3 sm:p-5 md:p-8 lg:p-10 font-sans select-none relative overflow-y-auto z-10">
 
-      {/* Subtle Atmospheric Back-Glows (No interactive constellation) */}
+      {/* Subtle Atmospheric Back-Glows */}
       <div className="absolute top-0 left-1/4 w-[600px] h-[350px] bg-emerald-950/20 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[350px] bg-teal-950/20 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Top Global Campus Redressal Header Pill */}
-      <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md text-[11px] text-zinc-400 mb-4 sm:mb-6 shadow-md">
+      <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0E151E]/90 border border-teal-500/20 backdrop-blur-md text-[11px] text-zinc-400 mb-4 sm:mb-6 shadow-md">
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
         <span className="font-semibold text-zinc-200">RGUKT RK Valley</span>
         <span className="text-zinc-600">•</span>
@@ -10086,11 +10069,11 @@ function AuthScreen({ onLoginSuccess }) {
       </div>
 
       {/* Safari Browser Mockup Window Container (Website) or Native Split Card Container (App) */}
-      <div className="w-full max-w-5xl xl:max-w-6xl rounded-2xl md:rounded-3xl border border-white/10 bg-[#070b10] shadow-[0_35px_100px_-20px_rgba(0,0,0,0.95),0_0_1px_1px_rgba(255,255,255,0.06)] overflow-hidden transition-all my-auto">
+      <div className="w-full max-w-5xl xl:max-w-6xl rounded-2xl md:rounded-3xl border border-teal-500/25 bg-[#0E141D] dynamic-emerald-border shadow-[0_35px_100px_-20px_rgba(0,0,0,0.95)] overflow-hidden transition-all my-auto">
 
         {/* Safari Window Header / Chrome Toolbar (Website) vs Native Institutional App Header (APK) */}
         {!isApp ? (
-          <div className="h-12 bg-[#0c1117] border-b border-white/[0.08] px-4 flex items-center justify-between gap-3 select-none">
+          <div className="h-12 bg-[#0B0F15] border-b border-teal-500/15 px-4 flex items-center justify-between gap-3 select-none">
             {/* Left: macOS Traffic Light Window Controls & Nav Buttons */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -10110,7 +10093,7 @@ function AuthScreen({ onLoginSuccess }) {
 
             {/* Center: Safari Address & Search Bar */}
             <div className="flex-1 max-w-md mx-2 sm:mx-4">
-              <div className="w-full bg-[#05080d] border border-white/[0.08] hover:border-white/[0.15] rounded-lg px-3 py-1 flex items-center justify-between text-xs text-zinc-400 font-mono shadow-inner transition-all">
+              <div className="w-full bg-[#070C12] border border-teal-500/20 hover:border-emerald-500/40 rounded-lg px-3 py-1 flex items-center justify-between text-xs text-zinc-400 font-mono shadow-inner transition-all">
                 <div className="flex items-center gap-2 truncate">
                   <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
                   <span className="truncate">
@@ -10137,9 +10120,9 @@ function AuthScreen({ onLoginSuccess }) {
           </div>
         ) : (
           /* Mobile App Native Institutional Header */
-          <div className="h-14 bg-[#0c1117] border-b border-white/[0.08] px-4 sm:px-6 flex items-center justify-between gap-3 select-none">
+          <div className="h-14 bg-[#0B0F15] border-b border-teal-500/15 px-4 sm:px-6 flex items-center justify-between gap-3 select-none">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.08] p-1 flex items-center justify-center shadow-inner">
+              <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-teal-500/20 p-1 flex items-center justify-center shadow-inner">
                 <img 
                   src="/logo.png?v=original" 
                   alt="RGUKT Crest" 
@@ -10246,8 +10229,8 @@ function AuthScreen({ onLoginSuccess }) {
             </div>
           </div>
 
-          {/* RIGHT PANEL: Modern Authentication Form Panel (Matte-Black / Dark Obsidian) */}
-          <div className="lg:col-span-7 bg-[#060910] p-6 sm:p-8 lg:p-10 flex flex-col justify-center relative text-zinc-100">
+          {/* RIGHT PANEL: Modern Authentication Form Panel (Deep Charcoal & Emerald Accents) */}
+          <div className="lg:col-span-7 bg-[#0C121A] p-6 sm:p-8 lg:p-10 flex flex-col justify-center relative text-zinc-100">
             <div className="w-full max-w-md mx-auto">
               
               {/* Header */}
@@ -10269,7 +10252,7 @@ function AuthScreen({ onLoginSuccess }) {
               </div>
 
               {/* Segmented Student / Department Toggle */}
-              <div className="flex p-1 bg-white/[0.03] border border-white/[0.08] rounded-xl mb-5 relative">
+              <div className="flex p-1 bg-[#070C12] border border-teal-500/20 rounded-xl mb-5 relative">
                 <button
                   type="button"
                   onClick={() => {
@@ -10279,7 +10262,7 @@ function AuthScreen({ onLoginSuccess }) {
                   }}
                   className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     userTab === 'student'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-300 border border-emerald-500/40 shadow-sm'
                       : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
@@ -10295,7 +10278,7 @@ function AuthScreen({ onLoginSuccess }) {
                   }}
                   className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     userTab === 'department'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                      ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-300 border border-emerald-500/40 shadow-sm'
                       : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
@@ -10326,7 +10309,7 @@ function AuthScreen({ onLoginSuccess }) {
                       <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                         {userTab === 'student' ? 'Student ID NO' : 'Department / Faculty Email'}
                       </label>
-                      <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                      <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                         <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                         <input
                           type="text"
@@ -10366,7 +10349,7 @@ function AuthScreen({ onLoginSuccess }) {
                           Forgot?
                         </button>
                       </div>
-                      <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                      <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                         <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                         <input
                           type={showPassword ? 'text' : 'password'}
@@ -10389,10 +10372,10 @@ function AuthScreen({ onLoginSuccess }) {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                      className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
                     >
                       {isSubmitting ? (
-                        <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <span>Sign In to Redressal Portal</span>
                       )}
@@ -10400,18 +10383,18 @@ function AuthScreen({ onLoginSuccess }) {
                   </form>
 
                   <div className="flex items-center my-4 gap-3">
-                    <div className="h-px flex-1 bg-white/[0.08]"></div>
+                    <div className="h-px flex-1 bg-teal-500/15"></div>
                     <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
                       or continue with
                     </span>
-                    <div className="h-px flex-1 bg-white/[0.08]"></div>
+                    <div className="h-px flex-1 bg-teal-500/15"></div>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isSubmitting}
-                    className="w-full py-2.5 px-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/[0.16] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#0E151E] hover:bg-[#151E2B] border border-teal-500/20 hover:border-emerald-500/40 text-zinc-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path
@@ -10461,7 +10444,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                           Full Name
                         </label>
-                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                           <User className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                           <input
                             type="text"
@@ -10478,7 +10461,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                           {userTab === 'student' ? 'Student ID NO' : 'Faculty / Staff ID'}
                         </label>
-                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                           <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                           <input
                             type="text"
@@ -10495,7 +10478,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                           Official Email (@rgukt.ac.in)
                         </label>
-                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                           <Mail className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                           <input
                             type="email"
@@ -10512,7 +10495,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                           Create Password
                         </label>
-                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                           <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                           <input
                             type={showPassword ? 'text' : 'password'}
@@ -10536,10 +10519,10 @@ function AuthScreen({ onLoginSuccess }) {
                         type="button"
                         onClick={handleSendOtp}
                         disabled={isSendingOtp}
-                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                        className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
                       >
                         {isSendingOtp ? (
-                          <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <span>Request Verification OTP</span>
                         )}
@@ -10589,7 +10572,7 @@ function AuthScreen({ onLoginSuccess }) {
                             onChange={(e) => handleOtpBoxChange(e, index)}
                             onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
                             onPaste={handleOtpBoxPaste}
-                            className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 rounded-xl outline-none transition-all"
+                            className="w-10 h-12 text-center text-lg font-mono font-bold bg-[#070C12] text-white border border-teal-500/25 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/25 rounded-xl outline-none transition-all"
                           />
                         ))}
                       </div>
@@ -10633,10 +10616,10 @@ function AuthScreen({ onLoginSuccess }) {
                       <button
                         type="submit"
                         disabled={isSubmitting || (enteredOtp || '').length < 6}
-                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
                       >
                         {isSubmitting ? (
-                          <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <span>Verify & Enter Portal</span>
                         )}
@@ -10678,7 +10661,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
                           Student ID or Registered Email
                         </label>
-                        <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                        <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                           <IdCard className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                           <input
                             type="text"
@@ -10698,10 +10681,10 @@ function AuthScreen({ onLoginSuccess }) {
                         type="button"
                         onClick={handleSendForgotOtp}
                         disabled={isSendingOtp}
-                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
+                        className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer mt-2"
                       >
                         {isSendingOtp ? (
-                          <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <span>Send Recovery OTP</span>
                         )}
@@ -10726,7 +10709,7 @@ function AuthScreen({ onLoginSuccess }) {
                             onChange={(e) => handleOtpBoxChange(e, index)}
                             onKeyDown={(e) => handleOtpBoxKeyDown(e, index)}
                             onPaste={handleOtpBoxPaste}
-                            className="w-10 h-12 text-center text-lg font-mono font-bold bg-black/50 text-white border border-white/[0.12] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 rounded-xl outline-none transition-all"
+                            className="w-10 h-12 text-center text-lg font-mono font-bold bg-[#070C12] text-white border border-teal-500/25 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/25 rounded-xl outline-none transition-all"
                           />
                         ))}
                       </div>
@@ -10756,9 +10739,9 @@ function AuthScreen({ onLoginSuccess }) {
                       <button
                         type="button"
                         onClick={handleVerifyForgotOtp}
-                        className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
+                        className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer mt-2"
                       >
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <CheckCircle2 className="w-4 h-4 text-white" />
                         <span>Verify OTP & Continue</span>
                       </button>
 
@@ -10779,7 +10762,7 @@ function AuthScreen({ onLoginSuccess }) {
                           <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                             New Password
                           </label>
-                          <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                             <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                             <input
                               type={showNewPassword ? 'text' : 'password'}
@@ -10803,7 +10786,7 @@ function AuthScreen({ onLoginSuccess }) {
                           <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400 mb-1">
                             Confirm New Password
                           </label>
-                          <div className="relative flex items-center bg-black/50 border border-white/[0.08] hover:border-white/[0.16] focus-within:border-emerald-400/70 focus-within:ring-1 focus-within:ring-emerald-400/20 rounded-xl transition-all">
+                          <div className="relative flex items-center bg-[#070C12] border border-teal-500/20 hover:border-teal-500/40 focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-400/25 rounded-xl transition-all">
                             <KeyRound className="w-4 h-4 text-zinc-500 ml-3.5 shrink-0" />
                             <input
                               type={showConfirmPassword ? 'text' : 'password'}
@@ -10827,10 +10810,10 @@ function AuthScreen({ onLoginSuccess }) {
                           type="button"
                           onClick={handleResetPasswordSubmit}
                           disabled={isSubmitting}
-                          className="w-full py-3 px-4 rounded-xl bg-white text-zinc-950 font-bold text-sm hover:bg-emerald-300 hover:shadow-[0_0_25px_rgba(52,211,153,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                          className="w-full py-3 px-4 rounded-xl cyber-btn-gradient text-white font-bold text-sm transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
                         >
                           {isSubmitting ? (
-                            <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           ) : (
                             <span>Save Password & Sign In</span>
                           )}
@@ -10889,15 +10872,15 @@ function AuthScreen({ onLoginSuccess }) {
       {/* MODAL: INSTITUTIONAL GUIDELINES, TERMS OF SERVICE & PRIVACY POLICY */}
       {policyModalType && (
         <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="portal-modal-drawer relative w-full max-w-2xl bg-[#111319] rounded-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] text-slate-100 overflow-hidden flex flex-col max-h-[92vh] md:max-h-[88vh]">
+          <div className="portal-modal-drawer relative w-full max-w-2xl bg-[#121820] rounded-3xl border border-teal-500/25 dynamic-emerald-border shadow-[0_0_50px_rgba(0,0,0,0.8)] text-slate-100 overflow-hidden flex flex-col max-h-[92vh] md:max-h-[88vh]">
             {/* Mobile Swipe Indicator Pill */}
             <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
             
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-white/10 bg-[#0D2821] flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-teal-500/15 bg-[#0E151E] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(56,189,248,0.2)]">
-                  {policyModalType === 'terms' ? <Scale className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5 text-emerald-400" />}
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-teal-500/20 flex items-center justify-center text-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.2)]">
+                  {policyModalType === 'terms' ? <Scale className="w-5 h-5 text-teal-400" /> : <ShieldCheck className="w-5 h-5 text-emerald-400" />}
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
@@ -10912,7 +10895,7 @@ function AuthScreen({ onLoginSuccess }) {
               <button
                 type="button"
                 onClick={() => setPolicyModalType(null)}
-                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-white/10"
+                className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-teal-500/20"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -10922,11 +10905,11 @@ function AuthScreen({ onLoginSuccess }) {
             <div className="p-6 overflow-y-auto space-y-5 text-xs sm:text-[13px] leading-relaxed text-zinc-300">
               {policyModalType === 'terms' ? (
                 <>
-                  <div className="p-3.5 bg-cyan-950/30 border border-cyan-500/20 rounded-2xl flex items-start gap-3">
-                    <ShieldAlert className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                  <div className="p-3.5 bg-teal-950/30 border border-teal-500/25 rounded-2xl flex items-start gap-3">
+                    <ShieldAlert className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-bold text-white text-xs">Official Redressal Portal Usage</h4>
-                      <p className="text-[11.5px] text-cyan-200/90 mt-0.5">
+                      <p className="text-[11.5px] text-teal-200/90 mt-0.5">
                         This system is deployed strictly for registered students, faculty, and authorized campus staff of RGUKT RK Valley for lodging, processing, and monitoring maintenance requests and institutional grievances.
                       </p>
                     </div>
@@ -10934,41 +10917,41 @@ function AuthScreen({ onLoginSuccess }) {
 
                   <div className="space-y-3">
                     <div>
-                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-teal-300 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
                         1. Authorized User Accounts & Identity
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
-                        Access is tied to your verified Student ID (e.g., R240493) or official department email. Accounts must be registered and authenticated with official institutional webmail (<span className="text-cyan-300 font-mono">@rgukt.ac.in</span> or <span className="text-cyan-300 font-mono">@rguktrkv.ac.in</span>).
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-teal-500/30">
+                        Access is tied to your verified Student ID (e.g., R240493) or official department email. Accounts must be registered and authenticated with official institutional webmail (<span className="text-teal-300 font-mono">@rgukt.ac.in</span> or <span className="text-teal-300 font-mono">@rguktrkv.ac.in</span>).
                       </p>
                     </div>
 
                     <div>
-                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-teal-300 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
                         2. Genuine Reporting & False Complaint Policy
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-teal-500/30">
                         All reported issues (Electrical, Plumbing, Housekeeping, IT, Infrastructure, ICC) must reflect genuine campus requirements. Submitting fraudulent tickets, misleading images, or spamming the emergency queue may result in administrative review by the hostel warden and campus disciplinary council.
                       </p>
                     </div>
 
                     <div>
-                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-teal-300 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
                         3. 4-Tier Hostel Redressal Escalation Protocol
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-teal-500/30">
                         Hostel grievances follow an automatic 4-tier redressal framework: <strong>Stage 1: Hostel Warden</strong> ➔ <strong>Stage 2: DSW & Engineering Staff</strong> ➔ <strong>Stage 3: Administrative Officer (AO)</strong> ➔ <strong>Stage 4: Director, RGUKT RK Valley</strong>. Unresolved issues escalate automatically according to campus SLA timelines.
                       </p>
                     </div>
 
                     <div>
-                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                      <h4 className="font-black text-white text-xs uppercase tracking-wider text-teal-300 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-400"></span>
                         4. Technician Verification & Photo Proof
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-teal-500/30">
                         On-duty staff must provide verified photographic proof and work notes upon resolving a ticket. Reporters have the right to inspect repairs, provide a 5-star rating, or reopen the ticket within 48 hours if physical defects persist.
                       </p>
                     </div>
@@ -10992,7 +10975,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         1. Information Collected & Purpose
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-emerald-500/30">
                         We collect your Student/Staff ID, official institutional email, hostel block & room number, optional contact number, and defect descriptions solely to facilitate maintenance assignment, SLA tracking, and status dispatch notices.
                       </p>
                     </div>
@@ -11002,7 +10985,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         2. Internal Complaints Committee (ICC) Confidentiality
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-emerald-500/30">
                         Grievances marked under the <strong>Internal Complaints Committee (ICC)</strong> are strictly classified and protected by end-to-end institutional privacy rules. Only authorized committee members, the Presiding Officer, and the Director have access to confidential dockets.
                       </p>
                     </div>
@@ -11012,7 +10995,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         3. Zero Third-Party Advertising or Commercial Data Sharing
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-emerald-500/30">
                         Resident credentials and activity records are never sold, rented, or shared with third-party advertising brokers. Data is stored on RGUKT RK Valley secure cloud database instances with role-based security rules.
                       </p>
                     </div>
@@ -11022,7 +11005,7 @@ function AuthScreen({ onLoginSuccess }) {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         4. User Profile Control & Self-Editing Rights
                       </h4>
-                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-zinc-700">
+                      <p className="mt-1 text-zinc-300 pl-3 border-l-2 border-emerald-500/30">
                         You retain full control to edit your residential room, class year, contact mobile number, and avatar at any time directly through the <strong>My Profile</strong> dashboard option.
                       </p>
                     </div>
@@ -11032,14 +11015,14 @@ function AuthScreen({ onLoginSuccess }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-white/10 bg-slate-900/90 flex items-center justify-between">
+            <div className="px-6 py-3.5 border-t border-teal-500/15 bg-[#0B0F15] flex items-center justify-between">
               <span className="text-[11px] text-zinc-400">
                 Official Campus Policy • RGUKT RK Valley
               </span>
               <button
                 type="button"
                 onClick={() => setPolicyModalType(null)}
-                className="px-5 py-2 rounded-xl bg-white text-zinc-950 hover:bg-zinc-100 font-bold text-xs shadow-md transition-all cursor-pointer"
+                className="px-5 py-2 rounded-xl cyber-btn-gradient text-white font-bold text-xs shadow-md transition-all cursor-pointer"
               >
                 I Understand & Agree
               </button>
@@ -11940,10 +11923,10 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
 
   return (
     <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4">
-      <div className="portal-modal-drawer bg-[#111319] rounded-3xl max-w-md w-full p-5 sm:p-6 border border-white/[0.08] shadow-2xl">
+      <div className="portal-modal-drawer bg-[#121820] rounded-3xl max-w-md w-full p-5 sm:p-6 border border-teal-500/25 dynamic-emerald-border shadow-2xl">
         {/* Mobile Swipe Indicator Pill */}
         <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-2 md:hidden shrink-0 cursor-grab" />
-        <div className="flex justify-between items-center pb-3 border-b border-white/[0.08] mb-4">
+        <div className="flex justify-between items-center pb-3 border-b border-teal-500/15 mb-4">
           <div>
             <span className="text-xs font-mono font-bold text-emerald-400">{ticket.ticketNumber}</span>
             <h3 className="font-bold text-base text-white tracking-tight">Service Verification</h3>
@@ -11954,27 +11937,27 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
         {step === 'DECISION' && (
           <div className="text-center py-2 space-y-4">
             <h4 className="text-base font-bold text-white">Did the technician fix the issue satisfactorily?</h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-zinc-400">
               {ticket.assignedStaffName} uploaded resolution notes for {ticket.location}.
             </p>
 
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 onClick={() => setStep('RATING')}
-                className="p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50 hover:bg-emerald-100 text-left transition-colors"
+                className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/60 text-left transition-colors cursor-pointer"
               >
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 mb-1" />
-                <h5 className="font-bold text-xs text-emerald-950">Yes, it's fixed!</h5>
-                <p className="text-[10px] text-emerald-700">Rate staff & close</p>
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 mb-1" />
+                <h5 className="font-bold text-xs text-white">Yes, it's fixed!</h5>
+                <p className="text-[10px] text-emerald-300">Rate staff & close</p>
               </button>
 
               <button
                 onClick={() => setStep('REOPEN')}
-                className="p-4 rounded-xl border border-slate-700/60 bg-white hover:bg-rose-50 hover:border-rose-300 text-left transition-colors"
+                className="p-4 rounded-xl border border-rose-500/40 bg-rose-950/40 hover:bg-rose-900/60 text-left transition-colors cursor-pointer"
               >
-                <RotateCcw className="w-5 h-5 text-rose-600 mb-1" />
+                <RotateCcw className="w-5 h-5 text-rose-400 mb-1" />
                 <h5 className="font-bold text-xs text-white">No, still broken</h5>
-                <p className="text-[10px] text-slate-400">Reopen & escalate</p>
+                <p className="text-[10px] text-rose-300">Reopen & escalate</p>
               </button>
             </div>
           </div>
@@ -11984,27 +11967,27 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
           <div className="space-y-4">
             <div className="text-center">
               <h4 className="font-bold text-sm text-white">Rate {ticket.assignedStaffName}</h4>
-              <p className="text-xs text-slate-400">Directly impacts technician monthly bonus & CSAT score</p>
+              <p className="text-xs text-zinc-400">Directly impacts technician monthly bonus & CSAT score</p>
             </div>
 
             <div className="flex justify-center gap-1.5 py-1">
               {[1, 2, 3, 4, 5].map(s => (
                 <button key={s} type="button" onClick={() => setRating(s)} className="p-1">
-                  <Star className={`w-7 h-7 ${rating >= s ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`} />
+                  <Star className={`w-7 h-7 ${rating >= s ? 'fill-amber-400 text-amber-400' : 'text-zinc-600'}`} />
                 </button>
               ))}
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-300 block mb-1">Feedback Tags</label>
+              <label className="text-xs font-bold text-zinc-300 block mb-1">Feedback Tags</label>
               <div className="flex flex-wrap gap-1.5">
                 {['⚡ Prompt Arrival', '🧹 Clean Workspace', '🤝 Polite Behavior', '🛠️ Thorough Fix'].map(t => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setTags(tags.includes(t) ? tags.filter(x => x !== t) : [...tags, t])}
-                    className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      tags.includes(t) ? 'bg-slate-900 text-white' : 'bg-slate-800/80 text-slate-300'
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                      tags.includes(t) ? 'bg-gradient-to-r from-emerald-500/30 to-teal-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-[#0E151E] text-zinc-400 border border-teal-500/20 hover:text-zinc-200'
                     }`}
                   >
                     {t}
@@ -12018,14 +12001,14 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Additional remarks (optional)..."
-              className="w-full p-2.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs"
+              className="w-full p-2.5 bg-[#070C12] border border-teal-500/20 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/30 text-white rounded-xl text-xs outline-none"
             />
 
             <div className="flex gap-2 pt-2">
-              <button onClick={() => setStep('DECISION')} className="px-3 py-2 bg-slate-800/80 text-slate-300 rounded-xl text-xs font-bold">
+              <button onClick={() => setStep('DECISION')} className="px-3 py-2 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-300 rounded-xl text-xs font-bold border border-teal-500/20 cursor-pointer">
                 Back
               </button>
-              <button onClick={submitClose} className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold">
+              <button onClick={submitClose} className="flex-1 py-2 cyber-btn-gradient text-white rounded-xl text-xs font-bold shadow-md cursor-pointer">
                 Confirm Fix & Close Ticket
               </button>
             </div>
@@ -12034,16 +12017,16 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
 
         {step === 'REOPEN' && (
           <div className="space-y-4">
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
+            <div className="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-xs text-rose-300">
               Reopening elevates priority to <strong>HIGH</strong> and immediately alerts the Facilities Supervisor.
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-200 block mb-1">Reason for Reopening</label>
+              <label className="text-xs font-bold text-zinc-200 block mb-1">Reason for Reopening</label>
               <select
                 value={reopenReason}
                 onChange={(e) => setReopenReason(e.target.value)}
-                className="w-full p-2 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs"
+                className="w-full p-2 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs outline-none"
               >
                 <option>Problem recurred immediately after staff left</option>
                 <option>Only partial repair completed</option>
@@ -12057,14 +12040,14 @@ function FeedbackModal({ ticket, onClose, onSuccess }) {
               value={reopenComment}
               onChange={(e) => setReopenComment(e.target.value)}
               placeholder="Provide details on what is still malfunctioning..."
-              className="w-full p-2.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs"
+              className="w-full p-2.5 bg-[#070C12] border border-teal-500/20 focus:border-rose-400 focus:ring-1 focus:ring-rose-400/30 text-white rounded-xl text-xs outline-none"
             />
 
             <div className="flex gap-2 pt-2">
-              <button onClick={() => setStep('DECISION')} className="px-3 py-2 bg-slate-800/80 text-slate-300 rounded-xl text-xs font-bold">
+              <button onClick={() => setStep('DECISION')} className="px-3 py-2 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-300 rounded-xl text-xs font-bold border border-teal-500/20 cursor-pointer">
                 Back
               </button>
-              <button onClick={submitReopen} className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold">
+              <button onClick={submitReopen} className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer">
                 Reopen & Escalate Ticket
               </button>
             </div>
@@ -12163,48 +12146,48 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-700/60 shadow-2xl overflow-hidden my-6">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 overflow-y-auto">
+      <div className="portal-modal-drawer bg-[#121820] rounded-3xl max-w-xl w-full border border-teal-500/25 dynamic-emerald-border shadow-2xl overflow-hidden my-6">
         
         {/* Header */}
-        <div className="p-5 border-b border-slate-700/60 flex items-center justify-between bg-gradient-to-r from-emerald-50 via-teal-50/50 to-white">
+        <div className="p-5 border-b border-teal-500/15 flex items-center justify-between bg-[#0E151E]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-600/20">
-              <CheckCircle2 className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-bold shadow-md shadow-emerald-500/10">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base text-white tracking-tight leading-tight">Submit Fix & Proof of Work</h3>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
                   {ticket.ticketNumber}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Document the repair action and attach after-work verification photo</p>
+              <p className="text-xs text-zinc-400">Document the repair action and attach after-work verification photo</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-300 hover:bg-slate-200/60 transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Complaint Summary Context Card */}
         <div className="p-5 pb-0">
-          <div className="p-3.5 cyber-card-subtle rounded-2xl border border-slate-700/60/80 text-xs">
-            <div className="flex items-center justify-between text-slate-400 mb-1">
-              <span className="font-bold text-slate-200">{ticket.category}</span>
-              <span className="flex items-center gap-1 text-[11px]"><MapPin className="w-3 h-3 text-slate-400" /> {ticket.location}</span>
+          <div className="p-3.5 bg-[#0A0E14] rounded-2xl border border-teal-500/20 text-xs">
+            <div className="flex items-center justify-between text-zinc-400 mb-1">
+              <span className="font-bold text-emerald-300">{ticket.category}</span>
+              <span className="flex items-center gap-1 text-[11px]"><MapPin className="w-3 h-3 text-teal-400" /> {ticket.location}</span>
             </div>
             <h4 className="font-bold text-white text-sm mb-1">{ticket.title}</h4>
             {ticket.description && (
-              <p className="text-slate-400 text-xs line-clamp-2">{ticket.description}</p>
+              <p className="text-zinc-400 text-xs line-clamp-2">{ticket.description}</p>
             )}
             {ticket.photos && ticket.photos.length > 0 && (
-              <div className="mt-2.5 pt-2 border-t border-slate-700/60 flex items-center gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reported Defect Photo:</span>
+              <div className="mt-2.5 pt-2 border-t border-teal-500/15 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Reported Defect Photo:</span>
                 <img
                   src={ticket.photos[0]}
                   alt="Defect"
-                  className="w-10 h-10 object-cover rounded-lg border border-slate-700/60 shadow-2xs cursor-pointer hover:opacity-90"
+                  className="w-10 h-10 object-cover rounded-lg border border-teal-500/30 shadow-2xs cursor-pointer hover:opacity-90"
                   onClick={() => window.open(ticket.photos[0], '_blank')}
                   title="Click to view full reported image"
                 />
@@ -12217,18 +12200,18 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           
           {errorMsg && (
-            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2 font-medium">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <div className="p-3 bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs rounded-xl flex items-center gap-2 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {/* 1. Work Details & Action Taken */}
           <div>
-            <label className="block text-xs font-bold text-slate-100 mb-1">
+            <label className="block text-xs font-bold text-zinc-200 mb-1">
               1. Work Details & Action Taken <span className="text-rose-500">*</span>
             </label>
-            <p className="text-[11px] text-slate-400 mb-2">
+            <p className="text-[11px] text-zinc-400 mb-2">
               Explain the physical repairs conducted, root cause found, and test outcome.
             </p>
             <textarea
@@ -12239,7 +12222,7 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
                 if (errorMsg) setErrorMsg('');
               }}
               placeholder="e.g. Replaced faulty wiring connector, tested load for 20 mins, confirmed stable voltage output..."
-              className="w-full p-3 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+              className="w-full p-3 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 focus:outline-none"
             />
             {/* Quick helper chips */}
             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -12248,7 +12231,7 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
                   key={idx}
                   type="button"
                   onClick={() => setNotes(prev => prev ? `${prev}. ${chip}` : chip)}
-                  className="px-2 py-1 bg-slate-800/80 hover:bg-slate-200 text-slate-300 rounded-lg text-[10px] font-semibold transition-colors"
+                  className="px-2 py-1 bg-[#0E151E] hover:bg-[#151E2B] text-emerald-300 border border-teal-500/20 rounded-lg text-[10px] font-semibold transition-colors cursor-pointer"
                 >
                   + {chip}
                 </button>
@@ -12258,51 +12241,51 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
 
           {/* 2. Spare Parts & Materials Replaced */}
           <div>
-            <label className="block text-xs font-bold text-slate-100 mb-1">
-              2. Spare Parts & Materials Used <span className="text-slate-400 font-normal">(Optional)</span>
+            <label className="block text-xs font-bold text-zinc-200 mb-1">
+              2. Spare Parts & Materials Used <span className="text-zinc-500 font-normal">(Optional)</span>
             </label>
             <input
               type="text"
               value={spareParts}
               onChange={(e) => setSpareParts(e.target.value)}
               placeholder="e.g. 25W LED Batten, Teflon tape roll, 16A MCB switch, M6 bolts"
-              className="w-full p-2.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none"
+              className="w-full p-2.5 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 focus:outline-none"
             />
           </div>
 
           {/* 3. Upload Fix Proof Photo */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-bold text-slate-100">
+              <label className="block text-xs font-bold text-zinc-200">
                 3. Upload Fix Proof Photo (After-Repair Photo) <span className="text-rose-500">*</span>
               </label>
               {photo && (
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Check className="w-3 h-3" /> Photo Attached
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 mb-2.5">
+            <p className="text-[11px] text-zinc-400 mb-2.5">
               Take an on-site photo or upload a clear photo of the repaired equipment/area showing it is fixed.
             </p>
 
             {photo ? (
-              <div className="relative rounded-2xl border-2 border-emerald-400 bg-emerald-50/20 p-3 overflow-hidden shadow-xs">
+              <div className="relative rounded-2xl border border-emerald-500/40 bg-emerald-950/20 p-3 overflow-hidden shadow-xs">
                 <div className="flex items-center gap-3">
                   <img
                     src={photo}
                     alt="Fix Proof"
-                    className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl border border-emerald-200 shadow-xs"
+                    className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl border border-emerald-500/30 shadow-xs"
                   />
                   <div className="flex-1 space-y-1.5">
-                    <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600" /> Proof Photo Attached
+                    <span className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" /> Proof Photo Attached
                     </span>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-zinc-400">
                       This photo will be visible to the reporter on the complaint tracker and verified in resolution logs.
                     </p>
                     <div className="flex items-center gap-2 pt-1">
-                      <label className="cursor-pointer text-[11px] font-bold text-blue-600 hover:text-blue-700 underline">
+                      <label className="cursor-pointer text-[11px] font-bold text-teal-400 hover:text-teal-300 underline">
                         Replace Photo
                         <input
                           type="file"
@@ -12311,11 +12294,11 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
                           onChange={handlePhotoSelect}
                         />
                       </label>
-                      <span className="text-slate-300">•</span>
+                      <span className="text-zinc-600">•</span>
                       <button
                         type="button"
                         onClick={() => setPhoto('')}
-                        className="text-[11px] font-bold text-rose-600 hover:text-rose-700 underline"
+                        className="text-[11px] font-bold text-rose-400 hover:text-rose-300 underline cursor-pointer"
                       >
                         Remove
                       </button>
@@ -12324,10 +12307,10 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-500 cyber-card-subtle/60 hover:bg-emerald-50/20 transition-all">
+              <div className="p-4 rounded-2xl border-2 border-dashed border-teal-500/30 hover:border-emerald-400 bg-[#0A0E14] transition-all">
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   {/* Upload from Gallery / Files */}
-                  <label className="cursor-pointer px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2">
+                  <label className="cursor-pointer px-4 py-2.5 cyber-btn-gradient text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2">
                     <Upload className="w-4 h-4" />
                     <span>Upload Image</span>
                     <input
@@ -12339,8 +12322,8 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
                   </label>
 
                   {/* Camera Capture */}
-                  <label className="cursor-pointer px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-2">
-                    <Camera className="w-4 h-4 text-slate-700" />
+                  <label className="cursor-pointer px-4 py-2.5 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-200 border border-teal-500/20 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-teal-400" />
                     <span>Camera Capture</span>
                     <input
                       type="file"
@@ -12351,7 +12334,7 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
                     />
                   </label>
                 </div>
-                <p className="text-center text-[11px] text-slate-400 mt-2.5">
+                <p className="text-center text-[11px] text-zinc-400 mt-2.5">
                   Supports JPG, PNG, WEBP. On-device compression automatically optimized for high resolution and fast upload.
                 </p>
               </div>
@@ -12359,23 +12342,23 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
           </div>
 
           {/* 4. Verification Checklist */}
-          <div className="p-3 cyber-card-subtle rounded-xl border border-slate-700/60/70 space-y-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Technician Verification Checklist</span>
-            <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer select-none">
+          <div className="p-3 bg-[#0A0E14] rounded-xl border border-teal-500/20 space-y-2">
+            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Technician Verification Checklist</span>
+            <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={safetyChecked}
                 onChange={(e) => setSafetyChecked(e.target.checked)}
-                className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                className="w-4 h-4 text-emerald-500 rounded border-teal-500/30 focus:ring-emerald-400"
               />
               <span>I have tested the equipment / installation and verified full functionality.</span>
             </label>
-            <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={cleanedUp}
                 onChange={(e) => setCleanedUp(e.target.checked)}
-                className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                className="w-4 h-4 text-emerald-500 rounded border-teal-500/30 focus:ring-emerald-400"
               />
               <span>Worksite cleaned up; all hazardous debris, scraps, and tools removed.</span>
             </label>
@@ -12387,14 +12370,14 @@ function ResolveProofModal({ ticket, onClose, onSubmit }) {
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 py-2.5 bg-slate-800/80 hover:bg-slate-200 text-slate-200 font-bold rounded-xl text-xs transition-colors"
+              className="flex-1 py-2.5 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-300 font-bold rounded-xl text-xs transition-colors border border-teal-500/20 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 cyber-btn-gradient text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               {submitting ? 'Submitting Fix & Proof...' : 'Submit Fix & Proof'}
@@ -12437,42 +12420,42 @@ function RejectModal({ ticket, onClose, onReject }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 border border-slate-700/60 shadow-2xl">
+    <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 overflow-y-auto">
+      <div className="portal-modal-drawer bg-[#121820] rounded-3xl max-w-lg w-full p-5 sm:p-6 border border-teal-500/25 dynamic-emerald-border shadow-2xl">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800/60">
+        <div className="flex items-center justify-between pb-3 border-b border-teal-500/15">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
               <Ban className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-mono font-bold text-slate-400">{ticket.ticketNumber}</span>
+              <span className="text-xs font-mono font-bold text-zinc-400">{ticket.ticketNumber}</span>
               <h3 className="font-bold text-base text-white tracking-tight leading-tight">Reject Grievance Ticket</h3>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-300 hover:bg-slate-800/80">
+          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Ticket Context Card */}
-        <div className="my-4 p-3 cyber-card-subtle rounded-2xl border border-slate-700/60/80 text-xs space-y-1">
-          <div className="flex items-center justify-between font-bold text-slate-100">
+        <div className="my-4 p-3.5 bg-[#0A0E14] rounded-2xl border border-teal-500/20 text-xs space-y-1">
+          <div className="flex items-center justify-between font-bold text-white">
             <span className="truncate">{ticket.title}</span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-900 font-bold text-[10px] shrink-0 ml-2">{ticket.category}</span>
+            <span className="px-2 py-0.5 rounded-md bg-white/[0.06] text-emerald-300 border border-emerald-500/30 font-bold text-[10px] shrink-0 ml-2">{ticket.category}</span>
           </div>
-          <p className="text-slate-400 flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-slate-400 shrink-0" /> {ticket.location}
+          <p className="text-zinc-400 flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-teal-400 shrink-0" /> {ticket.location}
           </p>
-          <p className="text-slate-400 flex items-center gap-1">
-            <Mail className="w-3 h-3 text-slate-400 shrink-0" /> Reporter: {ticket.reporterName} ({ticket.reporterEmail})
+          <p className="text-zinc-400 flex items-center gap-1">
+            <Mail className="w-3 h-3 text-teal-400 shrink-0" /> Reporter: {ticket.reporterName} ({ticket.reporterEmail})
           </p>
         </div>
 
         {/* Notice */}
-        <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-xs mb-4 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-3 bg-amber-950/40 rounded-xl border border-amber-500/30 text-amber-300 text-xs mb-4 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             Rejecting this ticket will mark the grievance as <strong>REJECTED</strong> and dispatch a formal explanation email directly from the <strong>{ticket.category} Department</strong> to the reporter.
           </p>
@@ -12480,22 +12463,22 @@ function RejectModal({ ticket, onClose, onReject }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
               1. Select Primary Reason for Rejection <span className="text-rose-500">*</span>
             </label>
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full p-2.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-100 focus:ring-2 focus:ring-slate-900/10 focus:outline-none"
+              className="w-full p-2.5 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs font-semibold focus:ring-1 focus:ring-rose-400 focus:border-rose-400 outline-none"
             >
               {REJECTION_REASONS.map((r) => (
-                <option key={r} value={r}>{r}</option>
+                <option key={r} value={r} className="bg-[#0E151E] text-white">{r}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
               2. Department Explanation & Remarks (Why was it rejected?) <span className="text-rose-500">*</span>
             </label>
             <textarea
@@ -12503,10 +12486,10 @@ function RejectModal({ ticket, onClose, onReject }) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Explain clearly to the reporter why this issue cannot be serviced (e.g. verified normal operation, duplicate ticket #CMP-2026-..., or outside campus maintenance scope)..."
-              className="w-full p-3 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs focus:ring-2 focus:ring-slate-900/10 focus:outline-none placeholder:text-slate-400"
+              className="w-full p-3 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs focus:ring-1 focus:ring-rose-400 focus:border-rose-400 outline-none placeholder:text-zinc-600"
               required
             />
-            <span className="text-[11px] text-slate-400 block mt-1">
+            <span className="text-[11px] text-zinc-400 block mt-1">
               This exact explanation will be emailed to {ticket.reporterEmail}.
             </span>
           </div>
@@ -12516,14 +12499,14 @@ function RejectModal({ ticket, onClose, onReject }) {
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 py-2.5 bg-slate-800/80 hover:bg-slate-200 text-slate-200 font-bold rounded-xl text-xs transition-colors"
+              className="flex-1 py-2.5 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-300 font-bold rounded-xl text-xs transition-colors border border-teal-500/20 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Ban className="w-4 h-4" />
               {submitting ? 'Dispatching Notice...' : 'Confirm Rejection & Send Mail'}
@@ -12554,22 +12537,22 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
 
   return (
     <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4">
-      <div className="portal-modal-drawer bg-[#111319] rounded-3xl max-w-3xl w-full max-h-[92vh] md:max-h-[85vh] flex flex-col border border-white/[0.08] shadow-2xl overflow-hidden">
+      <div className="portal-modal-drawer bg-[#121820] rounded-3xl max-w-3xl w-full max-h-[92vh] md:max-h-[85vh] flex flex-col border border-teal-500/25 dynamic-emerald-border shadow-2xl overflow-hidden">
         {/* Mobile Swipe Indicator Pill */}
         <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
         
         {/* Header */}
-        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#0D2821] shrink-0">
+        <div className="p-5 border-b border-teal-500/15 flex items-center justify-between bg-[#0E151E] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
               <Mail className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-base text-white tracking-tight leading-tight">Campus Dispatch & Email Center</h3>
-                <span className="px-2 py-0.5 rounded-full bg-white/[0.06] text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">Audit Log</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">Audit Log</span>
               </div>
-              <p className="text-xs text-zinc-300">Live archive of automated department dispatches, notifications, and grievance mailings</p>
+              <p className="text-xs text-zinc-400">Live archive of automated department dispatches, notifications, and grievance mailings</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -12577,40 +12560,40 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
               <button
                 type="button"
                 onClick={onOpenSmtp}
-                className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-[#0E151E] hover:bg-[#151E2B] text-teal-300 border border-teal-500/25 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
               >
-                <Settings className="w-3.5 h-3.5 text-blue-600" />
+                <Settings className="w-3.5 h-3.5 text-teal-400" />
                 <span className="hidden sm:inline">Configure Real SMTP</span>
               </button>
             )}
-            <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-300 hover:bg-slate-200/60 transition-colors">
+            <button onClick={onClose} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer">
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Navigation Tabs & Search */}
-        <div className="px-5 py-3 border-b border-slate-800/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white">
+        <div className="px-5 py-3 border-b border-teal-500/15 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#0A0E14]">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('emails')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'emails' ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-200'
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'emails' ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-300 border border-emerald-500/40 shadow-xs' : 'bg-[#0E151E] text-zinc-400 border border-teal-500/15 hover:text-zinc-200'
               }`}
             >
               <Mail className="w-3.5 h-3.5" />
               <span>Department Emails</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">{emails.length}</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px]">{emails.length}</span>
             </button>
             <button
               onClick={() => setActiveTab('notifications')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'notifications' ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-200'
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'notifications' ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-300 border border-emerald-500/40 shadow-xs' : 'bg-[#0E151E] text-zinc-400 border border-teal-500/15 hover:text-zinc-200'
               }`}
             >
               <Bell className="w-3.5 h-3.5" />
               <span>Push / App Alerts</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">{notifications.length}</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-white/10 text-[10px]">{notifications.length}</span>
             </button>
           </div>
 
@@ -12620,17 +12603,17 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by ticket #, recipient..."
-              className="w-full px-3 py-1.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+              className="w-full px-3 py-1.5 bg-[#070C12] border border-teal-500/20 text-white placeholder:text-zinc-500 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400"
             />
           </div>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-3 cyber-card-subtle/50">
+        <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-[#070C12]">
           {activeTab === 'emails' ? (
             filteredEmails.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
-                <Inbox className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <div className="py-12 text-center text-zinc-400 text-xs">
+                <Inbox className="w-8 h-8 mx-auto mb-2 opacity-50 text-teal-400" />
                 No department emails logged yet. Submit or reject a complaint to trigger automated dispatches.
               </div>
             ) : (
@@ -12644,25 +12627,25 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
                   <div
                     key={mail.id}
                     className={`rounded-2xl border transition-all ${
-                      isReject ? 'border-rose-200 bg-rose-50/30' :
-                      isResolve ? 'border-emerald-200 bg-emerald-50/30' :
-                      'border-slate-700/60 bg-white shadow-2xs'
+                      isReject ? 'border-rose-500/30 bg-rose-950/20' :
+                      isResolve ? 'border-emerald-500/30 bg-emerald-950/20' :
+                      'border-teal-500/20 bg-[#0E151E] shadow-2xs'
                     }`}
                   >
                     <div className="p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isReject ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                            isResolve ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                            isDeptDispatch ? 'bg-purple-100 text-purple-800 border border-purple-200' :
-                            'bg-blue-100 text-blue-800 border border-blue-200'
+                            isReject ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' :
+                            isResolve ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                            isDeptDispatch ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
+                            'bg-teal-500/20 text-teal-300 border border-teal-500/30'
                           }`}>
                             {isReject ? '❌ REJECTION NOTICE' :
                              isResolve ? '✅ RESOLUTION COMPLETED' :
                              isDeptDispatch ? '🚨 DISPATCH TO DEPT' : '📋 REPORTER ACK'}
                           </span>
-                          <span className="text-xs font-mono font-bold text-slate-100">{mail.ticketNumber}</span>
+                          <span className="text-xs font-mono font-bold text-white">{mail.ticketNumber}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           {mail.previewUrl && (
@@ -12670,12 +12653,12 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
                               href={mail.previewUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded flex items-center gap-1"
+                              className="text-[10px] font-bold text-teal-300 hover:text-teal-200 bg-teal-500/10 border border-teal-500/25 px-2 py-0.5 rounded flex items-center gap-1"
                             >
                               <ExternalLink className="w-3 h-3" /> Live Preview
                             </a>
                           )}
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-zinc-400">
                             {new Date(mail.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(mail.time).toLocaleDateString()}
                           </span>
                         </div>
@@ -12683,31 +12666,31 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
 
                       <h4 className="text-xs sm:text-sm font-bold text-white mb-1.5">{mail.subject}</h4>
 
-                      <div className="text-[11px] text-slate-300 space-y-0.5">
-                        <p><strong className="text-slate-100">From:</strong> {mail.fromName} &lt;{mail.from}&gt;</p>
-                        <p><strong className="text-slate-100">To:</strong> {mail.toName} &lt;{mail.to}&gt;</p>
+                      <div className="text-[11px] text-zinc-300 space-y-0.5">
+                        <p><strong className="text-zinc-200">From:</strong> {mail.fromName} &lt;{mail.from}&gt;</p>
+                        <p><strong className="text-zinc-200">To:</strong> {mail.toName} &lt;{mail.to}&gt;</p>
                         {mail.rejectionReason && (
-                          <p className="text-rose-700 font-bold pt-1">
+                          <p className="text-rose-400 font-bold pt-1">
                             ⚠️ Rejection Reason: {mail.rejectionReason}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between">
+                      <div className="mt-3 pt-2.5 border-t border-teal-500/15 flex items-center justify-between">
                         <button
                           type="button"
                           onClick={() => setExpandedMailId(isExpanded ? null : mail.id)}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          className="text-xs font-bold text-teal-400 hover:text-teal-300 flex items-center gap-1 cursor-pointer"
                         >
                           {isExpanded ? 'Hide Message Body' : 'View Full Email Body'}
                           <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                         </button>
-                        <span className="text-[10px] text-slate-400">Delivered via RGUKT Mail Gateway</span>
+                        <span className="text-[10px] text-zinc-500">Delivered via RGUKT Mail Gateway</span>
                       </div>
                     </div>
 
                     {isExpanded && (
-                      <div className="p-4 bg-slate-900 text-slate-100 rounded-b-2xl border-t border-slate-800 text-xs font-mono whitespace-pre-wrap leading-relaxed">
+                      <div className="p-4 bg-[#070C12] text-zinc-200 rounded-b-2xl border-t border-teal-500/15 text-xs font-mono whitespace-pre-wrap leading-relaxed">
                         {mail.body}
                       </div>
                     )}
@@ -12717,22 +12700,22 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
             )
           ) : (
             notifications.length === 0 ? (
-              <div className="p-8 text-center text-slate-400">
-                <Bell className="w-8 h-8 text-slate-500 mx-auto mb-2 opacity-50" />
-                <p className="text-xs font-bold text-slate-300">No notifications yet</p>
-                <p className="text-[11px] text-slate-400 mt-1">System dispatches, complaint receipts, and security alerts will appear here.</p>
+              <div className="p-8 text-center text-zinc-400">
+                <Bell className="w-8 h-8 text-zinc-600 mx-auto mb-2 opacity-50" />
+                <p className="text-xs font-bold text-zinc-200">No notifications yet</p>
+                <p className="text-[11px] text-zinc-400 mt-1">System dispatches, complaint receipts, and security alerts will appear here.</p>
               </div>
             ) : (
               notifications.map(notif => (
-                <div key={notif.id} className="p-3.5 glass-panel rounded-2xl shadow-2xs border border-slate-700/60">
+                <div key={notif.id} className="p-3.5 bg-[#0E151E] rounded-2xl shadow-2xs border border-teal-500/20">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-bold text-slate-100">{notif.title}</span>
-                    <span className="text-[10px] text-cyan-400 font-mono bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">{notif.channel || 'CAMPUS'}</span>
+                    <span className="font-bold text-white">{notif.title}</span>
+                    <span className="text-[10px] text-teal-300 font-mono bg-teal-950/60 px-2 py-0.5 rounded border border-teal-500/30">{notif.channel || 'CAMPUS'}</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">{notif.body}</p>
-                  <div className="mt-2 text-[10px] text-slate-400 flex items-center justify-between">
-                    <span>Recipient: <strong className="text-slate-200">{notif.recipient || 'You'}</strong></span>
-                    <span className="font-mono text-slate-400">
+                  <p className="text-xs text-zinc-300 leading-relaxed">{notif.body}</p>
+                  <div className="mt-2 text-[10px] text-zinc-400 flex items-center justify-between">
+                    <span>Recipient: <strong className="text-zinc-200">{notif.recipient || 'You'}</strong></span>
+                    <span className="font-mono text-zinc-400">
                       {notif.time ? (isNaN(new Date(notif.time)) ? notif.time : new Date(notif.time).toLocaleTimeString()) : (notif.timestamp ? new Date(notif.timestamp).toLocaleTimeString() : 'Just now')}
                     </span>
                   </div>
@@ -12743,11 +12726,11 @@ function DispatchMailboxModal({ emails, notifications, onClose, onOpenSmtp }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-700/60 bg-white flex items-center justify-between text-xs text-slate-400">
+        <div className="p-4 border-t border-teal-500/15 bg-[#0A0E14] flex items-center justify-between text-xs text-zinc-400">
           <span>Active Department Gateways: Electrical, Plumbing, IT, Housekeeping, Civil, Safety</span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition-colors"
+            className="px-4 py-2 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-200 font-bold rounded-xl text-xs border border-teal-500/20 transition-colors cursor-pointer"
           >
             Close Center
           </button>
@@ -12841,19 +12824,19 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
 
   return (
     <div className="portal-modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 overflow-y-auto">
-      <div className="portal-modal-drawer bg-[#111319] rounded-3xl max-w-xl w-full border border-white/[0.08] shadow-2xl overflow-hidden my-auto">
+      <div className="portal-modal-drawer bg-[#121820] rounded-3xl max-w-xl w-full border border-teal-500/25 dynamic-emerald-border shadow-2xl overflow-hidden my-auto">
         {/* Mobile Swipe Indicator Pill */}
         <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto my-2.5 md:hidden shrink-0 cursor-grab" />
         
         {/* Header */}
-        <div className="p-5 border-b border-white/[0.08] flex items-center justify-between bg-[#0D2821] shrink-0">
+        <div className="p-5 border-b border-teal-500/15 flex items-center justify-between bg-[#0E151E] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-emerald-400 flex items-center justify-center font-bold shadow-inner">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shadow-inner">
               <Settings className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <h3 className="font-bold text-base text-white tracking-tight leading-tight">Live Email & SMTP Configuration</h3>
-              <p className="text-xs text-zinc-300">Configure real Gmail or institutional mail server for student alerts</p>
+              <p className="text-xs text-zinc-400">Configure real Gmail or institutional mail server for student alerts</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer">
@@ -12864,9 +12847,9 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
         {/* Status Alerts */}
         {statusMsg && (
           <div className={`m-5 mb-0 p-3.5 rounded-2xl text-xs flex items-start gap-2.5 font-medium border ${
-            statusMsg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
+            statusMsg.type === 'success' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30' : 'bg-rose-950/40 text-rose-300 border-rose-500/30'
           }`}>
-            {statusMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" /> : <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />}
+            {statusMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" /> : <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />}
             <span className="leading-relaxed">{statusMsg.text}</span>
           </div>
         )}
@@ -12875,7 +12858,7 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
           
           {/* Provider Selection */}
           <div>
-            <label className="block text-xs font-bold text-slate-100 mb-1.5">
+            <label className="block text-xs font-bold text-zinc-300 mb-1.5">
               Select Email Service Provider
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -12886,42 +12869,42 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
                   setHost('smtp.gmail.com');
                   setPort(587);
                 }}
-                className={`p-3 rounded-xl border text-xs font-bold text-left transition-all ${
+                className={`p-3 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer ${
                   service === 'gmail'
-                    ? 'border-blue-600 bg-blue-50/50 text-blue-900 ring-2 ring-blue-600/10'
-                    : 'border-slate-700/60 cyber-card-subtle text-slate-200 hover:bg-slate-800/80'
+                    ? 'border-emerald-500/40 bg-emerald-950/30 text-emerald-300 ring-1 ring-emerald-500/30'
+                    : 'border-teal-500/20 bg-[#0A0E14] text-zinc-300 hover:bg-[#121820]'
                 }`}
               >
-                <span className="block font-black">Google Gmail</span>
-                <span className="text-[10px] text-slate-400 font-normal">Requires 16-character App Password</span>
+                <span className="block font-black text-white">Google Gmail</span>
+                <span className="text-[10px] text-zinc-400 font-normal">Requires 16-character App Password</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setService('custom')}
-                className={`p-3 rounded-xl border text-xs font-bold text-left transition-all ${
+                className={`p-3 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer ${
                   service === 'custom'
-                    ? 'border-blue-600 bg-blue-50/50 text-blue-900 ring-2 ring-blue-600/10'
-                    : 'border-slate-700/60 cyber-card-subtle text-slate-200 hover:bg-slate-800/80'
+                    ? 'border-emerald-500/40 bg-emerald-950/30 text-emerald-300 ring-1 ring-emerald-500/30'
+                    : 'border-teal-500/20 bg-[#0A0E14] text-zinc-300 hover:bg-[#121820]'
                 }`}
               >
-                <span className="block font-black">Custom SMTP</span>
-                <span className="text-[10px] text-slate-400 font-normal">University / Corporate mail server</span>
+                <span className="block font-black text-white">Custom SMTP</span>
+                <span className="text-[10px] text-zinc-400 font-normal">University / Corporate mail server</span>
               </button>
             </div>
           </div>
 
           {/* Gmail Helper Guide */}
           {service === 'gmail' && (
-            <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 space-y-1.5">
-              <div className="flex items-center gap-1.5 font-bold text-amber-950">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="p-3.5 bg-amber-950/40 rounded-2xl border border-amber-500/30 text-xs text-amber-300 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-amber-200">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>How to connect your Gmail in 1 minute:</span>
               </div>
-              <ol className="list-decimal list-inside text-[11px] text-amber-900/90 space-y-1 pl-1">
+              <ol className="list-decimal list-inside text-[11px] text-amber-300/90 space-y-1 pl-1">
                 <li>Go to your <strong>Google Account</strong> &gt; <strong>Security</strong> &gt; <strong>2-Step Verification</strong>.</li>
                 <li>At the bottom, click <strong>App passwords</strong>.</li>
-                <li>Enter app name <code className="bg-amber-100 px-1 rounded">RGUKT Maintenance</code> and click <strong>Create</strong>.</li>
+                <li>Enter app name <code className="bg-amber-900/60 px-1 rounded text-amber-200">RGUKT Maintenance</code> and click <strong>Create</strong>.</li>
                 <li>Copy the <strong>16-letter password</strong> and paste it below.</li>
               </ol>
             </div>
@@ -12930,7 +12913,7 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
           {/* Email & Password inputs */}
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-bold text-zinc-300 mb-1">
                 Sender Email Address (e.g. Gmail) <span className="text-rose-500">*</span>
               </label>
               <input
@@ -12938,13 +12921,13 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
                 placeholder="your.email@gmail.com"
-                className="w-full p-2.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                className="w-full p-2.5 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs font-semibold focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-bold text-zinc-300 mb-1">
                 App Password / SMTP Password <span className="text-rose-500">*</span>
               </label>
               <input
@@ -12952,7 +12935,7 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
                 placeholder={config?.hasPassword ? "•••••••••••••••• (Leave blank to keep existing password)" : "16-character Google App Password"}
-                className="w-full p-2.5 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+                className="w-full p-2.5 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs font-semibold focus:ring-1 focus:ring-emerald-400 focus:border-emerald-400 outline-none"
               />
             </div>
           </div>
@@ -12961,31 +12944,31 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
           {service === 'custom' && (
             <div className="grid grid-cols-3 gap-2">
               <div className="col-span-2">
-                <label className="block text-xs font-bold text-slate-200 mb-1">SMTP Host</label>
+                <label className="block text-xs font-bold text-zinc-300 mb-1">SMTP Host</label>
                 <input
                   type="text"
                   value={host}
                   onChange={(e) => setHost(e.target.value)}
                   placeholder="smtp.rgukt.ac.in"
-                  className="w-full p-2 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs"
+                  className="w-full p-2 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-200 mb-1">Port</label>
+                <label className="block text-xs font-bold text-zinc-300 mb-1">Port</label>
                 <input
                   type="number"
                   value={port}
                   onChange={(e) => setPort(e.target.value)}
                   placeholder="587"
-                  className="w-full p-2 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs"
+                  className="w-full p-2 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs outline-none"
                 />
               </div>
             </div>
           )}
 
           {/* Live Test Section */}
-          <div className="pt-2 border-t border-slate-800/60">
-            <label className="block text-xs font-bold text-slate-200 mb-1">
+          <div className="pt-2 border-t border-teal-500/15">
+            <label className="block text-xs font-bold text-zinc-300 mb-1">
               Verify Delivery to Student Email:
             </label>
             <div className="flex gap-2">
@@ -12994,13 +12977,13 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
                 placeholder="student@rgukt.ac.in"
-                className="flex-1 p-2 cyber-card-subtle border border-slate-700/60 rounded-xl text-xs"
+                className="flex-1 p-2 bg-[#070C12] border border-teal-500/20 text-white rounded-xl text-xs outline-none"
               />
               <button
                 type="button"
                 disabled={testing}
                 onClick={handleTestSend}
-                className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0"
+                className="px-3.5 py-2 cyber-btn-gradient text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{testing ? 'Dispatching...' : 'Test Send'}</span>
@@ -13013,14 +12996,14 @@ function SmtpSettingsModal({ config, onClose, onSuccess, defaultTestEmail }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 bg-slate-800/80 hover:bg-slate-200 text-slate-200 font-bold rounded-xl text-xs transition-colors"
+              className="flex-1 py-2.5 bg-[#0E151E] hover:bg-[#151E2B] text-zinc-300 font-bold rounded-xl text-xs transition-colors border border-teal-500/20 cursor-pointer"
             >
               Close
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 cyber-btn-gradient text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{saving ? 'Verifying & Saving...' : 'Save Configuration'}</span>
