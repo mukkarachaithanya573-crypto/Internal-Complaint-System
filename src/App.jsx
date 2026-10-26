@@ -1266,7 +1266,7 @@ export default function CampusMaintenanceApp() {
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [rejectModalTicket, setRejectModalTicket] = useState(null);
   const [showMailboxModal, setShowMailboxModal] = useState(false);
-  const [showIntro, setShowIntro] = useState(false);
+  const [showIntro, setShowIntro] = useState(!initialUser);
   const [showSmtpModal, setShowSmtpModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
   const [profileEditSuccessToast, setProfileEditSuccessToast] = useState(false);
@@ -3030,6 +3030,23 @@ export default function CampusMaintenanceApp() {
           onDismiss={() => setDismissOfflinePage(true)}
           offlineQueueCount={offlineOutbox.length}
         />
+      </>
+    );
+  }
+
+  // Show Cinematic Intro Screen before login & registration
+  if (showIntro && !isAuthenticated) {
+    return (
+      <>
+        <AuroraBackground />
+        {updateAvailable && isAppEnvironment() && (
+          <AppUpdateModal
+            appVersion={appVersion}
+            onUpdate={handleApplyUpdate}
+            onSkip={handleSkipUpdate}
+          />
+        )}
+        <CinematicIntro onEnter={() => setShowIntro(false)} />
       </>
     );
   }
